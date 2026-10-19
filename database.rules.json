@@ -1,0 +1,10 @@
+{
+  "rules": {
+    "secret": { ".read": false, ".write": false },
+    "board": {
+      ".read": false,
+      "json": { ".read": true },
+      ".write": "newData.child('key').val() === root.child('secret').val()"
+    }
+  }
+}

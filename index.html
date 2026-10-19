@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Парламентия: табло</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Onest:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: control-room board. Top bar with turn track, 3x2 party cards left, round/event/parliament/log column right. Single dark look for projector. */
+:root{
+  --bg:#0d1520; --panel:#142132; --panel2:#1a2b40; --line:#26405c;
+  --fg:#e8eef6; --mute:#8fa5bf; --gold:#e5b53c; --bad:#e46a5c; --good:#4fc08d;
+  --p1:#d9534a; --p2:#42b08a; --p3:#4f93e6; --p4:#e4688a; --p5:#e8bb3e; --p6:#9d7fdc;
+  --display:'Unbounded','Onest',system-ui,sans-serif; --body:'Onest',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.35;
+  padding-block:14px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:4px 9px;cursor:pointer}
+button:hover{border-color:var(--mute)} button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+button:disabled{opacity:.35;cursor:default}
+.top{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between;margin-bottom:12px}
+h1{font:700 22px/1.1 var(--display);margin:0;letter-spacing:-.01em}
+h1 small{display:block;font:500 12px var(--body);color:var(--mute);margin-top:5px;letter-spacing:.04em;text-transform:uppercase}
+.track{display:flex;gap:4px;flex-wrap:wrap}
+.step{min-width:92px;padding:6px 8px;border-radius:6px;background:var(--panel);border:1px solid var(--line);font-size:12px;color:var(--mute)}
+.step b{display:block;font:500 11px var(--mono);color:var(--mute)}
+.step.done{color:var(--fg);background:var(--panel2)} .step.now{border-color:var(--gold);color:var(--fg);background:#2a2a1c}
+.step.now b{color:var(--gold)}
+.tools{display:flex;gap:6px;flex-wrap:wrap}
+.tools .primary{background:var(--gold);color:#1a1604;border-color:var(--gold);font-weight:600;padding:6px 14px}
+.main{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(300px,1fr);gap:14px;align-items:start}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.card{background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--c);border-radius:8px;padding:10px 11px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.card.out{opacity:.92}
+.ch{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.gno{font:600 10px var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.pname{width:100%;margin-top:2px;font:700 15px/1.2 var(--display);color:var(--c);background:transparent;border:0;border-bottom:1px dashed var(--line);padding:2px 0;border-radius:0}
+.pname::placeholder{color:var(--mute);font-weight:500;font-size:13px}
+.pname:hover{border-bottom-color:var(--mute)} .pname:focus{outline:none;border-bottom:1px solid var(--c);background:var(--panel2)}
+.ch p{margin:3px 0 0;font-size:12px;color:var(--mute)}
+.rate{font:700 30px/1 var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.rate span{font-size:15px;color:var(--mute)}
+.badge{display:inline-block;font:600 10px var(--body);letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:4px;margin-top:4px}
+.badge.in{background:#17382d;color:var(--good)} .badge.outb{background:#3d1d1a;color:var(--bad)}
+.bar{position:relative;height:14px;background:var(--panel2);border-radius:3px}
+.bar i{position:absolute;inset:0 auto 0 0;background:var(--c);border-radius:3px;transition:width .35s}
+.bar u{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--gold)}
+.bar s{position:absolute;top:-17px;transform:translateX(-50%);font:500 9px var(--mono);color:var(--gold);text-decoration:none}
+.row{display:flex;gap:6px;flex-wrap:wrap}
+.nudge button{padding:2px 8px;font:600 12px var(--mono)}
+.res{display:grid;grid-template-columns:auto 1fr auto;gap:3px 7px;align-items:center;font-size:12px}
+.res label{color:var(--mute)}
+.pips{display:flex;gap:2px}.pips i{width:100%;height:7px;border-radius:1px;background:var(--panel2);flex:1}.pips i.on{background:var(--c)}
+.res .st{display:flex;gap:2px}.res .st button{padding:0 6px;font:600 11px var(--mono);line-height:16px}
+.ms{display:flex;flex-wrap:wrap;gap:4px}
+.ms button{font-size:11px;padding:2px 6px;color:var(--mute)}
+.ms button.on{background:var(--c);color:#0d1520;border-color:var(--c);font-weight:600}
+.acts{display:flex;gap:5px}.acts button{flex:1;font-size:11.5px;padding:4px 4px}
+.side{display:flex;flex-direction:column;gap:10px;min-width:0}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:11px 12px;min-width:0}
+.box h3{margin:0 0 7px;font:600 11px var(--body);letter-spacing:.09em;text-transform:uppercase;color:var(--mute)}
+.task h4{font:700 16px/1.2 var(--display);margin:0 0 6px}
+.task p{margin:0 0 6px}.task .rule{color:var(--gold);font-size:13.5px}
+.task .src{font-size:12px;color:var(--mute)}
+.ev{border-left:3px solid var(--gold);padding-left:10px}
+.ev b{font:700 14px var(--display);display:block;margin-bottom:3px}
+.eff{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}
+.eff span{font:500 11.5px var(--mono);padding:1px 6px;border-radius:4px;background:var(--panel2)}
+.eff .pos{color:var(--good)}.eff .neg{color:var(--bad)}
+.seatbar{display:flex;height:26px;border-radius:4px;overflow:hidden;background:var(--panel2);margin:4px 0 8px}
+.seatbar div{display:flex;align-items:center;justify-content:center;font:600 11px var(--mono);color:#0d1520;min-width:0;overflow:hidden}
+.legend{display:grid;grid-template-columns:1fr auto auto;gap:3px 10px;font-size:12.5px;font-variant-numeric:tabular-nums}
+.legend .n{font-family:var(--mono)}
+.kpi{display:flex;gap:16px;margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
+.kpi div{font-size:11px;color:var(--mute)}.kpi b{display:block;font:700 20px var(--mono);color:var(--fg)}
+.blocs{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:7px}
+.blocs button.sel{background:var(--gold);color:#1a1604;border-color:var(--gold)}
+.blocnote{font-size:12px;color:var(--mute);margin-top:6px}
+.log{max-height:170px;overflow:auto;font-size:12.5px;display:flex;flex-direction:column;gap:3px}
+.log div{color:var(--mute)}.log div:first-child{color:var(--fg)}.log em{font:500 11px var(--mono);color:var(--gold);font-style:normal;margin-right:5px}
+.techs dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font-size:12.5px}
+.techs dt{font-weight:600;color:var(--gold)}.techs dd{margin:0;color:var(--mute)}
+.mode{font:600 11px var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--mute);align-self:center;padding:0 6px}
+.ro .nudge,.ro .acts,.ro .st,.ro #qrbtn,.ro #undo,.ro #endturn,.ro #reset,.ro .blocs,.ro .blocnote,.ro #event .row{display:none}
+.ro .res{grid-template-columns:auto 1fr}.ro .ms button{pointer-events:none}.ro .pname{border-bottom-color:transparent}
+.qrov{position:fixed;inset:0;background:rgba(5,9,15,.86);display:flex;align-items:center;justify-content:center;z-index:10;padding:20px}
+.qrbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:24px;display:flex;gap:28px;align-items:center;max-width:960px;flex-wrap:wrap;justify-content:center}
+.qrsvg{width:min(70vmin,420px);flex:none;border-radius:6px;overflow:hidden}.qrsvg svg{display:block;width:100%;height:auto}
+.qrtxt{max-width:340px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.qrtxt h2{font:700 24px/1.15 var(--display);margin:0}.qrtxt p{margin:0;font-size:16px;color:var(--mute)}
+.qrtxt code{font:500 12px var(--mono);color:var(--gold);overflow-wrap:anywhere}
+@media (max-width:1100px){.main{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.cards{grid-template-columns:1fr}.step{min-width:70px}}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+body{margin:0}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <h1>Парламентия<small>Тема 5 · Лекция 1 · партии и партийные системы</small></h1>
+  <div class="track" id="track"></div>
+  <div class="tools">
+    <span class="mode" id="mode"></span><button id="qrbtn">QR для студентов</button>
+    <button id="undo">Отменить</button>
+    <button id="endturn" class="primary">Конец хода →</button>
+    <button id="reset">Сбросить игру</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="cards" id="cards"></div>
+  <div class="side">
+    <div class="box task" id="task"></div>
+    <div class="box" id="event"></div>
+    <div class="box" id="parl"></div>
+    <div class="box"><h3>Журнал</h3><div class="log" id="log"></div></div>
+  </div>
+</div>
+
+<div class="qrov" id="qrov" hidden><div class="qrbox"><div id="qrsvg" class="qrsvg"></div><div class="qrtxt"><h2>Откройте табло на телефоне</h2><p>Наведите камеру на код. На телефоне будут рейтинги, ресурсы, события и парламент в реальном времени. Управлять игрой может только ведущий.</p><code>https://voran1987.github.io/parlamentiya/</code><button id="qrclose">Закрыть</button></div></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+const N_BARRIER = 5, SEATS = 450, RMAX = 30;
+const RES = [['O','Организация'],['D','Деньги']];
+const P0 = [
+  {n:'Группа 1',t:'Консервативно-националистическая массовая',c:'var(--p1)',r:12,res:{O:6,D:3},inc:{O:2}},
+  {n:'Группа 2',t:'Левая зелёная сетевая',c:'var(--p2)',r:4,res:{O:3,D:2},inc:{O:1,D:1}},
+  {n:'Группа 3',t:'Правая либеральная кадровая',c:'var(--p3)',r:4,res:{O:2,D:7},inc:{D:2}},
+  {n:'Группа 4',t:'Социал-демократическая массовая с профсоюзами',c:'var(--p4)',r:9,res:{O:7,D:3},inc:{O:2}},
+  {n:'Группа 5',t:'Либертарианская «зонтичная»',c:'var(--p5)',r:2,res:{O:2,D:3},inc:{O:1,D:1}},
+  {n:'Группа 6',t:'Центристско-популистская, вождистская',c:'var(--p6)',r:8,res:{O:3,D:5},inc:{O:1,D:1}}
+];
+const ROUNDS = [
+ {t:'Типология',tk:'Дюверже, Киркхаймер, Кац и Мэйр',task:'Назовите тип вашей партии по двум классификациям и объясните, почему.',rule:'Верно по обеим: +1,0 к рейтингу. Верно по одной: +0,5.',src:'Раздел 3 лекции'},
+ {t:'Функции',tk:'Артикуляция и агрегирование интересов',task:'Назовите группу, чьи интересы вы артикулируете, и одну уступку, на которую пойдёте ради агрегирования интересов.',rule:'Конкретная группа и уступка: +1,0 к рейтингу. Общие слова: +0,5.',src:'Раздел 2 лекции'},
+ {t:'Организация',tk:'Массовая, кадровая, сетевая, картельная',task:'Как ваша организация помогает и мешает в борьбе за ваш электорат? Назовите одну слабость и способ её закрыть.',rule:'Честный анализ и план: +1 Организация и +0,5 к рейтингу.',src:'Раздел 3 лекции'},
+ {t:'Институционализация',tk:'Хантингтон: адаптивность, сложность, автономия, согласованность',task:'Оцените партию по четырём критериям Хантингтона. Что случится, если лидер уйдёт завтра?',rule:'Анализ по всем четырём критериям: +1,0 к рейтингу. Названы два: +0,5.',src:'Раздел 4 лекции'},
+ {t:'Блоки и коалиции',tk:'Предвыборные блоки, барьер 5%, послевыборные коалиции',task:'3 минуты переговоров между группами. Кто готов объединиться в блок и на каких условиях? Блок считается единым списком с одним барьером.',rule:'Заключённый блок: +0,5 к рейтингу каждому участнику, дальше создайте блок в панели парламента.',src:'Раздел 5 лекции'},
+ {t:'Партийная система',tk:'Дюверже, Сартори, эффективное число партий',task:'Какую партийную систему вы строите вашими решениями? Какое место в ней вы хотите занять?',rule:'Обоснование с терминами Сартори: +1,0 к рейтингу. Подсчёт N по текущей таблице: +0,5.',src:'Раздел 5 лекции'},
+ {t:'Барьер 5%',tk:'Выживание на пороге',task:'Партии ниже порога: назовите шаг, который позволит перепрыгнуть барьер за один ход. Партии выше: чем вы рискуете потерять место?',rule:'Реалистичный шаг: +1,0 к рейтингу. Фантазия без опоры на ресурсы: 0.',src:'Раздел 6 лекции'},
+ {t:'Итоги',tk:'Парламент',task:'Посмотрите на распределение мандатов. Кто формирует правительство? Какая коалиция минимальная выигрывающая?',rule:'Верная минимальная коалиция: +1,0 всем её участникам.',src:'Подведение итогов'}
+];
+const EVENTS = [
+ {t:'Скандал с партийными деньгами',x:'Журналисты нашли «чёрную кассу» в кадровой партии.',e:[[2,-1.5],[2,'D',-2]]},
+ {t:'Уход лидера',x:'Лидер вождистской партии объявил, что уходит из политики.',e:[[5,-2.5],[5,'O',-1]]},
+ {t:'Молодёжный протест',x:'Студенты вышли на улицы из-за стоимости жилья.',e:[[1,1.5],[4,0.5],[1,'O',1]]},
+ {t:'Забастовка на заводах',x:'Профсоюзы требуют повышения зарплат. Левые получают повестку.',e:[[3,1.0],[3,'O',1],[0,0.3]]},
+ {t:'Вирусный ролик',x:'Видео либертарианцев набрало миллионы просмотров.',e:[[4,1.5],[4,'D',1]]},
+ {t:'Кризис цен на селе',x:'Фермеры недовольны ценами на удобрения.',e:[[0,1.0],[0,'O',1],[2,-0.5]]},
+ {t:'Крупный донор',x:'Бизнесмен перечислил деньги правой партии.',e:[[2,'D',3],[2,0.5]]},
+ {t:'Раскол в профсоюзах',x:'Часть профсоюзных лидеров ушла к популистам.',e:[[3,-1.5],[3,'O',-2],[5,1.0]]},
+ {t:'Теледебаты',x:'Центристский лидер блестяще выступил в эфире.',e:[[5,1.2],[5,'D',1],[0,-0.5]]},
+ {t:'Рост явки',x:'Избиратели 18–30 лет вдруг пошли на выборы.',e:[[1,1.0],[4,0.5],[0,-0.5]]},
+ {t:'Скандал вокруг заявлений активистов',x:'Региональные активисты консервативной партии сделали резкие заявления, партию критикуют.',e:[[0,-1.2],[0,'O',-1],[1,0.3]]},
+ {t:'Сетевая кампания без лидера',x:'Зелёная сеть провела акцию без единого штаба и потеряла фокус.',e:[[1,-1.0],[1,'O',-1]]},
+ {t:'Непопулярный закон',x:'Партии, поддержавшие непопулярную реформу, теряют избирателей.',e:[[3,-1.0],[5,-1.0],[3,'D',-1]]},
+ {t:'Расследование о доходах лидера',x:'Журналисты опубликовали данные о собственности лидера центристской партии.',e:[[5,-1.5],[5,'D',-1]]},
+ {t:'Падение доверия к партиям',x:'Опрос показал рекордное недоверие к крупным парламентским партиям.',e:[[0,-0.7],[3,-0.7],[5,-0.7]]},
+ {t:'Раскол фракции',x:'Часть депутатов консервативной партии вышла из фракции и критикует руководство.',e:[[0,-1.5],[0,'O',-1],[5,0.5]]}
+];
+
+let S, hist = [], resetArm = false, evIdx = -1, selBloc = [], canWrite = true, db = null, fbKey = null, pend = null, modeNote = '';
+const BOARD_URL = 'https://voran1987.github.io/parlamentiya/';
+const $ = id => document.getElementById(id);
+const clone = o => JSON.parse(JSON.stringify(o));
+const fmt = v => v.toFixed(1).replace('.',',');
+const nm = p => p.name || p.n;
+const esc = s => s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+// Рейтинги это доли электората. Половина прироста берётся у «прочих», половина у остальных партий пропорционально.
+function others(){ return Math.max(0, 100 - S.parties.reduce((a,p)=>a+p.r,0)); }
+function shift(i,d){
+  const P = S.parties;
+  if(d >= 0){
+    const pool = P.reduce((a,p,k)=>k===i?a:a+p.r,0);
+    const o = Math.min(others(), d/2);
+    const c = Math.min(d - o, pool);
+    const extra = Math.max(0, Math.min(others() - o, d - o - c));
+    if(c > 0) P.forEach((p,k)=>{ if(k!==i) p.r -= c*p.r/pool; });
+    P[i].r += o + c + extra;
+  } else { P[i].r = Math.max(0, P[i].r + d); }
+  P.forEach(p=>{ p.r = Math.round(p.r*100)/100; });
+}
+const clamp =(v,a,b) => Math.max(a, Math.min(b, v));
+
+function fresh(){
+  return {ver:2, round:0, parties:clone(P0), blocs:[], log:[], used:[], ev:-1, evApplied:false};
+}
+function load(){
+  try{ const s = localStorage.getItem('parl-v1'); if(s){ const o = JSON.parse(s); if(o && o.ver===2) return o; } }catch(e){}
+  return fresh();
+}
+function save(){
+  try{ localStorage.setItem('parl-v1', JSON.stringify(S)); }catch(e){}
+  if(canWrite && db && fbKey){
+    clearTimeout(pend);
+    pend = setTimeout(()=>{
+      db.ref('board').update({json:JSON.stringify(S), key:fbKey})
+        .then(()=>{ if(modeNote){ modeNote=''; render(); } })
+        .catch(()=>{ modeNote='Не сохранено: проверьте ключ ведущего'; render(); });
+    }, 400);
+  }
+}
+function snap(){ hist.push(JSON.stringify(S)); if(hist.length>60) hist.shift(); }
+function log(msg){ S.log.unshift({r:S.round+1, m:msg}); if(S.log.length>60) S.log.pop(); }
+function act(fn){ snap(); resetArm=false; fn(); save(); render(); }
+
+// Seats: D'Hondt on lists that pass the barrier. A bloc is one list with summed rating.
+function lists(){
+  const inBloc = new Set(S.blocs.flat()), L = [];
+  S.blocs.forEach(b=>L.push({ids:b, r:b.reduce((a,i)=>a+S.parties[i].r,0), name:'Блок '+b.map(i=>i+1).join('+'), c:S.parties[b[0]].c}));
+  S.parties.forEach((p,i)=>{ if(!inBloc.has(i)) L.push({ids:[i], r:p.r, name:nm(p), c:p.c}); });
+  return L;
+}
+function seats(){
+  const L = lists(), ok = L.filter(l=>l.r>=N_BARRIER);
+  ok.forEach(l=>l.s=0);
+  for(let k=0;k<SEATS;k++){
+    let best=null, bv=-1;
+    ok.forEach(l=>{ const q=l.r/(l.s+1); if(q>bv){bv=q;best=l;} });
+    if(best) best.s++;
+  }
+  const enp = ok.length ? 1/ok.reduce((a,l)=>a+Math.pow(l.s/SEATS,2),0) : 0;
+  const top = ok.length ? Math.max(...ok.map(l=>l.s)) : 0;
+  return {L, ok, enp, top};
+}
+
+function pip(v,c){ let h=''; for(let i=1;i<=10;i++) h+=`<i class="${i<=v?'on':''}"></i>`; return `<div class="pips">${h}</div>`; }
+
+function render(){
+  document.body.classList.toggle('ro', !canWrite);
+  $('mode').textContent = modeNote || (canWrite ? 'Ведущий' : 'Просмотр');
+  $('track').innerHTML = ROUNDS.map((r,i)=>`<div class="step ${i<S.round?'done':i===S.round?'now':''}"><b>ХОД ${i+1}</b>${r.t}</div>`).join('');
+  $('endturn').disabled = S.round >= ROUNDS.length-1;
+  $('endturn').textContent = S.round >= ROUNDS.length-1 ? 'Последний ход' : 'Конец хода →';
+  $('undo').disabled = !hist.length;
+  $('reset').textContent = resetArm ? 'Да, сбросить всё' : 'Сбросить игру';
+
+  const sc = seats(), passing = new Set();
+  sc.ok.forEach(l=>l.ids.forEach(i=>passing.add(i)));
+  const rank = S.parties.map((p,i)=>[i,p.r]).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
+
+  $('cards').innerHTML = S.parties.map((p,i)=>{
+    const inn = passing.has(i), bl = S.blocs.find(b=>b.includes(i));
+    return `<section class="card ${inn?'':'out'}" style="--c:${p.c}">
+      <div class="ch"><div><div class="gno">${p.n}</div><input class="pname" id="pn${i}" data-i="${i}" value="${esc(p.name||'')}" placeholder="Название партии" maxlength="30" autocomplete="off" ${canWrite?'':'readonly'}><p>${p.t}</p>
+        <span class="badge ${inn?'in':'outb'}">${inn?(bl&&p.r<N_BARRIER?'Проходит в блоке':'Проходит'):'Ниже барьера'}</span></div>
+        <div class="rate">${fmt(p.r)}<span>%</span></div></div>
+      <div class="bar"><i style="width:${p.r/RMAX*100}%"></i><u style="left:${N_BARRIER/RMAX*100}%"></u><s style="left:${N_BARRIER/RMAX*100}%">5%</s></div>
+      <div class="row nudge"><button data-a="r" data-i="${i}" data-d="-1">−1</button><button data-a="r" data-i="${i}" data-d="-0.5">−0,5</button><button data-a="r" data-i="${i}" data-d="0.5">+0,5</button><button data-a="r" data-i="${i}" data-d="1">+1</button></div>
+      <div class="res">${RES.map(([k,nm])=>`<label>${nm}</label>${pip(p.res[k])}<span class="st"><button data-a="x" data-i="${i}" data-k="${k}" data-d="-1">−</button><button data-a="x" data-i="${i}" data-k="${k}" data-d="1">+</button></span>`).join('')}</div>
+      <div class="acts"><button data-a="camp" data-i="${i}" title="−1 Деньги, +0,8% к рейтингу">Агитация · −1 Деньги</button><button data-a="mob" data-i="${i}" title="−1 Организация, +0,8% к рейтингу">Мобилизация · −1 Орг.</button></div>
+    </section>`;
+  }).join('');
+
+  const R = ROUNDS[S.round];
+  $('task').innerHTML = `<h3>Ход ${S.round+1} из ${ROUNDS.length} · задание</h3><h4>${R.t}</h4><p>${R.task}</p><p class="rule">${R.rule}</p><p class="src">${R.tk} · ${R.src}</p><p class="src">Конец хода: ресурс на нуле означает −0,5% к рейтингу.</p>`;
+
+  const ev = EVENTS[S.ev];
+  $('event').innerHTML = `<h3>Событие в стране</h3>` + (ev ? `<div class="ev"><b>${ev.t}</b>${ev.x}<div class="eff">${ev.e.map(e=>effChip(e)).join('')}</div>
+      <div class="row"><button data-a="applyev" ${S.evApplied?'disabled':''}>${S.evApplied?'Применено':'Применить'}</button><button data-a="drawev">Другое событие</button></div></div>`
+    : `<p style="margin:0 0 8px;color:var(--mute)">Карта события пока не открыта.</p><button data-a="drawev">Открыть событие</button>`);
+
+  const bl = S.blocs;
+  $('parl').innerHTML = `<h3>Электорат · сумма 100%</h3>
+    <div class="seatbar">${S.parties.map(p=>`<div style="flex:${p.r};background:${p.c}" title="${nm(p)} ${fmt(p.r)}%">${p.r>=6?fmt(p.r):''}</div>`).join('')}<div style="flex:${others()};background:var(--line);color:var(--fg)" title="Прочие и не определились">${others()>=6?fmt(others()):''}</div></div>
+    <div class="blocnote" style="margin:0 0 10px">Серый сегмент: прочие партии и не определившиеся, сейчас ${fmt(others())}%.</div>
+    <h3>Парламент · ${SEATS} мандатов, барьер ${N_BARRIER}%</h3>
+    <div class="seatbar">${sc.ok.slice().sort((a,b)=>b.s-a.s).map(l=>`<div style="flex:${l.s};background:${l.c}">${l.s>=22?l.s:''}</div>`).join('')}</div>
+    <div class="legend">${sc.L.slice().sort((a,b)=>b.r-a.r).map(l=>{ const ok=l.r>=N_BARRIER; return `<span style="color:${ok?'var(--fg)':'var(--bad)'}">${l.name}</span><span class="n">${fmt(l.r)}%</span><span class="n">${ok?l.s:'—'}</span>`}).join('')}</div>
+    <div class="kpi"><div>Эффективное число партий<b>${sc.enp?fmt(sc.enp):'—'}</b></div><div>Списков в парламенте<b>${sc.ok.length}</b></div><div>Большинство<b>${sc.top>SEATS/2?'есть':'нет'}</b></div></div>
+    <div class="blocnote">Блоки. Выберите группы и создайте блок: у него один барьер на сумму рейтингов.</div>
+    <div class="blocs" style="margin-top:6px">${S.parties.map((p,i)=>{ const inb=bl.some(b=>b.includes(i)); return `<button data-a="selb" data-i="${i}" class="${selBloc.includes(i)?'sel':''}" ${inb?'disabled':''}>${i+1}</button>`}).join('')}
+      <button data-a="mkbloc" ${selBloc.length<2?'disabled':''}>Создать блок</button>${bl.length?`<button data-a="clrbloc">Распустить блоки (${bl.length})</button>`:''}</div>`;
+
+  $('log').innerHTML = S.log.length ? S.log.map(l=>`<div><em>ХОД ${l.r}</em>${l.m}</div>`).join('') : '<div>Журнал пуст. Изменения рейтинга и ресурсов появятся здесь.</div>';
+}
+function effChip(e){
+  if(e.length===2){ const d=e[1]; return `<span class="${d>0?'pos':'neg'}">Гр.${e[0]+1} рейтинг ${d>0?'+':'−'}${fmt(Math.abs(d))}</span>`; }
+  const d=e[2], nm=RES.find(x=>x[0]===e[1])[1]; return `<span class="${d>0?'pos':'neg'}">Гр.${e[0]+1} ${nm} ${d>0?'+':'−'}${Math.abs(d)}</span>`;
+}
+
+document.addEventListener('click', ev=>{
+  const b = ev.target.closest('button'); if(!b) return;
+  if(b.id==='qrbtn'){ drawQR(); $('qrov').hidden=false; return; }
+  if(b.id==='qrclose'){ $('qrov').hidden=true; return; }
+  if(!canWrite) return;
+  const a = b.dataset.a, i = +b.dataset.i, P = S.parties[i];
+  if(b.id==='undo'){ if(hist.length){ S = JSON.parse(hist.pop()); save(); render(); } return; }
+  if(b.id==='reset'){ if(!resetArm){ resetArm=true; render(); } else { hist=[]; S=fresh(); selBloc=[]; resetArm=false; save(); render(); } return; }
+  if(b.id==='endturn'){ act(()=>{ S.parties.forEach((p,i)=>{ if(p.res.O===0||p.res.D===0){ shift(i,-0.5); log(`${nm(p)}: ресурс на нуле, −0,5%`); } });
+      S.parties.forEach(p=>{ for(const k in p.inc) p.res[k]=clamp(p.res[k]+p.inc[k],0,10); });
+      log('Конец хода «'+ROUNDS[S.round].t+'». Партии получили ресурсы по профилю.'); S.round++; S.ev=-1; S.evApplied=false; }); return; }
+  if(a==='r'){ const d=+b.dataset.d; act(()=>{ shift(i,d); log(`${nm(P)}: рейтинг ${d>0?'+':'−'}${fmt(Math.abs(d))} → ${fmt(P.r)}%`); }); }
+  else if(a==='x'){ const k=b.dataset.k, d=+b.dataset.d; act(()=>{ P.res[k]=clamp(P.res[k]+d,0,10); log(`${nm(P)}: ${RES.find(x=>x[0]===k)[1]} ${d>0?'+1':'−1'} → ${P.res[k]}`); }); }
+  else if(a==='camp'){ if(P.res.D<1) return flash(b,'Нужна 1 Деньги'); act(()=>{ P.res.D--; shift(i,0.8); log(`${nm(P)}: агитация, +0,8% → ${fmt(P.r)}%`); }); }
+  else if(a==='mob'){ if(P.res.O<1) return flash(b,'Нужна 1 Организация'); act(()=>{ P.res.O--; shift(i,0.8); log(`${nm(P)}: мобилизация, +0,8% → ${fmt(P.r)}%`); }); }
+  else if(a==='drawev'){ act(()=>{ const pool=EVENTS.map((_,k)=>k).filter(k=>!S.used.includes(k)&&k!==S.ev); const src=pool.length?pool:EVENTS.map((_,k)=>k).filter(k=>k!==S.ev);
+      if(!pool.length) S.used=[]; S.ev=src[Math.floor(Math.random()*src.length)]; S.used.push(S.ev); S.evApplied=false; log('Событие: «'+EVENTS[S.ev].t+'»'); }); }
+  else if(a==='applyev'){ act(()=>{ EVENTS[S.ev].e.forEach(e=>{ const p=S.parties[e[0]]; if(e.length===2) shift(e[0],e[1]); else p.res[e[1]]=clamp(p.res[e[1]]+e[2],0,10); }); S.evApplied=true; log('Применено: «'+EVENTS[S.ev].t+'»'); }); }
+  else if(a==='selb'){ selBloc = selBloc.includes(i) ? selBloc.filter(x=>x!==i) : [...selBloc,i]; render(); }
+  else if(a==='mkbloc'){ act(()=>{ S.blocs.push(selBloc.slice().sort()); log('Создан блок групп '+selBloc.map(x=>x+1).join(', ')+'. Барьер считается на сумму.'); selBloc=[]; }); }
+  else if(a==='clrbloc'){ act(()=>{ S.blocs=[]; log('Блоки распущены'); }); }
+});
+document.addEventListener('change', ev=>{
+  const el = ev.target; if(!canWrite || !el.classList || !el.classList.contains('pname')) return;
+  const P = S.parties[+el.dataset.i], v = el.value.trim().slice(0,30);
+  if(v === (P.name||'')) return;
+  act(()=>{ P.name = v; log(v ? `${P.n} назвала партию «${v}»` : `${P.n}: название снято`); });
+});
+function flash(b,t){ const o=b.textContent; b.textContent=t; setTimeout(()=>{ b.textContent=o; },1400); }
+
+function drawQR(){
+  if(typeof qrcode==='undefined') return;
+  const q = qrcode(0,'M'); q.addData(BOARD_URL); q.make();
+  const n = q.getModuleCount(), m = 2; let r = '';
+  for(let y=0;y<n;y++) for(let x=0;x<n;x++) if(q.isDark(y,x)) r += `<rect x="${x+m}" y="${y+m}" width="1" height="1"/>`;
+  $('qrsvg').innerHTML = `<svg viewBox="0 0 ${n+2*m} ${n+2*m}" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><g fill="#000">${r}</g></svg>`;
+}
+function start(){
+  S = load();
+  const cfg = window.FIREBASE_CONFIG;
+  try{
+    const u = new URL(location.href), k = u.searchParams.get('key');
+    if(k){ localStorage.setItem('parl-key', k); history.replaceState(null, '', location.pathname); }
+    fbKey = localStorage.getItem('parl-key');
+  }catch(e){}
+  if(!cfg || typeof firebase === 'undefined'){ canWrite = true; modeNote = 'Локальный режим'; render(); return; }
+  try{ firebase.initializeApp(cfg); db = firebase.database(); }catch(e){ canWrite = true; modeNote = 'Нет связи с базой'; render(); return; }
+  canWrite = !!fbKey;
+  if(!canWrite) S = fresh();
+  modeNote = 'Подключение…'; render();
+  let first = true;
+  db.ref('board/json').on('value', snap=>{
+    let o = null; try{ o = snap.val() ? JSON.parse(snap.val()) : null; }catch(e){}
+    modeNote = '';
+    if(canWrite){
+      if(first){ first = false; if(o && o.ver === 2) S = o; else { S = fresh(); save(); } render(); }
+      return;
+    }
+    if(o && o.ver === 2) S = o; else { S = fresh(); modeNote = 'Ведущий ещё не начал игру'; }
+    render();
+  }, ()=>{ modeNote = 'Нет доступа к табло'; render(); });
+}
+start();
+</script>
+</body>
+</html>
