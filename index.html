@@ -331,8 +331,9 @@ function start(){
     if(k){ localStorage.setItem('parl-key', k); history.replaceState(null, '', location.pathname); }
     fbKey = localStorage.getItem('parl-key');
   }catch(e){}
-  if(!cfg || typeof firebase === 'undefined'){ canWrite = true; modeNote = 'Локальный режим'; render(); return; }
-  try{ firebase.initializeApp(cfg); db = firebase.database(); }catch(e){ canWrite = true; modeNote = 'Нет связи с базой'; render(); return; }
+  const localOk = location.protocol === 'file:' || /[?&]local=1/.test(location.search);
+  if(!cfg || typeof firebase === 'undefined'){ canWrite = localOk; if(!localOk) S = fresh(); modeNote = localOk ? 'Локальный режим' : 'Нет связи с базой'; render(); return; }
+  try{ firebase.initializeApp(cfg); db = firebase.database(); }catch(e){ canWrite = false; S = fresh(); modeNote = 'Нет связи с базой'; render(); return; }
   canWrite = !!fbKey;
   if(!canWrite) S = fresh();
   modeNote = 'Подключение…'; render();
