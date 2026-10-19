@@ -334,6 +334,7 @@ function start(){
     const u = new URL(location.href), k = u.searchParams.get('key');
     if(k){ localStorage.setItem('parl-key', k); history.replaceState(null, '', location.pathname); }
     fbKey = localStorage.getItem('parl-key');
+    if(/[?&]view=1/.test(location.search)) fbKey = null;
   }catch(e){}
   const localOk = location.protocol === 'file:' || /[?&]local=1/.test(location.search);
   if(!cfg || typeof firebase === 'undefined'){ canWrite = localOk; if(!localOk) S = fresh(); modeNote = localOk ? 'Локальный режим' : 'Нет связи с базой'; render(); return; }
