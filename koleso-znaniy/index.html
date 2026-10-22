@@ -99,7 +99,9 @@ function buildDoc(){
  return '<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>'
  +'<title>'+TITLE+'</title>'+link+'<style id="sty">'+css+'</style><div id="app"></div>'
  +'<script id="state" type="application/json">'+st+'<\/script><script id="qdata">'+qd+'<\/script><script id="code">'+code+'<\/script></body></html>'}
-let fbKey=null,db=null;const LK='koleso_znaniy_v1';
+let fbKey=null,db=null,synced=false,lastJ='';
+function autoSync(){if(!db||!teacher||!fbKey||!synced)return;const j=JSON.stringify(S);if(j!==lastJ){lastJ=j;publish()}}
+const LK='koleso_znaniy_v1';
 function publish(){try{localStorage.setItem(LK,JSON.stringify(S))}catch(e){}if(db&&teacher&&fbKey){db.ref('koleso').update({json:JSON.stringify(S),key:fbKey}).then(()=>{if(msg){msg='';render()}}).catch(()=>{msg='Не сохранено: проверьте ключ ведущего';render()})}}
 const ANS=ANSW;
 let rot0=S.rot||0;
@@ -142,8 +144,8 @@ function render(){const A=$('app');let h='';
  const err=msg?`<div class="note" role="alert">${esc(msg)}</div>`:'';
  if(S.phase==='setup')h=top+(teacher?setup():`<div class="card"><h2>Игра скоро начнётся</h2><div class="hint">Страница обновится сама, когда ведущий откроет игру. Если этого не произошло, перезагрузите страницу.</div></div>`);
  else if(S.phase==='end')h=top+endScreen()+rack();else h=top+tableView()+rack();
- const showDiag=teacher||/недоступн|ошибка/.test(diag);
- A.innerHTML='<div class="wrap">'+err+h+(showDiag?`<div class="hint">${teacher&&!art?'':'Служебно: '+esc(diag)}</div>`:'')+'</div>';if($('wheel'))drawWheel()}
+ const showDiag=true;
+ A.innerHTML='<div class="wrap">'+err+h+(showDiag?`<div class="hint">Связь: ${esc(diag)}</div>`:'')+'</div>';if($('wheel'))drawWheel();autoSync()}
 function setup(){return `<div class="setup"><div class="card"><div class="tag">Колода вопросов</div><div class="decks">${DECKS.map((d,i)=>`<button class="deck${S.deck===i?' on':''}" data-a="deck" data-i="${i}"><b>${esc(d.name)}</b><span>${esc(d.sub)}</span></button>`).join('')}</div>
  <div class="tag">Команды</div><div class="row"><span>Количество:</span><button data-a="n-" aria-label="Меньше команд">−</button><b>${S.n}</b><button data-a="n+" aria-label="Больше команд">+</button></div>
  <div class="names">${[...Array(S.n).keys()].map(i=>`<input id="nm${i}" value="${esc(S.names[i])}" data-a="name" data-i="${i}" aria-label="Название команды ${i+1}">`).join('')}</div>
@@ -198,7 +200,7 @@ render();
  try{firebase.initializeApp(cfg);db=firebase.database()}catch(e){diag='нет связи с базой';render();return}
  teacher=!!fbKey;let first=true;diag=teacher?'ведущий, синхронизация включена':'просмотр';render();
  db.ref('koleso/json').on('value',snap=>{let o=null;try{o=snap.val()?JSON.parse(snap.val()):null}catch(e){}
-  if(teacher){if(first){first=false;if(o&&o.phase)S=o;else{S=fresh;publish()}render()}return}
-  if(o&&o.phase)S=o;else S=fresh;render()},()=>{diag='нет доступа к игре';render()})
+  if(teacher){if(first){first=false;if(o&&o.phase)S=o;else{S=fresh}synced=true;lastJ='';render()}return}
+  if(o&&o.phase){S=o;diag='просмотр, обновлено '+new Date().toLocaleTimeString('ru-RU')}else{S=fresh;diag='просмотр, ведущий ещё не начал игру'}render()},()=>{diag='нет доступа к игре';render()})
 })();
 </script></body></html>
