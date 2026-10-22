@@ -150,14 +150,14 @@ function setup(){return `<div class="setup"><div class="card"><div class="tag">�
  <div class="row"><label for="st">Стартовый банк</label><select id="st" data-a="start">${[500,1000,2000].map(v=>`<option value="${v}"${S.start===v?' selected':''}>${v} фишек</option>`).join('')}</select>
  <label for="rd">Раундов до финала</label><select id="rd" data-a="rounds">${[6,10,14].map(v=>`<option value="${v}"${S.rounds===v?' selected':''}>${v}</option>`).join('')}</select></div>
  <div><button class="gold" data-a="start-game">Открыть игру</button></div></div>
- <div class="card"><div class="tag">Правила за столом</div><ol class="rules"><li>Рулетка выбирает тему, карта дилера задаёт выплату: от 1 к 1 для лёгких вопросов до 4 к 1 для самых трудных.</li><li>Команды ставят фишки до показа вопроса, зная только тему и выплату. Можно пасовать.</li><li>Верный ответ приносит ставку, умноженную на выплату. Неверный забирает ставку.</li><li>Если у команды меньше 100 фишек, банк доливает ей до 100.</li><li>Финал — ва-банк: можно поставить весь банк, выплата 2 к 1. Побеждает команда с самым большим банком.</li></ol></div></div>`}
+ <div class="card"><div class="tag">Правила за столом</div><ol class="rules"><li>Колесо выбирает тему, карта ведущего задаёт выплату: от 1 к 1 для лёгких вопросов до 4 к 1 для самых трудных.</li><li>Команды ставят фишки до показа вопроса, зная только тему и выплату. Можно пасовать.</li><li>Верный ответ приносит ставку, умноженную на выплату. Неверный забирает ставку.</li><li>Если у команды меньше 100 фишек, банк доливает ей до 100.</li><li>Финал — ва-банк: можно поставить весь банк, выплата 2 к 1. Побеждает команда с самым большим банком.</li></ol></div></div>`}
 function tableView(){const c=S.cur,sp=S.phase==='spin';
  const leg=deck().catsFlat.map((n,i)=>`<div class="${c&&c.ci===i?'cur':''}"><span class="n">${i+1}</span>${esc(n)}<span class="left">осталось ${left(i)}</span></div>`).join('');
- const wheel=`<div class="wheelbox"><div class="wheelwrap"><canvas id="wheel" aria-label="Рулетка тем"></canvas><div class="pointer"></div></div><div class="legend">${leg}</div></div>`;
+ const wheel=`<div class="wheelbox"><div class="wheelwrap"><canvas id="wheel" aria-label="Колесо тем"></canvas><div class="pointer"></div></div><div class="legend">${leg}</div></div>`;
  let p='';
- if(sp)p=`<div class="dealer"><h2>Крутим рулетку</h2><div class="hint">Шарик выберет тему из шести. Затем дилер откроет карту с выплатой.</div>${teacher?`<div><button class="gold" data-a="spin"${spinning?' disabled':''}>${spinning?'Рулетка крутится…':'Крутить'}</button></div>`:''}</div>`;
+ if(sp)p=`<div class="dealer"><h2>Крутим колесо</h2><div class="hint">Колесо выберет тему из шести. Затем ведущий откроет карту с выплатой.</div>${teacher?`<div><button class="gold" data-a="spin"${spinning?' disabled':''}>${spinning?'Колесо крутится…':'Крутить'}</button></div>`:''}</div>`;
  else{const d=qd(),o=odds(c),topic=c.final?'Финальный вопрос':deck().catsFlat[c.ci];
-  p=`<div class="dealer"><div class="tag">${esc(topic)}</div><div class="odds">Выплата ${o} к 1<small>${c.final?'ва-банк':'карта дилера'}</small></div>`;
+  p=`<div class="dealer"><div class="tag">${esc(topic)}</div><div class="odds">Выплата ${o} к 1<small>${c.final?'ва-банк':'карта ведущего'}</small></div>`;
   if(S.notes.length&&S.phase==='bet')p+=S.notes.map(n=>`<div class="note">${esc(n)}</div>`).join('');
   if(S.phase==='bet')p+=`<div class="hint">Команды делают ставки, вопрос пока скрыт.</div>${teacher?'<div><button class="gold" data-a="reveal">Принять ставки и показать вопрос</button></div>':''}`;
   else{p+=`<div class="ctx"><b>Кейс · ${esc(d.tag)}</b>${esc(d.ctx)}</div><div class="q">${esc(d.q)}</div>`;
