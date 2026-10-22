@@ -1,0 +1,204 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><title>Колесо знаний</title>
+<link id="fonts" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,900&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style id="sty">/* Layout: shared casino table. Host runs the game, students watch the same table on their phones. Single dark felt look by choice. */
+:root{color-scheme:dark;--felt:#0B3A2C;--felt2:#0F4A38;--felt3:#082A20;--ink:#F4EFE0;--mute:#A9C2B5;--gold:#D9B45A;--gold2:#8F7230;--red:#B3262E;--black:#17181A;--line:#2C6A55;
+--t0:#D9B45A;--t1:#E5736B;--t2:#6FB3D9;--t3:#9BD16F;--t4:#C99BE0;--t5:#F0A15A;
+--serif:"Playfair Display",Georgia,"Times New Roman",serif;--sans:"Source Sans 3","Segoe UI",Arial,sans-serif}
+*{box-sizing:border-box}
+body{background:var(--felt);background-image:radial-gradient(120% 80% at 50% 0%,var(--felt2),var(--felt) 60%,var(--felt3));background-attachment:fixed;color:var(--ink);font-family:var(--sans);font-size:16px;padding-inline:16px;padding-block:16px 32px;min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--serif);margin:0;text-wrap:balance}
+button{font:inherit;cursor:pointer;color:var(--ink);background:var(--felt3);border:1px solid var(--line);border-radius:8px;padding:9px 14px;font-weight:600}
+button:hover{border-color:var(--gold)}
+button:disabled{opacity:.45;cursor:default;border-color:var(--line)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button.gold{background:var(--gold);color:#241B05;border-color:var(--gold)}
+button.gold:hover{background:#E6C273}
+button.red{background:var(--red);border-color:var(--red)}
+input,select{font:inherit;background:var(--felt3);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.top{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;justify-content:space-between}
+.brand{font-size:clamp(26px,4vw,40px);font-weight:900;font-style:italic;color:var(--gold)}
+.sub{color:var(--mute);font-size:14px}
+.tag{font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+/* setup */
+.setup{display:grid;grid-template-columns:1fr;gap:18px}
+@media(min-width:860px){.setup{grid-template-columns:1.1fr .9fr}}
+.card{background:rgba(8,42,32,.72);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.decks{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.deck{text-align:left;padding:14px;border-radius:12px;display:flex;flex-direction:column;gap:4px}
+.deck.on{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold) inset}
+.deck b{font-family:var(--serif);font-size:20px}
+.deck span{font-weight:400;color:var(--mute);font-size:14px}
+.names{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.rules{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;color:var(--ink)}
+.rules li::marker{color:var(--gold)}
+/* table */
+.table{display:grid;grid-template-columns:1fr;gap:18px;align-items:start}
+@media(min-width:900px){.table{grid-template-columns:minmax(0,440px) 1fr}}
+.wheelbox{display:flex;flex-direction:column;align-items:center;gap:12px}
+.wheelwrap{position:relative;width:min(440px,100%);aspect-ratio:1}
+canvas{width:100%;height:100%;display:block}
+.pointer{position:absolute;left:50%;top:-4px;transform:translateX(-50%);width:0;height:0;border-left:13px solid transparent;border-right:13px solid transparent;border-top:28px solid var(--gold);filter:drop-shadow(0 2px 2px rgba(0,0,0,.5))}
+.legend{display:grid;grid-template-columns:1fr;gap:4px;width:100%;font-size:15px}
+.legend div{display:flex;gap:10px;align-items:center;padding:4px 8px;border-radius:8px}
+.legend .n{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;background:var(--red);color:var(--ink);flex:none}
+.legend div:nth-child(even) .n{background:var(--black)}
+.legend .cur{background:rgba(217,180,90,.18);outline:1px solid var(--gold)}
+.legend .left{margin-left:auto;color:var(--mute);font-size:13px;white-space:nowrap}
+.panel{display:flex;flex-direction:column;gap:14px;min-width:0}
+.dealer{background:rgba(8,42,32,.72);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.odds{display:inline-flex;align-items:baseline;gap:8px;font-family:var(--serif);font-weight:900;font-size:clamp(28px,4vw,40px);color:var(--gold)}
+.odds small{font-family:var(--sans);font-weight:600;font-size:14px;color:var(--mute)}
+.ctx{background:rgba(0,0,0,.22);border-radius:12px;padding:14px 16px;font-size:clamp(16px,2vw,20px);line-height:1.5}
+.ctx b{display:block;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+.q{font-family:var(--serif);font-weight:700;font-size:clamp(22px,3.2vw,32px);line-height:1.25;text-wrap:balance}
+.ans{background:var(--gold);color:#241B05;border-radius:12px;padding:14px 18px;font-family:var(--serif);font-weight:700;font-size:clamp(20px,2.8vw,28px);line-height:1.35}
+.note{background:rgba(217,180,90,.14);border:1px solid var(--gold2);border-radius:10px;padding:8px 12px;font-size:14px}
+.hint{color:var(--mute);font-size:14px}
+/* teams */
+.rack{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.team{background:rgba(8,42,32,.8);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.team.lead{border-color:var(--gold)}
+.tname{font-weight:700;overflow-wrap:anywhere;display:flex;gap:8px;align-items:center}
+.dot{width:12px;height:12px;border-radius:50%;flex:none}
+.bank{font-family:var(--serif);font-weight:900;font-size:30px;font-variant-numeric:tabular-nums}
+.stack{display:flex;flex-wrap:wrap;gap:3px;min-height:20px}
+.chip{width:20px;height:20px;border-radius:50%;border:3px dashed rgba(255,255,255,.75);box-shadow:0 1px 0 rgba(0,0,0,.4)}
+.bet{display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:8px}
+.qb{display:flex;flex-wrap:wrap;gap:5px}
+.qb button{padding:5px 9px;font-size:14px}
+.qb button.sel{background:var(--gold);color:#241B05;border-color:var(--gold)}
+.betv{font-variant-numeric:tabular-nums;font-weight:700}
+.mark{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.mark button{padding:8px 0;font-size:18px}
+.mark .w.on{background:#2F8A57;border-color:#2F8A57}
+.mark .l.on{background:var(--red);border-color:var(--red)}
+.pos{color:#8EE0A9;font-weight:700}.neg{color:#F19A9A;font-weight:700}
+.podium{display:flex;flex-direction:column;gap:8px}
+.podium div{display:flex;gap:12px;align-items:baseline;padding:10px 14px;border-radius:12px;background:rgba(0,0,0,.22);font-size:20px}
+.podium div:first-child{background:var(--gold);color:#241B05}
+.podium .p{font-family:var(--serif);font-weight:900;font-size:26px;width:34px}
+.podium .c{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums}
+</style>
+<div id="app"></div><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script><script src="../firebase-config.js"></script>
+<script id="state" type="application/json">{"phase":"setup","deck":1,"n":4,"names":["Команда 1","Команда 2","Команда 3","Команда 4","Команда 5","Команда 6"],"start":1000,"rounds":10,"teams":[],"round":0,"used":{},"cur":null,"show":false,"ans":"","notes":[],"settled":false,"rot":0}</script>
+<script id="qdata">const DECKS=[{"name":"Демократия","sub":"Сравнительная политология: модели, измерение, волны, откат","D":{"cats":["Понятия\nи подходы","Модели\nдемократии","Измерение\nдемократии","Условия\nдемократии","Волны\nи транзиты","Кризис\nи откат"],"catsFlat":["Понятия и подходы","Модели демократии","Измерение демократии","Условия демократии","Волны и транзиты","Кризис и откат"],"q":[[{"tag":"Афины, V в. до н. э.","ctx":"Граждане Афин собираются на холме Пникс и голосуют по законам и войне сами, без представителей. Решения принимаются большинством голосов, многие должности распределяют жребием.","q":"Какая это форма демократии?"},{"tag":"Геттисберг, 1863","ctx":"19 ноября 1863 года Авраам Линкольн на открытии кладбища в Геттисберге говорит о правлении, которое не исчезнет с земли.","q":"Как звучит его формула демократии?"},{"tag":"Швейцария","ctx":"В Швейцарии граждане выбирают парламент, а ещё регулярно голосуют на референдумах по законам и поправкам к конституции и могут выдвигать народную инициативу.","q":"Какие формы демократии здесь сочетаются?"},{"tag":"Минимальное определение","ctx":"Исследователь считает страну демократией, если там проходят свободные конкурентные выборы. О свободе СМИ и независимости судов он ничего не выясняет.","q":"Какое понимание демократии он использует?"}],[{"tag":"Даль, 1971","ctx":"Роберт Даль различает идеал демократии и реальные режимы, в которых действуют выборные власти, свободные выборы, свобода слова и право создавать объединения.","q":"Как Даль назвал такие реальные режимы?"},{"tag":"Великобритания","ctx":"Партия, получившая около 40% голосов, формирует однопартийное правительство с большинством мест. Две крупные партии сменяют друг друга у власти, кабинет сильнее парламента.","q":"Какая модель по Лейпхарту здесь показана?"},{"tag":"Нидерланды и Бельгия","ctx":"Выборы идут по пропорциональной системе, в парламенте много партий, правительства создаются как коалиции. Важные решения принимают, договариваясь с представителями разных групп.","q":"Какая модель по Лейпхарту здесь показана?"},{"tag":"Шумпетер, 1942","ctx":"Избиратели раз в несколько лет выбирают между конкурирующими группами политиков. В промежутке решения принимают профессионалы, а граждане в них не участвуют.","q":"Какая это модель демократии?"}],[{"tag":"Freedom House","ctx":"Американская организация ежегодно ставит странам баллы за политические права и гражданские свободы и на этой основе присваивает им статус.","q":"Какие три статуса она использует?"},{"tag":"The Economist","ctx":"Economist Intelligence Unit оценивает страны по шкале от 0 до 10 по пяти группам показателей: выборы и плюрализм, работа правительства, участие, политическая культура, гражданские свободы.","q":"Какие четыре типа режимов выделяет индекс?"},{"tag":"V-Dem, Гётеборг","ctx":"Проект из Гётеборга опирается на оценки тысяч экспертов по странам и делит режимы на четыре типа, от самого закрытого до самого демократичного.","q":"Назовите эти четыре типа."},{"tag":"Polity","ctx":"По шкале Polity одна страна получает +9, другая −8. Шкала идёт от −10 до +10.","q":"Что означают эти оценки?"}],[{"tag":"Липсет, 1959","ctx":"Липсет сравнивает страны по доходу, образованию и урбанизации и показывает: чем богаче и образованнее общество, тем выше шансы на устойчивую демократию.","q":"Как называется эта теория?"},{"tag":"Алмонд и Верба, 1963","ctx":"Исследователи опрашивают жителей США, Великобритании, ФРГ, Италии и Мексики о доверии к власти, интересе к политике и готовности участвовать в ней.","q":"Какое понятие они вводят?"},{"tag":"Италия, Патнэм","ctx":"После региональной реформы 1970 года северные области Италии с давними кооперативами и ассоциациями управляются заметно лучше южных.","q":"Какой фактор объясняет разницу по Патнэму?"},{"tag":"Мур, 1966","ctx":"Баррингтон Мур сравнивает Англию, Францию, США, Китай, Японию и Индию. Исход зависит от того, как соотносятся силы крестьянства, землевладельцев и городских классов.","q":"Какая формула приписывается Муру?"}],[{"tag":"Хантингтон, 1991","ctx":"Хантингтон выделяет периоды, когда число демократий в мире быстро растёт, и периоды отката, когда часть из них возвращается к авторитаризму.","q":"Сколько волн демократизации он насчитал?"},{"tag":"Лиссабон, 1974","ctx":"25 апреля 1974 года офицеры свергают в Лиссабоне авторитарный режим. Солдаты и горожане выходят на улицы с гвоздиками.","q":"Как называется событие и какую волну оно открыло?"},{"tag":"О'Доннелл и Шмиттер, 1986","ctx":"Исследователи описывают переход от диктатуры к демократии как последовательность: кризис режима, переговоры элит, первые свободные выборы, закрепление новых правил.","q":"Как называется этот подход?"},{"tag":"Каротерс, 2002","ctx":"Многие страны, пережившие переходы 1990-х, не стали ни устойчивыми демократиями, ни закрытыми диктатурами. Выборы проходят, но власть почти не меняется.","q":"Как называют такие режимы?"}],[{"tag":"Закария, 1997","ctx":"В стране проходят выборы, но правительство ограничивает права меньшинств, а суды и СМИ работают под давлением. Фарид Закария описал этот случай в статье для Foreign Affairs.","q":"Какой термин он предложил?"},{"tag":"Откат демократии","ctx":"Правящая партия честно побеждает на выборах, затем меняет правила: подчиняет суды, усиливает контроль над СМИ, меняет избирательные округа.","q":"Как называется этот процесс?"},{"tag":"Левицки и Зиблатт, 2018","ctx":"В книге «Как умирают демократии» авторы пишут, что сегодня демократии чаще разрушают избранные лидеры, а не военные перевороты. Защищают их неписаные нормы.","q":"Назовите две такие нормы."},{"tag":"Поляризация","ctx":"Партии воспринимают друг друга не как оппонентов, а как врагов. Победа на выборах кажется вопросом выживания, поэтому правила игры легко нарушают.","q":"Какой фактор отката показан в примере?"}]],"final":{"tag":"Выборы без демократии","ctx":"В стране регулярно проходят выборы с несколькими партиями, но оппозиция почти не имеет доступа к СМИ, судьи зависят от власти, а правящая партия не меняется десятилетиями.","q":"К какому типу режимов по V-Dem относится страна и чем он отличается от электоральной демократии?"},"spare":{"tag":"Токвиль, 1835","ctx":"В 1830-е годы французский аристократ едет в США, изучает тюрьмы, а пишет о равенстве условий и об опасности «тирании большинства».","q":"Кто это и как называется его книга?"}}},{"name":"Россия-цивилизация","sub":"Основы российской государственности","D":{"cats":["Понятия\nи подходы","Русская\nмысль","Государство\nи институты","Исторические\nоснования","Ценности","Мыслители\nи термины"],"catsFlat":["Понятия и подходы","Русская мысль","Государство и институты","Исторические основания","Ценности","Мыслители и термины"],"q":[[{"tag":"Данилевский, 1869","ctx":"В книге «Россия и Европа» автор утверждает, что человечество не едино: существует ряд самобытных типов, и каждый проходит рождение, расцвет и упадок.","q":"Как называется его теория?"},{"tag":"Хантингтон, 1993","ctx":"Американский политолог пишет, что после холодной войны главные линии разломов в мире пройдут не между идеологиями, а между культурными общностями.","q":"Как называется его концепция?"},{"tag":"Тойнби","ctx":"Британский историк объясняет рост цивилизации тем, как творческое меньшинство отвечает на трудности среды и внешние угрозы.","q":"Какую формулу он использует?"},{"tag":"Шпенглер, 1918","ctx":"Немецкий философ описывает культуры как организмы, которые проходят весну, лето, осень и зиму. Последнюю стадию он называет цивилизацией.","q":"Как называется книга и в чём её главная мысль?"}],[{"tag":"Псков, начало XVI в.","ctx":"Старец псковского монастыря пишет великому князю: два Рима пали, Москва — третий, а четвёртому не бывать.","q":"Как называется эта идея и кто её автор?"},{"tag":"Леонтьев, 1875","ctx":"Мыслитель видит силу России в сплаве византийского православия и самодержавия и призывает беречь «цветущую сложность».","q":"Как называется его работа?"},{"tag":"Эмиграция, 1920-е","ctx":"Н. Трубецкой и П. Савицкий считают Россию не частью Европы и не частью Азии, а особым миром, связанным общей историей и географией.","q":"Как называется это направление?"},{"tag":"Гумилёв","ctx":"Историк-этнолог объясняет подъёмы и упадки этносов избытком или нехваткой особой энергии, которая действует в течение примерно полутора тысяч лет.","q":"Какой термин он ввёл?"}],[{"tag":"Парламент","ctx":"В России регионы представлены в парламенте дважды: через выборы депутатов Государственной думы и через верхнюю палату, куда входят представители субъектов федерации.","q":"Как называется верхняя палата парламента?"},{"tag":"Конституция, 1993","ctx":"Конституция 1993 года называет носителем суверенитета и единственным источником власти в России «… народ Российской Федерации».","q":"Какое слово пропущено?"},{"tag":"Российская империя","ctx":"С 1808 по 1917 год в одной из северо-западных областей Российской империи действовал особый порядок управления: собственные органы власти и законы.","q":"Какая это область?"},{"tag":"Поправки 2020 года","ctx":"Поправки 2020 года закрепили за русским языком статус языка «… народа, входящего в многонациональный союз равноправных народов».","q":"Какое слово пропущено?"}],[{"tag":"Днепр, Х век","ctx":"Киевский князь принимает веру из Византии, и жителей города массово крестят в реке.","q":"Как называется это событие и в каком году оно произошло?"},{"tag":"Осень 1480 года","ctx":"Осенью 1480 года войска Ивана III и хана Ахмата стоят друг против друга на реке и расходятся без решающей битвы.","q":"Как называется событие и что оно значило?"},{"tag":"Москва, 1613","ctx":"После Смутного времени Земский собор избирает нового царя. Так начинается новая династия.","q":"Кого избрали на царство?"},{"tag":"Санкт-Петербург, 1721","ctx":"После окончания Северной войны Сенат и Синод преподносят Петру I новые титулы, которые меняют название государства.","q":"Как изменился статус государства?"}],[{"tag":"Константа","ctx":"Одна из пяти ценностных констант российской цивилизации — сохранение своего «Я», народной и личностной уникальности, раскрытие творческого потенциала многонационального народа.","q":"Как называется эта константа?"},{"tag":"Константа","ctx":"Стремление к идеальным образам, сохранению культурной традиции, поиску смысла; приоритет этической оценки над прагматикой.","q":"Как называется эта константа?"},{"tag":"Константа","ctx":"Значимость социальных связей, соборного начала, командной работы и добровольчества. Примеры: община, артель.","q":"Как называется эта константа?"},{"tag":"Константа","ctx":"Философ С. Франк предупреждает: опасны и радикализм, и бездумный консерватизм, нужно сохранять принципы, но обновлять формы. Это способность реагировать на вызовы.","q":"Как называется эта константа?"}],[{"tag":"Хомяков","ctx":"Русский мыслитель-славянофил называет «идеей единства во множестве» особое начало церковной и общественной жизни.","q":"Каким словом он его назвал?"},{"tag":"Формулировка 1983 года","ctx":"«Именно национализм порождает нации, а не наоборот» — так, в споре с примордиалистами, звучит одна из главных формулировок конструктивизма.","q":"Кому она принадлежит?"},{"tag":"1946 год","ctx":"Выражение «столкновение цивилизаций» прозвучало почти за полвека до знаменитой статьи Хантингтона.","q":"Кто употребил его впервые?"},{"tag":"Россия между цивилизациями","ctx":"Автор критикует отождествление России с евразийской цивилизацией и предлагает строить «защитные пояса» из государств, лежащих между цивилизациями.","q":"Кто автор концепции «Остров Россия»?"}]],"final":{"tag":"Конец истории, 1989","ctx":"В журнале The National Interest вышло эссе с тезисом, что после холодной войны история как борьба идеологий подошла к концу, а либеральная демократия победила.","q":"Кто автор этого эссе?"},"spare":{"tag":"Москва, 1612","ctx":"В 2005 году установили государственный праздник в память об освобождении Москвы от польских интервентов ополчением Минина и Пожарского.","q":"Как называется праздник и когда его отмечают?"}}}];const ANSW={"0|0|0":"Прямая демократия.","0|0|1":"Правление народа, посредством народа и для народа.","0|0|2":"Представительная демократия с элементами прямой.","0|0|3":"Процедурное (минималистское), как у Шумпетера.","0|1|0":"Полиархия.","0|1|1":"Мажоритарная (вестминстерская).","0|1|2":"Консенсусная.","0|1|3":"Элитарная (конкурентная элитистская) модель.","0|2|0":"Свободная, частично свободная, несвободная.","0|2|1":"Полная демократия, ущербная демократия, гибридный режим, авторитарный режим.","0|2|2":"Закрытая автократия, электоральная автократия, электоральная демократия, либеральная демократия.","0|2|3":"Первая страна — устойчивая демократия, вторая — автократия.","0|3|0":"Теория модернизации (экономические предпосылки демократии).","0|3|1":"Гражданская культура.","0|3|2":"Социальный капитал: доверие и гражданская активность.","0|3|3":"«Нет буржуазии — нет демократии».","0|4|0":"Три.","0|4|1":"«Революция гвоздик»; третью волну.","0|4|2":"Транзитология (парадигма транзита).","0|4|3":"Гибридные режимы («серая зона»).","0|5|0":"Нелиберальная демократия.","0|5|1":"Демократический откат (backsliding).","0|5|2":"Взаимная терпимость и институциональная сдержанность.","0|5|3":"Политическая поляризация.","0|F":"Электоральная автократия. Выборы формально есть, но они не свободны и не честны, ограничены свобода СМИ и объединений.","1|0|0":"Теория культурно-исторических типов.","1|0|1":"«Столкновение цивилизаций».","1|0|2":"«Вызов и ответ».","1|0|3":"«Закат Европы»: культуры стареют и умирают, цивилизация — стадия упадка.","1|1|0":"«Москва — Третий Рим», старец Филофей.","1|1|1":"«Византизм и славянство».","1|1|2":"Евразийство.","1|1|3":"Пассионарность.","1|2|0":"Совет Федерации.","1|2|1":"Многонациональный.","1|2|2":"Великое княжество Финляндское.","1|2|3":"Государствообразующего.","1|3|0":"Крещение Руси, 988 год.","1|3|1":"Стояние на Угре; конец ордынской зависимости.","1|3|2":"Михаила Фёдоровича Романова.","1|3|3":"Россия стала империей.","1|4|0":"Самобытность.","1|4|1":"Духовность.","1|4|2":"Общинность.","1|4|3":"Адаптивность.","1|5|0":"Соборность.","1|5|1":"Эрнесту Геллнеру.","1|5|2":"Альбер Камю.","1|5|3":"Вадим Цымбурский.","1|F":"Фрэнсис Фукуяма."};</script>
+<script id="code">const COLS=['--t0','--t1','--t2','--t3','--t4','--t5'],TITLE='Колесо знаний';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+let S=JSON.parse($('state').textContent);
+let art=null,teacher=false,msg='',diag='проверка прав…',spinning=false;
+const deck=()=>DECKS[S.deck].D;
+const odds=c=>c.final?2:c.row+1;
+const left=ci=>deck().q[ci].filter((_,r)=>!S.used[ci+'-'+r]).length;
+function buildDoc(){
+ const css=$('sty').textContent,link=$('fonts').outerHTML,code=$('code').textContent,qd=$('qdata').textContent;
+ const st=JSON.stringify(S).replace(/</g,'\\u003c');
+ return '<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>'
+ +'<title>'+TITLE+'</title>'+link+'<style id="sty">'+css+'</style><div id="app"></div>'
+ +'<script id="state" type="application/json">'+st+'<\/script><script id="qdata">'+qd+'<\/script><script id="code">'+code+'<\/script></body></html>'}
+let fbKey=null,db=null;const LK='koleso_znaniy_v1';
+function publish(){try{localStorage.setItem(LK,JSON.stringify(S))}catch(e){}if(db&&teacher&&fbKey){db.ref('koleso').update({json:JSON.stringify(S),key:fbKey}).then(()=>{if(msg){msg='';render()}}).catch(()=>{msg='Не сохранено: проверьте ключ ведущего';render()})}}
+const ANS=ANSW;
+let rot0=S.rot||0;
+function drawWheel(){const cv=$('wheel');if(!cv)return;const dpr=window.devicePixelRatio||1,size=cv.clientWidth||440;
+ cv.width=size*dpr;cv.height=size*dpr;const g=cv.getContext('2d');g.scale(dpr,dpr);const R=size/2,rot=S.rot||0;
+ g.clearRect(0,0,size,size);g.save();g.translate(R,R);
+ g.beginPath();g.arc(0,0,R-2,0,Math.PI*2);g.fillStyle='#5B3A12';g.fill();
+ g.beginPath();g.arc(0,0,R-8,0,Math.PI*2);g.fillStyle='#D9B45A';g.fill();
+ for(let i=0;i<24;i++){const a=i/24*Math.PI*2;g.beginPath();g.arc(Math.cos(a)*(R-14),Math.sin(a)*(R-14),3,0,7);g.fillStyle='#FFF3C4';g.fill()}
+ const r0=R-24,step=Math.PI*2/6;
+ for(let i=0;i<6;i++){const a0=rot+i*step,a1=a0+step;g.beginPath();g.moveTo(0,0);g.arc(0,0,r0,a0,a1);g.closePath();
+  g.fillStyle=i%2?'#17181A':'#B3262E';g.fill();g.strokeStyle='#D9B45A';g.lineWidth=2;g.stroke();
+  g.save();g.rotate(a0+step/2);g.translate(r0*0.66,0);g.rotate(Math.PI/2);g.fillStyle='#F4EFE0';
+  g.font='900 '+Math.round(size*0.11)+'px "Playfair Display",Georgia,serif';g.textAlign='center';g.textBaseline='middle';g.fillText(String(i+1),0,0);g.restore()}
+ g.beginPath();g.arc(0,0,size*0.07,0,7);g.fillStyle='#D9B45A';g.fill();g.beginPath();g.arc(0,0,size*0.035,0,7);g.fillStyle='#5B3A12';g.fill();g.restore()}
+function doSpin(){if(!teacher||spinning||S.phase!=='spin')return;
+ const cats=[...Array(6).keys()].filter(i=>left(i)>0);if(!cats.length){finalRound();return}
+ const ci=cats[Math.floor(Math.random()*cats.length)],rows=[0,1,2,3].filter(r=>!S.used[ci+'-'+r]),row=rows[Math.floor(Math.random()*rows.length)];
+ const step=Math.PI*2/6,want=(3*Math.PI/2)-(ci+0.5)*step,two=Math.PI*2,cur=(((S.rot||0)%two)+two)%two,delta=(((want-cur)%two)+two)%two;
+ const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches,total=delta+(reduce?0:two*5),dur=reduce?300:4200,r0=S.rot||0,t0=performance.now();spinning=true;render();
+ (function f(now){const t=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-t,3);S.rot=r0+total*e;drawWheel();
+  if(t<1)requestAnimationFrame(f);else{S.rot=r0+total;spinning=false;S.cur={ci,row,final:false};S.phase='bet';prepareBets();render();publish()}})(t0)}
+function prepareBets(){S.notes=[];S.show=false;S.ans='';S.settled=false;
+ S.teams.forEach(t=>{t.bet=0;t.res=null;t.delta=0;if(t.chips<100){S.notes.push('Банк добавил '+(100-t.chips)+' фишек команде «'+t.name+'», чтобы она осталась в игре.');t.chips=100}})}
+function finalRound(){S.cur={ci:-1,row:-1,final:true};S.phase='bet';prepareBets();render();publish()}
+function qd(){return S.cur.final?deck().final:deck().q[S.cur.ci][S.cur.row]}
+function akey(){return S.deck+'|'+(S.cur.final?'F':S.cur.ci+'|'+S.cur.row)}
+function start(){S.teams=[...Array(S.n).keys()].map(i=>({name:(S.names[i]||'').trim()||'Команда '+(i+1),chips:S.start,bet:0,res:null,delta:0}));
+ S.used={};S.round=0;S.cur=null;S.phase='spin';S.rot=0;S.show=false;S.ans='';render();publish()}
+function setBet(i,v){const t=S.teams[i];t.bet=Math.max(0,Math.min(t.chips,Math.round(+v||0)));render()}
+function settle(){if(S.settled)return;const o=odds(S.cur);
+ S.teams.forEach(t=>{t.delta=0;if(t.bet>0){t.delta=t.res==='w'?t.bet*o:-t.bet;t.chips+=t.delta}});
+ if(!S.cur.final)S.used[S.cur.ci+'-'+S.cur.row]=true;S.settled=true;S.phase='result';render();publish()}
+function nextRound(){if(S.cur.final){S.phase='end';render();publish();return}
+ S.round++;const any=[...Array(6).keys()].some(i=>left(i)>0);if(S.round>=S.rounds||!any){finalRound();return}
+ S.phase='spin';S.cur=null;S.show=false;S.ans='';render();publish()}
+function render(){const A=$('app');let h='';
+ const label=S.phase==='setup'?'':S.cur&&S.cur.final?'Финал · ва-банк':S.phase==='end'?'Игра окончена':'Раунд '+(S.round+1)+' из '+S.rounds;
+ const top=`<div class="top"><div><div class="brand">Колесо знаний</div><div class="sub">${S.phase==='setup'?(teacher?'Командная викторина · режим ведущего':'Командная викторина'):esc(DECKS[S.deck].name)+(teacher?' · режим ведущего':' · вы смотрите игру')}</div></div>${S.phase!=='setup'?`<div class="row"><span class="tag">${label}</span>${teacher?'<button data-a="new">Новая игра</button>':''}</div>`:''}</div>`;
+ const err=msg?`<div class="note" role="alert">${esc(msg)}</div>`:'';
+ if(S.phase==='setup')h=top+(teacher?setup():`<div class="card"><h2>Игра скоро начнётся</h2><div class="hint">Страница обновится сама, когда ведущий откроет игру. Если этого не произошло, перезагрузите страницу.</div></div>`);
+ else if(S.phase==='end')h=top+endScreen()+rack();else h=top+tableView()+rack();
+ const showDiag=teacher||/недоступн|ошибка/.test(diag);
+ A.innerHTML='<div class="wrap">'+err+h+(showDiag?`<div class="hint">${teacher&&!art?'':'Служебно: '+esc(diag)}</div>`:'')+'</div>';if($('wheel'))drawWheel()}
+function setup(){return `<div class="setup"><div class="card"><div class="tag">Колода вопросов</div><div class="decks">${DECKS.map((d,i)=>`<button class="deck${S.deck===i?' on':''}" data-a="deck" data-i="${i}"><b>${esc(d.name)}</b><span>${esc(d.sub)}</span></button>`).join('')}</div>
+ <div class="tag">Команды</div><div class="row"><span>Количество:</span><button data-a="n-" aria-label="Меньше команд">−</button><b>${S.n}</b><button data-a="n+" aria-label="Больше команд">+</button></div>
+ <div class="names">${[...Array(S.n).keys()].map(i=>`<input id="nm${i}" value="${esc(S.names[i])}" data-a="name" data-i="${i}" aria-label="Название команды ${i+1}">`).join('')}</div>
+ <div class="row"><label for="st">Стартовый банк</label><select id="st" data-a="start">${[500,1000,2000].map(v=>`<option value="${v}"${S.start===v?' selected':''}>${v} фишек</option>`).join('')}</select>
+ <label for="rd">Раундов до финала</label><select id="rd" data-a="rounds">${[6,10,14].map(v=>`<option value="${v}"${S.rounds===v?' selected':''}>${v}</option>`).join('')}</select></div>
+ <div><button class="gold" data-a="start-game">Открыть игру</button></div></div>
+ <div class="card"><div class="tag">Правила за столом</div><ol class="rules"><li>Рулетка выбирает тему, карта дилера задаёт выплату: от 1 к 1 для лёгких вопросов до 4 к 1 для самых трудных.</li><li>Команды ставят фишки до показа вопроса, зная только тему и выплату. Можно пасовать.</li><li>Верный ответ приносит ставку, умноженную на выплату. Неверный забирает ставку.</li><li>Если у команды меньше 100 фишек, банк доливает ей до 100.</li><li>Финал — ва-банк: можно поставить весь банк, выплата 2 к 1. Побеждает команда с самым большим банком.</li></ol></div></div>`}
+function tableView(){const c=S.cur,sp=S.phase==='spin';
+ const leg=deck().catsFlat.map((n,i)=>`<div class="${c&&c.ci===i?'cur':''}"><span class="n">${i+1}</span>${esc(n)}<span class="left">осталось ${left(i)}</span></div>`).join('');
+ const wheel=`<div class="wheelbox"><div class="wheelwrap"><canvas id="wheel" aria-label="Рулетка тем"></canvas><div class="pointer"></div></div><div class="legend">${leg}</div></div>`;
+ let p='';
+ if(sp)p=`<div class="dealer"><h2>Крутим рулетку</h2><div class="hint">Шарик выберет тему из шести. Затем дилер откроет карту с выплатой.</div>${teacher?`<div><button class="gold" data-a="spin"${spinning?' disabled':''}>${spinning?'Рулетка крутится…':'Крутить'}</button></div>`:''}</div>`;
+ else{const d=qd(),o=odds(c),topic=c.final?'Финальный вопрос':deck().catsFlat[c.ci];
+  p=`<div class="dealer"><div class="tag">${esc(topic)}</div><div class="odds">Выплата ${o} к 1<small>${c.final?'ва-банк':'карта дилера'}</small></div>`;
+  if(S.notes.length&&S.phase==='bet')p+=S.notes.map(n=>`<div class="note">${esc(n)}</div>`).join('');
+  if(S.phase==='bet')p+=`<div class="hint">Команды делают ставки, вопрос пока скрыт.</div>${teacher?'<div><button class="gold" data-a="reveal">Принять ставки и показать вопрос</button></div>':''}`;
+  else{p+=`<div class="ctx"><b>Кейс · ${esc(d.tag)}</b>${esc(d.ctx)}</div><div class="q">${esc(d.q)}</div>`;
+   if(S.show)p+=`<div class="ans">${esc(S.ans)}</div>`;
+   else if(teacher)p+=`<div><button class="gold" data-a="answer">Показать ответ</button></div>`;
+   if(S.show&&S.phase==='question'&&teacher){const bs=S.teams.filter(t=>t.bet>0),ok=bs.every(t=>t.res);p+=`<div class="hint">${bs.length?'Отметьте результат у команд, сделавших ставку.':'Ставок не было.'}</div><div><button class="gold" data-a="settle"${ok?'':' disabled'}>Рассчитать ставки</button></div>`}
+   if(S.phase==='question'&&!teacher&&!S.show)p+='<div class="hint">Ведущий покажет ответ и рассчитает ставки.</div>';
+   if(S.phase==='result'&&teacher)p+=`<div><button class="gold" data-a="next">${c.final?'Подвести итоги':'Следующий раунд'}</button></div>`}
+  p+='</div>'}
+ return `<div class="table">${wheel}<div class="panel">${p}</div></div>`}
+function rack(){const inGame=S.phase!=='end',mx=Math.max(...S.teams.map(t=>t.chips)),o=S.cur?odds(S.cur):1;
+ return `<div class="rack">${S.teams.map((t,i)=>{const stack=Array.from({length:Math.min(10,Math.ceil(t.chips/250))},()=>`<span class="chip" style="background:var(${COLS[i]})"></span>`).join('');let b='';
+ if(inGame&&S.phase==='bet'&&teacher)b=`<div class="bet"><div>Ставка: <span class="betv">${fmt(t.bet)}</span></div><div class="qb">${[['Пас',0],['50',50],['100',100],['250',250],['½ банка',Math.floor(t.chips/2)],['Ва-банк',t.chips]].map(([l,v])=>`<button data-a="bet" data-i="${i}" data-v="${v}" class="${t.bet===v&&(l!=='Пас'||t.bet===0)?'sel':''}"${v>t.chips?' disabled':''}>${l}</button>`).join('')}</div><input type="number" min="0" max="${t.chips}" inputmode="numeric" value="${t.bet}" data-a="betin" data-i="${i}" aria-label="Ставка команды ${esc(t.name)}"></div>`;
+ else if(inGame&&S.phase==='question'&&S.show&&t.bet>0&&teacher)b=`<div class="bet"><div>Ставка: <span class="betv">${fmt(t.bet)}</span> · выплата ${fmt(t.bet*o)}</div><div class="mark"><button class="w${t.res==='w'?' on':''}" data-a="mark" data-i="${i}" data-v="w" aria-label="Верно">✓ верно</button><button class="l${t.res==='l'?' on':''}" data-a="mark" data-i="${i}" data-v="l" aria-label="Неверно">✗ неверно</button></div></div>`;
+ else if(inGame&&(S.phase==='question'||S.phase==='result')&&S.phase!=='result')b=`<div class="hint">${t.bet>0?'Ставка: '+fmt(t.bet):'Пас'}</div>`;
+ else if(inGame&&S.phase==='result')b=t.bet>0?`<div class="hint">Ставка ${fmt(t.bet)}: <span class="${t.delta>0?'pos':'neg'}">${t.delta>0?'+':'−'}${fmt(Math.abs(t.delta))}</span></div>`:`<div class="hint">Пас</div>`;
+ return `<div class="team${t.chips===mx?' lead':''}"><div class="tname"><span class="dot" style="background:var(${COLS[i]})"></span>${esc(t.name)}</div><div class="bank">${fmt(t.chips)}</div><div class="stack">${stack}</div>${b}</div>`}).join('')}</div>`}
+function endScreen(){const r=[...S.teams].sort((a,b)=>b.chips-a.chips);
+ return `<div class="card"><h2>Итоги вечера</h2><div class="podium">${r.map((t,i)=>`<div><span class="p">${i+1}</span><span>${esc(t.name)}</span><span class="c">${fmt(t.chips)} фишек</span></div>`).join('')}</div>${teacher?'<div><button class="gold" data-a="new">Сыграть ещё</button></div>':''}</div>`}
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]');if(!b||!teacher||b.tagName==='INPUT'||b.tagName==='SELECT')return;const a=b.dataset.a,i=+b.dataset.i,v=b.dataset.v;
+ if(a==='deck'){S.deck=i;render()}else if(a==='n-'){S.n=Math.max(2,S.n-1);render()}else if(a==='n+'){S.n=Math.min(6,S.n+1);render()}
+ else if(a==='start-game')start();else if(a==='spin')doSpin();else if(a==='bet')setBet(i,v);
+ else if(a==='reveal'){S.phase='question';render();publish()}
+ else if(a==='answer'){const k=akey();S.ans=ANS[k]||'Ответ не найден';S.show=true;render();publish()}
+ else if(a==='mark'){S.teams[i].res=S.teams[i].res===v?null:v;render()}
+ else if(a==='settle')settle();else if(a==='next')nextRound();
+ else if(a==='new'){S.phase='setup';S.cur=null;S.show=false;S.ans='';render();publish()}});
+document.addEventListener('change',e=>{if(!teacher)return;const t=e.target,a=t.dataset.a;if(a==='betin')setBet(+t.dataset.i,t.value);
+ else if(a==='start')S.start=+t.value;else if(a==='rounds')S.rounds=+t.value;else if(a==='name')S.names[+t.dataset.i]=t.value});
+window.addEventListener('resize',()=>{if($('wheel'))drawWheel()});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{if($('wheel'))drawWheel()});
+render();
+(function(){
+ const fresh=JSON.parse(JSON.stringify(S));
+ try{const k=new URL(location.href).searchParams.get('key');if(k){localStorage.setItem('koleso_key',k);history.replaceState(null,'',location.pathname)}fbKey=localStorage.getItem('koleso_key');if(/[?&]view=1/.test(location.search))fbKey=null}catch(e){}
+ const cfg=window.FIREBASE_CONFIG;
+ if(!cfg||typeof firebase==='undefined'){teacher=true;try{const sv=localStorage.getItem(LK);if(sv)S=JSON.parse(sv)}catch(e){}diag='локальный режим: игра только на этом устройстве';render();return}
+ try{firebase.initializeApp(cfg);db=firebase.database()}catch(e){diag='нет связи с базой';render();return}
+ teacher=!!fbKey;let first=true;diag=teacher?'ведущий, синхронизация включена':'просмотр';render();
+ db.ref('koleso/json').on('value',snap=>{let o=null;try{o=snap.val()?JSON.parse(snap.val()):null}catch(e){}
+  if(teacher){if(first){first=false;if(o&&o.phase)S=o;else{S=fresh;publish()}render()}return}
+  if(o&&o.phase)S=o;else S=fresh;render()},()=>{diag='нет доступа к игре';render()})
+})();
+</script></body></html>
