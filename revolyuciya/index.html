@@ -1,0 +1,2826 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Революционная ситуация</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Roboto:wght@400;500&display=swap">
+<style>
+/* Layout: слева событие и тайные решения команд, справа шкалы страны, карта революционной ситуации и рейтинг; тёмная палитра с сигнально-красным акцентом */
+:root{
+  color-scheme:dark;
+  --bg:#14161B; --card:#1D2027; --card2:#262A33; --ink:#EFE9DD; --mute:#9AA0A8; --line:#363B46;
+  --red:#E0533D; --red-soft:#3A1F1B; --gold:#E3B04B; --gold-soft:#3A3120; --ok:#7BAE7F;
+  --r-reg:#E3B04B; --r-opp:#E0533D; --r-arm:#7BAE7F; --r-eli:#A98BD1; --r-int:#6FA3C7; --r-ext:#4FB8B0;
+  --fd:'Oswald','Arial Narrow',Arial,sans-serif; --fb:'Roboto',Arial,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--fb);font-size:16px;line-height:1.45;
+  padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.bgimg{position:fixed;inset:0;z-index:0;pointer-events:none;background-position:center;background-size:contain;background-repeat:no-repeat;opacity:.5}
+.app{position:relative;z-index:1;max-width:1400px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--fd);margin:0;text-wrap:balance;line-height:1.05;font-weight:700;text-transform:uppercase;letter-spacing:.01em}
+button{font:inherit;cursor:pointer;color:inherit}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;justify-content:space-between}
+.brand{font-family:var(--fd);font-weight:700;font-size:32px;text-transform:uppercase;letter-spacing:.02em}
+.brand small{display:block;font:400 12px var(--fb);letter-spacing:.16em;color:var(--red);margin-bottom:2px}
+.pips{display:flex;gap:6px}
+.pip{width:30px;height:8px;background:var(--line)}.pip.done{background:var(--mute)}.pip.now{background:var(--red)}
+.btn{border:1px solid var(--line);background:var(--card);padding:10px 16px;border-radius:4px;font-weight:500}
+.btn:hover{border-color:var(--red)}
+.btn.main{background:var(--red);color:#1B0A07;border-color:var(--red);font-size:18px;padding:13px 24px}
+.btn.main:disabled{background:var(--line);border-color:var(--line);color:var(--mute);cursor:not-allowed}
+.btn.warn{background:var(--red-soft);border-color:var(--red);color:var(--red)}
+.linkbtn{border:0;background:none;color:var(--mute);text-decoration:underline;font-size:13px;padding:0}
+.grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:960px){.grid{grid-template-columns:minmax(0,1fr)}}
+.col{display:flex;flex-direction:column;gap:14px;min-width:0}
+.panel{background:color-mix(in srgb,var(--card) 90%,transparent);border:1px solid var(--line);border-radius:6px;padding:18px 20px}
+.eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);font-weight:500}
+.round h2{font-size:clamp(34px,4.4vw,52px);margin:6px 0 8px}
+.lore{font-size:18px;max-width:66ch;margin:0 0 10px}
+.theory{display:inline-block;font-size:14px;padding:4px 10px;border-radius:999px;background:var(--gold-soft);border:1px solid var(--gold);color:var(--gold);margin-bottom:10px}
+.shock{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 10px}
+.rule{margin-top:10px;padding:10px 14px;background:var(--card2);border-left:3px solid var(--gold);border-radius:4px;font-size:15px}
+.rule b{font:500 12px var(--fb);letter-spacing:.12em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:2px}
+.tm{margin-top:12px;display:flex;gap:10px;align-items:center}
+.tm b{font:700 30px var(--fd);min-width:3ch;font-variant-numeric:tabular-nums}
+.dl{display:inline-flex;gap:3px;align-items:baseline;padding:2px 8px;border-radius:999px;font:500 14px var(--fb);background:var(--card2);border:1px solid var(--line);white-space:nowrap}
+.dl.up{color:var(--red);border-color:var(--red)}.dl.dn{color:var(--ok);border-color:var(--ok)}
+.teams{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:12px}
+.side{background:color-mix(in srgb,var(--card) 90%,transparent);border:2px solid var(--line);border-top:4px solid var(--rc);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.tname{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;font:700 24px var(--fd);text-transform:uppercase;overflow-wrap:break-word;min-width:0}
+.ic{flex:none;width:34px;height:34px;color:var(--rc)}.ic svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.goal{font-size:13px;color:var(--mute);line-height:1.35}
+.intr{font-size:14px;color:var(--ink);line-height:1.4}.intr b{color:var(--rc);font-weight:500}
+.opts{display:grid;grid-template-columns:1fr;gap:6px}
+.opt{padding:9px 12px;border-radius:4px;border:2px solid var(--line);background:var(--card2);font-weight:500;text-align:left;line-height:1.25}
+.opt small{display:block;font-weight:400;color:var(--mute);font-size:12px;margin-top:1px}
+.opt:hover{border-color:var(--rc)}
+.locked{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px;border-radius:4px;background:var(--card2);color:var(--ink);font-weight:500}
+.locked button{border:0;background:none;text-decoration:underline;color:var(--mute);padding:0}
+.res{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:10px 12px;border-radius:4px;font-weight:500;background:var(--card2);border-left:4px solid var(--rc)}
+.res .pt{font:700 34px var(--fd);font-variant-numeric:tabular-nums}
+.side.champ{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 0 26px rgba(227,176,75,.38)}
+.badge{margin-left:auto;font:500 11px var(--fb);letter-spacing:.1em;text-transform:uppercase;color:#1A1608;background:var(--gold);padding:3px 8px;border-radius:999px;white-space:nowrap}
+.spklist{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin-bottom:12px}
+.spk{display:grid;grid-template-columns:34px 1fr;gap:0 8px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-left:4px solid var(--rc);border-radius:4px;background:var(--card2)}
+.spk .ic{grid-row:1/3;width:28px;height:28px}.spk b{font:700 15px var(--fd);text-transform:uppercase}.spk span{font-size:12px;color:var(--mute)}
+.spk.now{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.speaker{padding:14px 18px;border:2px solid var(--rc);border-radius:6px;margin-bottom:12px;background:var(--card2)}
+.spt{font:700 clamp(60px,9vw,110px)/1 var(--fd);font-variant-numeric:tabular-nums;margin:6px 0}.spt.over{color:var(--red);font-size:clamp(40px,6vw,70px)}
+.auto{font-size:13px;color:var(--mute)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.actions .hint{color:var(--mute)}
+.gauge{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--line)}
+.gauge:last-child{border:0}
+.gauge .gn{font:500 15px var(--fb)}.gauge .gn small{display:block;color:var(--mute);font-weight:400;font-size:12px}
+.gauge .gv{font:700 38px/1 var(--fd);font-variant-numeric:tabular-nums;text-align:right}
+.track{grid-column:1/3;position:relative;height:10px;background:var(--card2);border-radius:5px}
+.track i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--ink)}
+.track u{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--red)}
+.track em{position:absolute;top:-4px;bottom:-4px;width:3px;background:var(--gold)}
+.lbl{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:6px}
+.chart{width:100%;height:auto;display:block}.chart text{fill:var(--mute);font:12px var(--fb)}
+.src{display:grid;gap:6px}.src div{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:15px}.src span.who{min-width:150px;font-weight:500}
+.verdict{padding:14px 18px;border-radius:6px;background:var(--card2);border:1px solid var(--line);font-size:17px}
+.verdict b{font:700 28px var(--fd);text-transform:uppercase;display:block;margin-bottom:2px}
+.verdict.rev{border-color:var(--red);background:var(--red-soft)}
+.rank{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.rank:last-child{border:0}
+.rank.lead{background:linear-gradient(90deg,var(--gold-soft),transparent);box-shadow:inset 3px 0 var(--gold);padding-left:12px}
+.pos{font:700 26px var(--fd);color:var(--mute)}
+.rank .nm{display:flex;gap:8px;align-items:center;font:700 22px var(--fd);text-transform:uppercase;min-width:0}.rank .ic{width:26px;height:26px}
+.score{font:700 44px/1 var(--fd);font-variant-numeric:tabular-nums}
+.sub{grid-column:2/4;font-size:13px;color:var(--mute)}
+.wrap{overflow-x:auto}
+.mx{border-collapse:collapse;width:100%;font-size:14px}
+.mx th,.mx td{border:1px solid var(--line);padding:6px 9px;text-align:left;vertical-align:top}
+.mx th{background:var(--card2);font-weight:500;color:var(--gold)}
+.mx td.c{text-align:center;white-space:nowrap}
+.setup{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.setup h1{font-size:clamp(44px,8vw,78px)}
+.setup .lead{font-size:18px;color:var(--mute);max-width:62ch}
+.seg{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.seg button{min-width:48px;padding:10px 16px;border:2px solid var(--line);background:var(--card);border-radius:4px;font-weight:500}
+.seg button.on{border-color:var(--red);background:var(--red-soft)}
+.roles{display:grid;gap:8px}.roles div{display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-left:4px solid var(--rc);border-radius:4px;background:var(--card)}
+.roles div.off{opacity:.55}
+.roles b{font:700 18px var(--fd);text-transform:uppercase}.roles span{display:block;font-size:13px;color:var(--mute)}
+.note{font-size:14px;color:var(--mute);margin-top:8px}
+details summary{cursor:pointer;color:var(--gold)}
+.win{font:700 clamp(40px,6vw,72px)/1.02 var(--fd);text-transform:uppercase}
+ol.q{margin:8px 0 0;padding-left:22px;display:flex;flex-direction:column;gap:8px;max-width:72ch}
+
+.live{font:500 11px var(--fb);letter-spacing:.06em;text-transform:uppercase;color:var(--ok);margin-left:auto;white-space:nowrap}
+.codein{width:7ch;font:700 30px var(--fd);text-transform:uppercase;letter-spacing:.12em;text-align:center;padding:8px;border:2px solid var(--line);border-radius:4px;background:var(--card);color:var(--ink)}
+.codebig{font:700 clamp(54px,9vw,96px)/1 var(--fd);letter-spacing:.14em;color:var(--gold);margin:2px 0 6px}
+.joinp{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:center}
+.qr{background:#fff;border-radius:6px;padding:6px;line-height:0}
+@media (max-width:560px){.joinp{grid-template-columns:minmax(0,1fr)}}
+.pl{max-width:560px;margin:0 auto;width:100%;display:flex;flex-direction:column;gap:12px}
+.phead{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-top:4px solid var(--rc);border-radius:6px;background:var(--card)}
+.phead b{display:block;font:700 22px var(--fd);text-transform:uppercase}.phead span{font-size:13px;color:var(--mute)}
+.opt.big{padding:14px 14px;min-height:60px;font-size:17px}
+.pl .gauge .gv{font-size:30px}.pl .round h2{margin:4px 0 6px}
+@media (prefers-reduced-motion:no-preference){.res,.verdict{animation:in .35s ease-out}@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+ .halo{animation:pulse 1.6s ease-out infinite}@keyframes pulse{0%{r:6;opacity:.8}100%{r:16;opacity:0}}}
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="../firebase-config.js"></script>
+</head><body>
+<div class="bgimg" id="bg" aria-hidden="true"></div>
+<div class="app" id="app"></div>
+<script>
+
+//---------------------------------------------------------------------
+//
+// QR Code Generator for JavaScript
+//
+// Copyright (c) 2009 Kazuhiko Arase
+//
+// URL: http://www.d-project.com/
+//
+// Licensed under the MIT license:
+//  http://www.opensource.org/licenses/mit-license.php
+//
+// The word 'QR Code' is registered trademark of
+// DENSO WAVE INCORPORATED
+//  http://www.denso-wave.com/qrcode/faqpatent-e.html
+//
+//---------------------------------------------------------------------
+
+var qrcode = function() {
+
+  //---------------------------------------------------------------------
+  // qrcode
+  //---------------------------------------------------------------------
+
+  /**
+   * qrcode
+   * @param typeNumber 1 to 40
+   * @param errorCorrectionLevel 'L','M','Q','H'
+   */
+  var qrcode = function(typeNumber, errorCorrectionLevel) {
+
+    var PAD0 = 0xEC;
+    var PAD1 = 0x11;
+
+    var _typeNumber = typeNumber;
+    var _errorCorrectionLevel = QRErrorCorrectionLevel[errorCorrectionLevel];
+    var _modules = null;
+    var _moduleCount = 0;
+    var _dataCache = null;
+    var _dataList = [];
+
+    var _this = {};
+
+    var makeImpl = function(test, maskPattern) {
+
+      _moduleCount = _typeNumber * 4 + 17;
+      _modules = function(moduleCount) {
+        var modules = new Array(moduleCount);
+        for (var row = 0; row < moduleCount; row += 1) {
+          modules[row] = new Array(moduleCount);
+          for (var col = 0; col < moduleCount; col += 1) {
+            modules[row][col] = null;
+          }
+        }
+        return modules;
+      }(_moduleCount);
+
+      setupPositionProbePattern(0, 0);
+      setupPositionProbePattern(_moduleCount - 7, 0);
+      setupPositionProbePattern(0, _moduleCount - 7);
+      setupPositionAdjustPattern();
+      setupTimingPattern();
+      setupTypeInfo(test, maskPattern);
+
+      if (_typeNumber >= 7) {
+        setupTypeNumber(test);
+      }
+
+      if (_dataCache == null) {
+        _dataCache = createData(_typeNumber, _errorCorrectionLevel, _dataList);
+      }
+
+      mapData(_dataCache, maskPattern);
+    };
+
+    var setupPositionProbePattern = function(row, col) {
+
+      for (var r = -1; r <= 7; r += 1) {
+
+        if (row + r <= -1 || _moduleCount <= row + r) continue;
+
+        for (var c = -1; c <= 7; c += 1) {
+
+          if (col + c <= -1 || _moduleCount <= col + c) continue;
+
+          if ( (0 <= r && r <= 6 && (c == 0 || c == 6) )
+              || (0 <= c && c <= 6 && (r == 0 || r == 6) )
+              || (2 <= r && r <= 4 && 2 <= c && c <= 4) ) {
+            _modules[row + r][col + c] = true;
+          } else {
+            _modules[row + r][col + c] = false;
+          }
+        }
+      }
+    };
+
+    var getBestMaskPattern = function() {
+
+      var minLostPoint = 0;
+      var pattern = 0;
+
+      for (var i = 0; i < 8; i += 1) {
+
+        makeImpl(true, i);
+
+        var lostPoint = QRUtil.getLostPoint(_this);
+
+        if (i == 0 || minLostPoint > lostPoint) {
+          minLostPoint = lostPoint;
+          pattern = i;
+        }
+      }
+
+      return pattern;
+    };
+
+    var setupTimingPattern = function() {
+
+      for (var r = 8; r < _moduleCount - 8; r += 1) {
+        if (_modules[r][6] != null) {
+          continue;
+        }
+        _modules[r][6] = (r % 2 == 0);
+      }
+
+      for (var c = 8; c < _moduleCount - 8; c += 1) {
+        if (_modules[6][c] != null) {
+          continue;
+        }
+        _modules[6][c] = (c % 2 == 0);
+      }
+    };
+
+    var setupPositionAdjustPattern = function() {
+
+      var pos = QRUtil.getPatternPosition(_typeNumber);
+
+      for (var i = 0; i < pos.length; i += 1) {
+
+        for (var j = 0; j < pos.length; j += 1) {
+
+          var row = pos[i];
+          var col = pos[j];
+
+          if (_modules[row][col] != null) {
+            continue;
+          }
+
+          for (var r = -2; r <= 2; r += 1) {
+
+            for (var c = -2; c <= 2; c += 1) {
+
+              if (r == -2 || r == 2 || c == -2 || c == 2
+                  || (r == 0 && c == 0) ) {
+                _modules[row + r][col + c] = true;
+              } else {
+                _modules[row + r][col + c] = false;
+              }
+            }
+          }
+        }
+      }
+    };
+
+    var setupTypeNumber = function(test) {
+
+      var bits = QRUtil.getBCHTypeNumber(_typeNumber);
+
+      for (var i = 0; i < 18; i += 1) {
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+        _modules[Math.floor(i / 3)][i % 3 + _moduleCount - 8 - 3] = mod;
+      }
+
+      for (var i = 0; i < 18; i += 1) {
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+        _modules[i % 3 + _moduleCount - 8 - 3][Math.floor(i / 3)] = mod;
+      }
+    };
+
+    var setupTypeInfo = function(test, maskPattern) {
+
+      var data = (_errorCorrectionLevel << 3) | maskPattern;
+      var bits = QRUtil.getBCHTypeInfo(data);
+
+      // vertical
+      for (var i = 0; i < 15; i += 1) {
+
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+
+        if (i < 6) {
+          _modules[i][8] = mod;
+        } else if (i < 8) {
+          _modules[i + 1][8] = mod;
+        } else {
+          _modules[_moduleCount - 15 + i][8] = mod;
+        }
+      }
+
+      // horizontal
+      for (var i = 0; i < 15; i += 1) {
+
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+
+        if (i < 8) {
+          _modules[8][_moduleCount - i - 1] = mod;
+        } else if (i < 9) {
+          _modules[8][15 - i - 1 + 1] = mod;
+        } else {
+          _modules[8][15 - i - 1] = mod;
+        }
+      }
+
+      // fixed module
+      _modules[_moduleCount - 8][8] = (!test);
+    };
+
+    var mapData = function(data, maskPattern) {
+
+      var inc = -1;
+      var row = _moduleCount - 1;
+      var bitIndex = 7;
+      var byteIndex = 0;
+      var maskFunc = QRUtil.getMaskFunction(maskPattern);
+
+      for (var col = _moduleCount - 1; col > 0; col -= 2) {
+
+        if (col == 6) col -= 1;
+
+        while (true) {
+
+          for (var c = 0; c < 2; c += 1) {
+
+            if (_modules[row][col - c] == null) {
+
+              var dark = false;
+
+              if (byteIndex < data.length) {
+                dark = ( ( (data[byteIndex] >>> bitIndex) & 1) == 1);
+              }
+
+              var mask = maskFunc(row, col - c);
+
+              if (mask) {
+                dark = !dark;
+              }
+
+              _modules[row][col - c] = dark;
+              bitIndex -= 1;
+
+              if (bitIndex == -1) {
+                byteIndex += 1;
+                bitIndex = 7;
+              }
+            }
+          }
+
+          row += inc;
+
+          if (row < 0 || _moduleCount <= row) {
+            row -= inc;
+            inc = -inc;
+            break;
+          }
+        }
+      }
+    };
+
+    var createBytes = function(buffer, rsBlocks) {
+
+      var offset = 0;
+
+      var maxDcCount = 0;
+      var maxEcCount = 0;
+
+      var dcdata = new Array(rsBlocks.length);
+      var ecdata = new Array(rsBlocks.length);
+
+      for (var r = 0; r < rsBlocks.length; r += 1) {
+
+        var dcCount = rsBlocks[r].dataCount;
+        var ecCount = rsBlocks[r].totalCount - dcCount;
+
+        maxDcCount = Math.max(maxDcCount, dcCount);
+        maxEcCount = Math.max(maxEcCount, ecCount);
+
+        dcdata[r] = new Array(dcCount);
+
+        for (var i = 0; i < dcdata[r].length; i += 1) {
+          dcdata[r][i] = 0xff & buffer.getBuffer()[i + offset];
+        }
+        offset += dcCount;
+
+        var rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
+        var rawPoly = qrPolynomial(dcdata[r], rsPoly.getLength() - 1);
+
+        var modPoly = rawPoly.mod(rsPoly);
+        ecdata[r] = new Array(rsPoly.getLength() - 1);
+        for (var i = 0; i < ecdata[r].length; i += 1) {
+          var modIndex = i + modPoly.getLength() - ecdata[r].length;
+          ecdata[r][i] = (modIndex >= 0)? modPoly.getAt(modIndex) : 0;
+        }
+      }
+
+      var totalCodeCount = 0;
+      for (var i = 0; i < rsBlocks.length; i += 1) {
+        totalCodeCount += rsBlocks[i].totalCount;
+      }
+
+      var data = new Array(totalCodeCount);
+      var index = 0;
+
+      for (var i = 0; i < maxDcCount; i += 1) {
+        for (var r = 0; r < rsBlocks.length; r += 1) {
+          if (i < dcdata[r].length) {
+            data[index] = dcdata[r][i];
+            index += 1;
+          }
+        }
+      }
+
+      for (var i = 0; i < maxEcCount; i += 1) {
+        for (var r = 0; r < rsBlocks.length; r += 1) {
+          if (i < ecdata[r].length) {
+            data[index] = ecdata[r][i];
+            index += 1;
+          }
+        }
+      }
+
+      return data;
+    };
+
+    var createData = function(typeNumber, errorCorrectionLevel, dataList) {
+
+      var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectionLevel);
+
+      var buffer = qrBitBuffer();
+
+      for (var i = 0; i < dataList.length; i += 1) {
+        var data = dataList[i];
+        buffer.put(data.getMode(), 4);
+        buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber) );
+        data.write(buffer);
+      }
+
+      // calc num max data.
+      var totalDataCount = 0;
+      for (var i = 0; i < rsBlocks.length; i += 1) {
+        totalDataCount += rsBlocks[i].dataCount;
+      }
+
+      if (buffer.getLengthInBits() > totalDataCount * 8) {
+        throw 'code length overflow. ('
+          + buffer.getLengthInBits()
+          + '>'
+          + totalDataCount * 8
+          + ')';
+      }
+
+      // end code
+      if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) {
+        buffer.put(0, 4);
+      }
+
+      // padding
+      while (buffer.getLengthInBits() % 8 != 0) {
+        buffer.putBit(false);
+      }
+
+      // padding
+      while (true) {
+
+        if (buffer.getLengthInBits() >= totalDataCount * 8) {
+          break;
+        }
+        buffer.put(PAD0, 8);
+
+        if (buffer.getLengthInBits() >= totalDataCount * 8) {
+          break;
+        }
+        buffer.put(PAD1, 8);
+      }
+
+      return createBytes(buffer, rsBlocks);
+    };
+
+    _this.addData = function(data, mode) {
+
+      mode = mode || 'Byte';
+
+      var newData = null;
+
+      switch(mode) {
+      case 'Numeric' :
+        newData = qrNumber(data);
+        break;
+      case 'Alphanumeric' :
+        newData = qrAlphaNum(data);
+        break;
+      case 'Byte' :
+        newData = qr8BitByte(data);
+        break;
+      case 'Kanji' :
+        newData = qrKanji(data);
+        break;
+      default :
+        throw 'mode:' + mode;
+      }
+
+      _dataList.push(newData);
+      _dataCache = null;
+    };
+
+    _this.isDark = function(row, col) {
+      if (row < 0 || _moduleCount <= row || col < 0 || _moduleCount <= col) {
+        throw row + ',' + col;
+      }
+      return _modules[row][col];
+    };
+
+    _this.getModuleCount = function() {
+      return _moduleCount;
+    };
+
+    _this.make = function() {
+      if (_typeNumber < 1) {
+        var typeNumber = 1;
+
+        for (; typeNumber < 40; typeNumber++) {
+          var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, _errorCorrectionLevel);
+          var buffer = qrBitBuffer();
+
+          for (var i = 0; i < _dataList.length; i++) {
+            var data = _dataList[i];
+            buffer.put(data.getMode(), 4);
+            buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber) );
+            data.write(buffer);
+          }
+
+          var totalDataCount = 0;
+          for (var i = 0; i < rsBlocks.length; i++) {
+            totalDataCount += rsBlocks[i].dataCount;
+          }
+
+          if (buffer.getLengthInBits() <= totalDataCount * 8) {
+            break;
+          }
+        }
+
+        _typeNumber = typeNumber;
+      }
+
+      makeImpl(false, getBestMaskPattern() );
+    };
+
+    _this.createTableTag = function(cellSize, margin) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var qrHtml = '';
+
+      qrHtml += '<table style="';
+      qrHtml += ' border-width: 0px; border-style: none;';
+      qrHtml += ' border-collapse: collapse;';
+      qrHtml += ' padding: 0px; margin: ' + margin + 'px;';
+      qrHtml += '">';
+      qrHtml += '<tbody>';
+
+      for (var r = 0; r < _this.getModuleCount(); r += 1) {
+
+        qrHtml += '<tr>';
+
+        for (var c = 0; c < _this.getModuleCount(); c += 1) {
+          qrHtml += '<td style="';
+          qrHtml += ' border-width: 0px; border-style: none;';
+          qrHtml += ' border-collapse: collapse;';
+          qrHtml += ' padding: 0px; margin: 0px;';
+          qrHtml += ' width: ' + cellSize + 'px;';
+          qrHtml += ' height: ' + cellSize + 'px;';
+          qrHtml += ' background-color: ';
+          qrHtml += _this.isDark(r, c)? '#000000' : '#ffffff';
+          qrHtml += ';';
+          qrHtml += '"/>';
+        }
+
+        qrHtml += '</tr>';
+      }
+
+      qrHtml += '</tbody>';
+      qrHtml += '</table>';
+
+      return qrHtml;
+    };
+
+    _this.createSvgTag = function(cellSize, margin, alt, title) {
+
+      var opts = {};
+      if (typeof arguments[0] == 'object') {
+        // Called by options.
+        opts = arguments[0];
+        // overwrite cellSize and margin.
+        cellSize = opts.cellSize;
+        margin = opts.margin;
+        alt = opts.alt;
+        title = opts.title;
+      }
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      // Compose alt property surrogate
+      alt = (typeof alt === 'string') ? {text: alt} : alt || {};
+      alt.text = alt.text || null;
+      alt.id = (alt.text) ? alt.id || 'qrcode-description' : null;
+
+      // Compose title property surrogate
+      title = (typeof title === 'string') ? {text: title} : title || {};
+      title.text = title.text || null;
+      title.id = (title.text) ? title.id || 'qrcode-title' : null;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var c, mc, r, mr, qrSvg='', rect;
+
+      rect = 'l' + cellSize + ',0 0,' + cellSize +
+        ' -' + cellSize + ',0 0,-' + cellSize + 'z ';
+
+      qrSvg += '<svg version="1.1" xmlns="http://www.w3.org/2000/svg"';
+      qrSvg += !opts.scalable ? ' width="' + size + 'px" height="' + size + 'px"' : '';
+      qrSvg += ' viewBox="0 0 ' + size + ' ' + size + '" ';
+      qrSvg += ' preserveAspectRatio="xMinYMin meet"';
+      qrSvg += (title.text || alt.text) ? ' role="img" aria-labelledby="' +
+          escapeXml([title.id, alt.id].join(' ').trim() ) + '"' : '';
+      qrSvg += '>';
+      qrSvg += (title.text) ? '<title id="' + escapeXml(title.id) + '">' +
+          escapeXml(title.text) + '</title>' : '';
+      qrSvg += (alt.text) ? '<description id="' + escapeXml(alt.id) + '">' +
+          escapeXml(alt.text) + '</description>' : '';
+      qrSvg += '<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>';
+      qrSvg += '<path d="';
+
+      for (r = 0; r < _this.getModuleCount(); r += 1) {
+        mr = r * cellSize + margin;
+        for (c = 0; c < _this.getModuleCount(); c += 1) {
+          if (_this.isDark(r, c) ) {
+            mc = c*cellSize+margin;
+            qrSvg += 'M' + mc + ',' + mr + rect;
+          }
+        }
+      }
+
+      qrSvg += '" stroke="transparent" fill="black"/>';
+      qrSvg += '</svg>';
+
+      return qrSvg;
+    };
+
+    _this.createDataURL = function(cellSize, margin) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      return createDataURL(size, size, function(x, y) {
+        if (min <= x && x < max && min <= y && y < max) {
+          var c = Math.floor( (x - min) / cellSize);
+          var r = Math.floor( (y - min) / cellSize);
+          return _this.isDark(r, c)? 0 : 1;
+        } else {
+          return 1;
+        }
+      } );
+    };
+
+    _this.createImgTag = function(cellSize, margin, alt) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+
+      var img = '';
+      img += '<img';
+      img += '\u0020src="';
+      img += _this.createDataURL(cellSize, margin);
+      img += '"';
+      img += '\u0020width="';
+      img += size;
+      img += '"';
+      img += '\u0020height="';
+      img += size;
+      img += '"';
+      if (alt) {
+        img += '\u0020alt="';
+        img += escapeXml(alt);
+        img += '"';
+      }
+      img += '/>';
+
+      return img;
+    };
+
+    var escapeXml = function(s) {
+      var escaped = '';
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charAt(i);
+        switch(c) {
+        case '<': escaped += '&lt;'; break;
+        case '>': escaped += '&gt;'; break;
+        case '&': escaped += '&amp;'; break;
+        case '"': escaped += '&quot;'; break;
+        default : escaped += c; break;
+        }
+      }
+      return escaped;
+    };
+
+    var _createHalfASCII = function(margin) {
+      var cellSize = 1;
+      margin = (typeof margin == 'undefined')? cellSize * 2 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      var y, x, r1, r2, p;
+
+      var blocks = {
+        '██': '█',
+        '█ ': '▀',
+        ' █': '▄',
+        '  ': ' '
+      };
+
+      var blocksLastLineNoMargin = {
+        '██': '▀',
+        '█ ': '▀',
+        ' █': ' ',
+        '  ': ' '
+      };
+
+      var ascii = '';
+      for (y = 0; y < size; y += 2) {
+        r1 = Math.floor((y - min) / cellSize);
+        r2 = Math.floor((y + 1 - min) / cellSize);
+        for (x = 0; x < size; x += 1) {
+          p = '█';
+
+          if (min <= x && x < max && min <= y && y < max && _this.isDark(r1, Math.floor((x - min) / cellSize))) {
+            p = ' ';
+          }
+
+          if (min <= x && x < max && min <= y+1 && y+1 < max && _this.isDark(r2, Math.floor((x - min) / cellSize))) {
+            p += ' ';
+          }
+          else {
+            p += '█';
+          }
+
+          // Output 2 characters per pixel, to create full square. 1 character per pixels gives only half width of square.
+          ascii += (margin < 1 && y+1 >= max) ? blocksLastLineNoMargin[p] : blocks[p];
+        }
+
+        ascii += '\n';
+      }
+
+      if (size % 2 && margin > 0) {
+        return ascii.substring(0, ascii.length - size - 1) + Array(size+1).join('▀');
+      }
+
+      return ascii.substring(0, ascii.length-1);
+    };
+
+    _this.createASCII = function(cellSize, margin) {
+      cellSize = cellSize || 1;
+
+      if (cellSize < 2) {
+        return _createHalfASCII(margin);
+      }
+
+      cellSize -= 1;
+      margin = (typeof margin == 'undefined')? cellSize * 2 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      var y, x, r, p;
+
+      var white = Array(cellSize+1).join('██');
+      var black = Array(cellSize+1).join('  ');
+
+      var ascii = '';
+      var line = '';
+      for (y = 0; y < size; y += 1) {
+        r = Math.floor( (y - min) / cellSize);
+        line = '';
+        for (x = 0; x < size; x += 1) {
+          p = 1;
+
+          if (min <= x && x < max && min <= y && y < max && _this.isDark(r, Math.floor((x - min) / cellSize))) {
+            p = 0;
+          }
+
+          // Output 2 characters per pixel, to create full square. 1 character per pixels gives only half width of square.
+          line += p ? white : black;
+        }
+
+        for (r = 0; r < cellSize; r += 1) {
+          ascii += line + '\n';
+        }
+      }
+
+      return ascii.substring(0, ascii.length-1);
+    };
+
+    _this.renderTo2dContext = function(context, cellSize) {
+      cellSize = cellSize || 2;
+      var length = _this.getModuleCount();
+      for (var row = 0; row < length; row++) {
+        for (var col = 0; col < length; col++) {
+          context.fillStyle = _this.isDark(row, col) ? 'black' : 'white';
+          context.fillRect(row * cellSize, col * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrcode.stringToBytes
+  //---------------------------------------------------------------------
+
+  qrcode.stringToBytesFuncs = {
+    'default' : function(s) {
+      var bytes = [];
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charCodeAt(i);
+        bytes.push(c & 0xff);
+      }
+      return bytes;
+    }
+  };
+
+  qrcode.stringToBytes = qrcode.stringToBytesFuncs['default'];
+
+  //---------------------------------------------------------------------
+  // qrcode.createStringToBytes
+  //---------------------------------------------------------------------
+
+  /**
+   * @param unicodeData base64 string of byte array.
+   * [16bit Unicode],[16bit Bytes], ...
+   * @param numChars
+   */
+  qrcode.createStringToBytes = function(unicodeData, numChars) {
+
+    // create conversion map.
+
+    var unicodeMap = function() {
+
+      var bin = base64DecodeInputStream(unicodeData);
+      var read = function() {
+        var b = bin.read();
+        if (b == -1) throw 'eof';
+        return b;
+      };
+
+      var count = 0;
+      var unicodeMap = {};
+      while (true) {
+        var b0 = bin.read();
+        if (b0 == -1) break;
+        var b1 = read();
+        var b2 = read();
+        var b3 = read();
+        var k = String.fromCharCode( (b0 << 8) | b1);
+        var v = (b2 << 8) | b3;
+        unicodeMap[k] = v;
+        count += 1;
+      }
+      if (count != numChars) {
+        throw count + ' != ' + numChars;
+      }
+
+      return unicodeMap;
+    }();
+
+    var unknownChar = '?'.charCodeAt(0);
+
+    return function(s) {
+      var bytes = [];
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charCodeAt(i);
+        if (c < 128) {
+          bytes.push(c);
+        } else {
+          var b = unicodeMap[s.charAt(i)];
+          if (typeof b == 'number') {
+            if ( (b & 0xff) == b) {
+              // 1byte
+              bytes.push(b);
+            } else {
+              // 2bytes
+              bytes.push(b >>> 8);
+              bytes.push(b & 0xff);
+            }
+          } else {
+            bytes.push(unknownChar);
+          }
+        }
+      }
+      return bytes;
+    };
+  };
+
+  //---------------------------------------------------------------------
+  // QRMode
+  //---------------------------------------------------------------------
+
+  var QRMode = {
+    MODE_NUMBER :    1 << 0,
+    MODE_ALPHA_NUM : 1 << 1,
+    MODE_8BIT_BYTE : 1 << 2,
+    MODE_KANJI :     1 << 3
+  };
+
+  //---------------------------------------------------------------------
+  // QRErrorCorrectionLevel
+  //---------------------------------------------------------------------
+
+  var QRErrorCorrectionLevel = {
+    L : 1,
+    M : 0,
+    Q : 3,
+    H : 2
+  };
+
+  //---------------------------------------------------------------------
+  // QRMaskPattern
+  //---------------------------------------------------------------------
+
+  var QRMaskPattern = {
+    PATTERN000 : 0,
+    PATTERN001 : 1,
+    PATTERN010 : 2,
+    PATTERN011 : 3,
+    PATTERN100 : 4,
+    PATTERN101 : 5,
+    PATTERN110 : 6,
+    PATTERN111 : 7
+  };
+
+  //---------------------------------------------------------------------
+  // QRUtil
+  //---------------------------------------------------------------------
+
+  var QRUtil = function() {
+
+    var PATTERN_POSITION_TABLE = [
+      [],
+      [6, 18],
+      [6, 22],
+      [6, 26],
+      [6, 30],
+      [6, 34],
+      [6, 22, 38],
+      [6, 24, 42],
+      [6, 26, 46],
+      [6, 28, 50],
+      [6, 30, 54],
+      [6, 32, 58],
+      [6, 34, 62],
+      [6, 26, 46, 66],
+      [6, 26, 48, 70],
+      [6, 26, 50, 74],
+      [6, 30, 54, 78],
+      [6, 30, 56, 82],
+      [6, 30, 58, 86],
+      [6, 34, 62, 90],
+      [6, 28, 50, 72, 94],
+      [6, 26, 50, 74, 98],
+      [6, 30, 54, 78, 102],
+      [6, 28, 54, 80, 106],
+      [6, 32, 58, 84, 110],
+      [6, 30, 58, 86, 114],
+      [6, 34, 62, 90, 118],
+      [6, 26, 50, 74, 98, 122],
+      [6, 30, 54, 78, 102, 126],
+      [6, 26, 52, 78, 104, 130],
+      [6, 30, 56, 82, 108, 134],
+      [6, 34, 60, 86, 112, 138],
+      [6, 30, 58, 86, 114, 142],
+      [6, 34, 62, 90, 118, 146],
+      [6, 30, 54, 78, 102, 126, 150],
+      [6, 24, 50, 76, 102, 128, 154],
+      [6, 28, 54, 80, 106, 132, 158],
+      [6, 32, 58, 84, 110, 136, 162],
+      [6, 26, 54, 82, 110, 138, 166],
+      [6, 30, 58, 86, 114, 142, 170]
+    ];
+    var G15 = (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0);
+    var G18 = (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0);
+    var G15_MASK = (1 << 14) | (1 << 12) | (1 << 10) | (1 << 4) | (1 << 1);
+
+    var _this = {};
+
+    var getBCHDigit = function(data) {
+      var digit = 0;
+      while (data != 0) {
+        digit += 1;
+        data >>>= 1;
+      }
+      return digit;
+    };
+
+    _this.getBCHTypeInfo = function(data) {
+      var d = data << 10;
+      while (getBCHDigit(d) - getBCHDigit(G15) >= 0) {
+        d ^= (G15 << (getBCHDigit(d) - getBCHDigit(G15) ) );
+      }
+      return ( (data << 10) | d) ^ G15_MASK;
+    };
+
+    _this.getBCHTypeNumber = function(data) {
+      var d = data << 12;
+      while (getBCHDigit(d) - getBCHDigit(G18) >= 0) {
+        d ^= (G18 << (getBCHDigit(d) - getBCHDigit(G18) ) );
+      }
+      return (data << 12) | d;
+    };
+
+    _this.getPatternPosition = function(typeNumber) {
+      return PATTERN_POSITION_TABLE[typeNumber - 1];
+    };
+
+    _this.getMaskFunction = function(maskPattern) {
+
+      switch (maskPattern) {
+
+      case QRMaskPattern.PATTERN000 :
+        return function(i, j) { return (i + j) % 2 == 0; };
+      case QRMaskPattern.PATTERN001 :
+        return function(i, j) { return i % 2 == 0; };
+      case QRMaskPattern.PATTERN010 :
+        return function(i, j) { return j % 3 == 0; };
+      case QRMaskPattern.PATTERN011 :
+        return function(i, j) { return (i + j) % 3 == 0; };
+      case QRMaskPattern.PATTERN100 :
+        return function(i, j) { return (Math.floor(i / 2) + Math.floor(j / 3) ) % 2 == 0; };
+      case QRMaskPattern.PATTERN101 :
+        return function(i, j) { return (i * j) % 2 + (i * j) % 3 == 0; };
+      case QRMaskPattern.PATTERN110 :
+        return function(i, j) { return ( (i * j) % 2 + (i * j) % 3) % 2 == 0; };
+      case QRMaskPattern.PATTERN111 :
+        return function(i, j) { return ( (i * j) % 3 + (i + j) % 2) % 2 == 0; };
+
+      default :
+        throw 'bad maskPattern:' + maskPattern;
+      }
+    };
+
+    _this.getErrorCorrectPolynomial = function(errorCorrectLength) {
+      var a = qrPolynomial([1], 0);
+      for (var i = 0; i < errorCorrectLength; i += 1) {
+        a = a.multiply(qrPolynomial([1, QRMath.gexp(i)], 0) );
+      }
+      return a;
+    };
+
+    _this.getLengthInBits = function(mode, type) {
+
+      if (1 <= type && type < 10) {
+
+        // 1 - 9
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 10;
+        case QRMode.MODE_ALPHA_NUM : return 9;
+        case QRMode.MODE_8BIT_BYTE : return 8;
+        case QRMode.MODE_KANJI     : return 8;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else if (type < 27) {
+
+        // 10 - 26
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 12;
+        case QRMode.MODE_ALPHA_NUM : return 11;
+        case QRMode.MODE_8BIT_BYTE : return 16;
+        case QRMode.MODE_KANJI     : return 10;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else if (type < 41) {
+
+        // 27 - 40
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 14;
+        case QRMode.MODE_ALPHA_NUM : return 13;
+        case QRMode.MODE_8BIT_BYTE : return 16;
+        case QRMode.MODE_KANJI     : return 12;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else {
+        throw 'type:' + type;
+      }
+    };
+
+    _this.getLostPoint = function(qrcode) {
+
+      var moduleCount = qrcode.getModuleCount();
+
+      var lostPoint = 0;
+
+      // LEVEL1
+
+      for (var row = 0; row < moduleCount; row += 1) {
+        for (var col = 0; col < moduleCount; col += 1) {
+
+          var sameCount = 0;
+          var dark = qrcode.isDark(row, col);
+
+          for (var r = -1; r <= 1; r += 1) {
+
+            if (row + r < 0 || moduleCount <= row + r) {
+              continue;
+            }
+
+            for (var c = -1; c <= 1; c += 1) {
+
+              if (col + c < 0 || moduleCount <= col + c) {
+                continue;
+              }
+
+              if (r == 0 && c == 0) {
+                continue;
+              }
+
+              if (dark == qrcode.isDark(row + r, col + c) ) {
+                sameCount += 1;
+              }
+            }
+          }
+
+          if (sameCount > 5) {
+            lostPoint += (3 + sameCount - 5);
+          }
+        }
+      };
+
+      // LEVEL2
+
+      for (var row = 0; row < moduleCount - 1; row += 1) {
+        for (var col = 0; col < moduleCount - 1; col += 1) {
+          var count = 0;
+          if (qrcode.isDark(row, col) ) count += 1;
+          if (qrcode.isDark(row + 1, col) ) count += 1;
+          if (qrcode.isDark(row, col + 1) ) count += 1;
+          if (qrcode.isDark(row + 1, col + 1) ) count += 1;
+          if (count == 0 || count == 4) {
+            lostPoint += 3;
+          }
+        }
+      }
+
+      // LEVEL3
+
+      for (var row = 0; row < moduleCount; row += 1) {
+        for (var col = 0; col < moduleCount - 6; col += 1) {
+          if (qrcode.isDark(row, col)
+              && !qrcode.isDark(row, col + 1)
+              &&  qrcode.isDark(row, col + 2)
+              &&  qrcode.isDark(row, col + 3)
+              &&  qrcode.isDark(row, col + 4)
+              && !qrcode.isDark(row, col + 5)
+              &&  qrcode.isDark(row, col + 6) ) {
+            lostPoint += 40;
+          }
+        }
+      }
+
+      for (var col = 0; col < moduleCount; col += 1) {
+        for (var row = 0; row < moduleCount - 6; row += 1) {
+          if (qrcode.isDark(row, col)
+              && !qrcode.isDark(row + 1, col)
+              &&  qrcode.isDark(row + 2, col)
+              &&  qrcode.isDark(row + 3, col)
+              &&  qrcode.isDark(row + 4, col)
+              && !qrcode.isDark(row + 5, col)
+              &&  qrcode.isDark(row + 6, col) ) {
+            lostPoint += 40;
+          }
+        }
+      }
+
+      // LEVEL4
+
+      var darkCount = 0;
+
+      for (var col = 0; col < moduleCount; col += 1) {
+        for (var row = 0; row < moduleCount; row += 1) {
+          if (qrcode.isDark(row, col) ) {
+            darkCount += 1;
+          }
+        }
+      }
+
+      var ratio = Math.abs(100 * darkCount / moduleCount / moduleCount - 50) / 5;
+      lostPoint += ratio * 10;
+
+      return lostPoint;
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // QRMath
+  //---------------------------------------------------------------------
+
+  var QRMath = function() {
+
+    var EXP_TABLE = new Array(256);
+    var LOG_TABLE = new Array(256);
+
+    // initialize tables
+    for (var i = 0; i < 8; i += 1) {
+      EXP_TABLE[i] = 1 << i;
+    }
+    for (var i = 8; i < 256; i += 1) {
+      EXP_TABLE[i] = EXP_TABLE[i - 4]
+        ^ EXP_TABLE[i - 5]
+        ^ EXP_TABLE[i - 6]
+        ^ EXP_TABLE[i - 8];
+    }
+    for (var i = 0; i < 255; i += 1) {
+      LOG_TABLE[EXP_TABLE[i] ] = i;
+    }
+
+    var _this = {};
+
+    _this.glog = function(n) {
+
+      if (n < 1) {
+        throw 'glog(' + n + ')';
+      }
+
+      return LOG_TABLE[n];
+    };
+
+    _this.gexp = function(n) {
+
+      while (n < 0) {
+        n += 255;
+      }
+
+      while (n >= 256) {
+        n -= 255;
+      }
+
+      return EXP_TABLE[n];
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // qrPolynomial
+  //---------------------------------------------------------------------
+
+  function qrPolynomial(num, shift) {
+
+    if (typeof num.length == 'undefined') {
+      throw num.length + '/' + shift;
+    }
+
+    var _num = function() {
+      var offset = 0;
+      while (offset < num.length && num[offset] == 0) {
+        offset += 1;
+      }
+      var _num = new Array(num.length - offset + shift);
+      for (var i = 0; i < num.length - offset; i += 1) {
+        _num[i] = num[i + offset];
+      }
+      return _num;
+    }();
+
+    var _this = {};
+
+    _this.getAt = function(index) {
+      return _num[index];
+    };
+
+    _this.getLength = function() {
+      return _num.length;
+    };
+
+    _this.multiply = function(e) {
+
+      var num = new Array(_this.getLength() + e.getLength() - 1);
+
+      for (var i = 0; i < _this.getLength(); i += 1) {
+        for (var j = 0; j < e.getLength(); j += 1) {
+          num[i + j] ^= QRMath.gexp(QRMath.glog(_this.getAt(i) ) + QRMath.glog(e.getAt(j) ) );
+        }
+      }
+
+      return qrPolynomial(num, 0);
+    };
+
+    _this.mod = function(e) {
+
+      if (_this.getLength() - e.getLength() < 0) {
+        return _this;
+      }
+
+      var ratio = QRMath.glog(_this.getAt(0) ) - QRMath.glog(e.getAt(0) );
+
+      var num = new Array(_this.getLength() );
+      for (var i = 0; i < _this.getLength(); i += 1) {
+        num[i] = _this.getAt(i);
+      }
+
+      for (var i = 0; i < e.getLength(); i += 1) {
+        num[i] ^= QRMath.gexp(QRMath.glog(e.getAt(i) ) + ratio);
+      }
+
+      // recursive call
+      return qrPolynomial(num, 0).mod(e);
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // QRRSBlock
+  //---------------------------------------------------------------------
+
+  var QRRSBlock = function() {
+
+    var RS_BLOCK_TABLE = [
+
+      // L
+      // M
+      // Q
+      // H
+
+      // 1
+      [1, 26, 19],
+      [1, 26, 16],
+      [1, 26, 13],
+      [1, 26, 9],
+
+      // 2
+      [1, 44, 34],
+      [1, 44, 28],
+      [1, 44, 22],
+      [1, 44, 16],
+
+      // 3
+      [1, 70, 55],
+      [1, 70, 44],
+      [2, 35, 17],
+      [2, 35, 13],
+
+      // 4
+      [1, 100, 80],
+      [2, 50, 32],
+      [2, 50, 24],
+      [4, 25, 9],
+
+      // 5
+      [1, 134, 108],
+      [2, 67, 43],
+      [2, 33, 15, 2, 34, 16],
+      [2, 33, 11, 2, 34, 12],
+
+      // 6
+      [2, 86, 68],
+      [4, 43, 27],
+      [4, 43, 19],
+      [4, 43, 15],
+
+      // 7
+      [2, 98, 78],
+      [4, 49, 31],
+      [2, 32, 14, 4, 33, 15],
+      [4, 39, 13, 1, 40, 14],
+
+      // 8
+      [2, 121, 97],
+      [2, 60, 38, 2, 61, 39],
+      [4, 40, 18, 2, 41, 19],
+      [4, 40, 14, 2, 41, 15],
+
+      // 9
+      [2, 146, 116],
+      [3, 58, 36, 2, 59, 37],
+      [4, 36, 16, 4, 37, 17],
+      [4, 36, 12, 4, 37, 13],
+
+      // 10
+      [2, 86, 68, 2, 87, 69],
+      [4, 69, 43, 1, 70, 44],
+      [6, 43, 19, 2, 44, 20],
+      [6, 43, 15, 2, 44, 16],
+
+      // 11
+      [4, 101, 81],
+      [1, 80, 50, 4, 81, 51],
+      [4, 50, 22, 4, 51, 23],
+      [3, 36, 12, 8, 37, 13],
+
+      // 12
+      [2, 116, 92, 2, 117, 93],
+      [6, 58, 36, 2, 59, 37],
+      [4, 46, 20, 6, 47, 21],
+      [7, 42, 14, 4, 43, 15],
+
+      // 13
+      [4, 133, 107],
+      [8, 59, 37, 1, 60, 38],
+      [8, 44, 20, 4, 45, 21],
+      [12, 33, 11, 4, 34, 12],
+
+      // 14
+      [3, 145, 115, 1, 146, 116],
+      [4, 64, 40, 5, 65, 41],
+      [11, 36, 16, 5, 37, 17],
+      [11, 36, 12, 5, 37, 13],
+
+      // 15
+      [5, 109, 87, 1, 110, 88],
+      [5, 65, 41, 5, 66, 42],
+      [5, 54, 24, 7, 55, 25],
+      [11, 36, 12, 7, 37, 13],
+
+      // 16
+      [5, 122, 98, 1, 123, 99],
+      [7, 73, 45, 3, 74, 46],
+      [15, 43, 19, 2, 44, 20],
+      [3, 45, 15, 13, 46, 16],
+
+      // 17
+      [1, 135, 107, 5, 136, 108],
+      [10, 74, 46, 1, 75, 47],
+      [1, 50, 22, 15, 51, 23],
+      [2, 42, 14, 17, 43, 15],
+
+      // 18
+      [5, 150, 120, 1, 151, 121],
+      [9, 69, 43, 4, 70, 44],
+      [17, 50, 22, 1, 51, 23],
+      [2, 42, 14, 19, 43, 15],
+
+      // 19
+      [3, 141, 113, 4, 142, 114],
+      [3, 70, 44, 11, 71, 45],
+      [17, 47, 21, 4, 48, 22],
+      [9, 39, 13, 16, 40, 14],
+
+      // 20
+      [3, 135, 107, 5, 136, 108],
+      [3, 67, 41, 13, 68, 42],
+      [15, 54, 24, 5, 55, 25],
+      [15, 43, 15, 10, 44, 16],
+
+      // 21
+      [4, 144, 116, 4, 145, 117],
+      [17, 68, 42],
+      [17, 50, 22, 6, 51, 23],
+      [19, 46, 16, 6, 47, 17],
+
+      // 22
+      [2, 139, 111, 7, 140, 112],
+      [17, 74, 46],
+      [7, 54, 24, 16, 55, 25],
+      [34, 37, 13],
+
+      // 23
+      [4, 151, 121, 5, 152, 122],
+      [4, 75, 47, 14, 76, 48],
+      [11, 54, 24, 14, 55, 25],
+      [16, 45, 15, 14, 46, 16],
+
+      // 24
+      [6, 147, 117, 4, 148, 118],
+      [6, 73, 45, 14, 74, 46],
+      [11, 54, 24, 16, 55, 25],
+      [30, 46, 16, 2, 47, 17],
+
+      // 25
+      [8, 132, 106, 4, 133, 107],
+      [8, 75, 47, 13, 76, 48],
+      [7, 54, 24, 22, 55, 25],
+      [22, 45, 15, 13, 46, 16],
+
+      // 26
+      [10, 142, 114, 2, 143, 115],
+      [19, 74, 46, 4, 75, 47],
+      [28, 50, 22, 6, 51, 23],
+      [33, 46, 16, 4, 47, 17],
+
+      // 27
+      [8, 152, 122, 4, 153, 123],
+      [22, 73, 45, 3, 74, 46],
+      [8, 53, 23, 26, 54, 24],
+      [12, 45, 15, 28, 46, 16],
+
+      // 28
+      [3, 147, 117, 10, 148, 118],
+      [3, 73, 45, 23, 74, 46],
+      [4, 54, 24, 31, 55, 25],
+      [11, 45, 15, 31, 46, 16],
+
+      // 29
+      [7, 146, 116, 7, 147, 117],
+      [21, 73, 45, 7, 74, 46],
+      [1, 53, 23, 37, 54, 24],
+      [19, 45, 15, 26, 46, 16],
+
+      // 30
+      [5, 145, 115, 10, 146, 116],
+      [19, 75, 47, 10, 76, 48],
+      [15, 54, 24, 25, 55, 25],
+      [23, 45, 15, 25, 46, 16],
+
+      // 31
+      [13, 145, 115, 3, 146, 116],
+      [2, 74, 46, 29, 75, 47],
+      [42, 54, 24, 1, 55, 25],
+      [23, 45, 15, 28, 46, 16],
+
+      // 32
+      [17, 145, 115],
+      [10, 74, 46, 23, 75, 47],
+      [10, 54, 24, 35, 55, 25],
+      [19, 45, 15, 35, 46, 16],
+
+      // 33
+      [17, 145, 115, 1, 146, 116],
+      [14, 74, 46, 21, 75, 47],
+      [29, 54, 24, 19, 55, 25],
+      [11, 45, 15, 46, 46, 16],
+
+      // 34
+      [13, 145, 115, 6, 146, 116],
+      [14, 74, 46, 23, 75, 47],
+      [44, 54, 24, 7, 55, 25],
+      [59, 46, 16, 1, 47, 17],
+
+      // 35
+      [12, 151, 121, 7, 152, 122],
+      [12, 75, 47, 26, 76, 48],
+      [39, 54, 24, 14, 55, 25],
+      [22, 45, 15, 41, 46, 16],
+
+      // 36
+      [6, 151, 121, 14, 152, 122],
+      [6, 75, 47, 34, 76, 48],
+      [46, 54, 24, 10, 55, 25],
+      [2, 45, 15, 64, 46, 16],
+
+      // 37
+      [17, 152, 122, 4, 153, 123],
+      [29, 74, 46, 14, 75, 47],
+      [49, 54, 24, 10, 55, 25],
+      [24, 45, 15, 46, 46, 16],
+
+      // 38
+      [4, 152, 122, 18, 153, 123],
+      [13, 74, 46, 32, 75, 47],
+      [48, 54, 24, 14, 55, 25],
+      [42, 45, 15, 32, 46, 16],
+
+      // 39
+      [20, 147, 117, 4, 148, 118],
+      [40, 75, 47, 7, 76, 48],
+      [43, 54, 24, 22, 55, 25],
+      [10, 45, 15, 67, 46, 16],
+
+      // 40
+      [19, 148, 118, 6, 149, 119],
+      [18, 75, 47, 31, 76, 48],
+      [34, 54, 24, 34, 55, 25],
+      [20, 45, 15, 61, 46, 16]
+    ];
+
+    var qrRSBlock = function(totalCount, dataCount) {
+      var _this = {};
+      _this.totalCount = totalCount;
+      _this.dataCount = dataCount;
+      return _this;
+    };
+
+    var _this = {};
+
+    var getRsBlockTable = function(typeNumber, errorCorrectionLevel) {
+
+      switch(errorCorrectionLevel) {
+      case QRErrorCorrectionLevel.L :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+      case QRErrorCorrectionLevel.M :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
+      case QRErrorCorrectionLevel.Q :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
+      case QRErrorCorrectionLevel.H :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
+      default :
+        return undefined;
+      }
+    };
+
+    _this.getRSBlocks = function(typeNumber, errorCorrectionLevel) {
+
+      var rsBlock = getRsBlockTable(typeNumber, errorCorrectionLevel);
+
+      if (typeof rsBlock == 'undefined') {
+        throw 'bad rs block @ typeNumber:' + typeNumber +
+            '/errorCorrectionLevel:' + errorCorrectionLevel;
+      }
+
+      var length = rsBlock.length / 3;
+
+      var list = [];
+
+      for (var i = 0; i < length; i += 1) {
+
+        var count = rsBlock[i * 3 + 0];
+        var totalCount = rsBlock[i * 3 + 1];
+        var dataCount = rsBlock[i * 3 + 2];
+
+        for (var j = 0; j < count; j += 1) {
+          list.push(qrRSBlock(totalCount, dataCount) );
+        }
+      }
+
+      return list;
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // qrBitBuffer
+  //---------------------------------------------------------------------
+
+  var qrBitBuffer = function() {
+
+    var _buffer = [];
+    var _length = 0;
+
+    var _this = {};
+
+    _this.getBuffer = function() {
+      return _buffer;
+    };
+
+    _this.getAt = function(index) {
+      var bufIndex = Math.floor(index / 8);
+      return ( (_buffer[bufIndex] >>> (7 - index % 8) ) & 1) == 1;
+    };
+
+    _this.put = function(num, length) {
+      for (var i = 0; i < length; i += 1) {
+        _this.putBit( ( (num >>> (length - i - 1) ) & 1) == 1);
+      }
+    };
+
+    _this.getLengthInBits = function() {
+      return _length;
+    };
+
+    _this.putBit = function(bit) {
+
+      var bufIndex = Math.floor(_length / 8);
+      if (_buffer.length <= bufIndex) {
+        _buffer.push(0);
+      }
+
+      if (bit) {
+        _buffer[bufIndex] |= (0x80 >>> (_length % 8) );
+      }
+
+      _length += 1;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrNumber
+  //---------------------------------------------------------------------
+
+  var qrNumber = function(data) {
+
+    var _mode = QRMode.MODE_NUMBER;
+    var _data = data;
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _data.length;
+    };
+
+    _this.write = function(buffer) {
+
+      var data = _data;
+
+      var i = 0;
+
+      while (i + 2 < data.length) {
+        buffer.put(strToNum(data.substring(i, i + 3) ), 10);
+        i += 3;
+      }
+
+      if (i < data.length) {
+        if (data.length - i == 1) {
+          buffer.put(strToNum(data.substring(i, i + 1) ), 4);
+        } else if (data.length - i == 2) {
+          buffer.put(strToNum(data.substring(i, i + 2) ), 7);
+        }
+      }
+    };
+
+    var strToNum = function(s) {
+      var num = 0;
+      for (var i = 0; i < s.length; i += 1) {
+        num = num * 10 + chatToNum(s.charAt(i) );
+      }
+      return num;
+    };
+
+    var chatToNum = function(c) {
+      if ('0' <= c && c <= '9') {
+        return c.charCodeAt(0) - '0'.charCodeAt(0);
+      }
+      throw 'illegal char :' + c;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrAlphaNum
+  //---------------------------------------------------------------------
+
+  var qrAlphaNum = function(data) {
+
+    var _mode = QRMode.MODE_ALPHA_NUM;
+    var _data = data;
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _data.length;
+    };
+
+    _this.write = function(buffer) {
+
+      var s = _data;
+
+      var i = 0;
+
+      while (i + 1 < s.length) {
+        buffer.put(
+          getCode(s.charAt(i) ) * 45 +
+          getCode(s.charAt(i + 1) ), 11);
+        i += 2;
+      }
+
+      if (i < s.length) {
+        buffer.put(getCode(s.charAt(i) ), 6);
+      }
+    };
+
+    var getCode = function(c) {
+
+      if ('0' <= c && c <= '9') {
+        return c.charCodeAt(0) - '0'.charCodeAt(0);
+      } else if ('A' <= c && c <= 'Z') {
+        return c.charCodeAt(0) - 'A'.charCodeAt(0) + 10;
+      } else {
+        switch (c) {
+        case ' ' : return 36;
+        case '$' : return 37;
+        case '%' : return 38;
+        case '*' : return 39;
+        case '+' : return 40;
+        case '-' : return 41;
+        case '.' : return 42;
+        case '/' : return 43;
+        case ':' : return 44;
+        default :
+          throw 'illegal char :' + c;
+        }
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qr8BitByte
+  //---------------------------------------------------------------------
+
+  var qr8BitByte = function(data) {
+
+    var _mode = QRMode.MODE_8BIT_BYTE;
+    var _data = data;
+    var _bytes = qrcode.stringToBytes(data);
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _bytes.length;
+    };
+
+    _this.write = function(buffer) {
+      for (var i = 0; i < _bytes.length; i += 1) {
+        buffer.put(_bytes[i], 8);
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrKanji
+  //---------------------------------------------------------------------
+
+  var qrKanji = function(data) {
+
+    var _mode = QRMode.MODE_KANJI;
+    var _data = data;
+
+    var stringToBytes = qrcode.stringToBytesFuncs['SJIS'];
+    if (!stringToBytes) {
+      throw 'sjis not supported.';
+    }
+    !function(c, code) {
+      // self test for sjis support.
+      var test = stringToBytes(c);
+      if (test.length != 2 || ( (test[0] << 8) | test[1]) != code) {
+        throw 'sjis not supported.';
+      }
+    }('\u53cb', 0x9746);
+
+    var _bytes = stringToBytes(data);
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return ~~(_bytes.length / 2);
+    };
+
+    _this.write = function(buffer) {
+
+      var data = _bytes;
+
+      var i = 0;
+
+      while (i + 1 < data.length) {
+
+        var c = ( (0xff & data[i]) << 8) | (0xff & data[i + 1]);
+
+        if (0x8140 <= c && c <= 0x9FFC) {
+          c -= 0x8140;
+        } else if (0xE040 <= c && c <= 0xEBBF) {
+          c -= 0xC140;
+        } else {
+          throw 'illegal char at ' + (i + 1) + '/' + c;
+        }
+
+        c = ( (c >>> 8) & 0xff) * 0xC0 + (c & 0xff);
+
+        buffer.put(c, 13);
+
+        i += 2;
+      }
+
+      if (i < data.length) {
+        throw 'illegal char at ' + (i + 1);
+      }
+    };
+
+    return _this;
+  };
+
+  //=====================================================================
+  // GIF Support etc.
+  //
+
+  //---------------------------------------------------------------------
+  // byteArrayOutputStream
+  //---------------------------------------------------------------------
+
+  var byteArrayOutputStream = function() {
+
+    var _bytes = [];
+
+    var _this = {};
+
+    _this.writeByte = function(b) {
+      _bytes.push(b & 0xff);
+    };
+
+    _this.writeShort = function(i) {
+      _this.writeByte(i);
+      _this.writeByte(i >>> 8);
+    };
+
+    _this.writeBytes = function(b, off, len) {
+      off = off || 0;
+      len = len || b.length;
+      for (var i = 0; i < len; i += 1) {
+        _this.writeByte(b[i + off]);
+      }
+    };
+
+    _this.writeString = function(s) {
+      for (var i = 0; i < s.length; i += 1) {
+        _this.writeByte(s.charCodeAt(i) );
+      }
+    };
+
+    _this.toByteArray = function() {
+      return _bytes;
+    };
+
+    _this.toString = function() {
+      var s = '';
+      s += '[';
+      for (var i = 0; i < _bytes.length; i += 1) {
+        if (i > 0) {
+          s += ',';
+        }
+        s += _bytes[i];
+      }
+      s += ']';
+      return s;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // base64EncodeOutputStream
+  //---------------------------------------------------------------------
+
+  var base64EncodeOutputStream = function() {
+
+    var _buffer = 0;
+    var _buflen = 0;
+    var _length = 0;
+    var _base64 = '';
+
+    var _this = {};
+
+    var writeEncoded = function(b) {
+      _base64 += String.fromCharCode(encode(b & 0x3f) );
+    };
+
+    var encode = function(n) {
+      if (n < 0) {
+        // error.
+      } else if (n < 26) {
+        return 0x41 + n;
+      } else if (n < 52) {
+        return 0x61 + (n - 26);
+      } else if (n < 62) {
+        return 0x30 + (n - 52);
+      } else if (n == 62) {
+        return 0x2b;
+      } else if (n == 63) {
+        return 0x2f;
+      }
+      throw 'n:' + n;
+    };
+
+    _this.writeByte = function(n) {
+
+      _buffer = (_buffer << 8) | (n & 0xff);
+      _buflen += 8;
+      _length += 1;
+
+      while (_buflen >= 6) {
+        writeEncoded(_buffer >>> (_buflen - 6) );
+        _buflen -= 6;
+      }
+    };
+
+    _this.flush = function() {
+
+      if (_buflen > 0) {
+        writeEncoded(_buffer << (6 - _buflen) );
+        _buffer = 0;
+        _buflen = 0;
+      }
+
+      if (_length % 3 != 0) {
+        // padding
+        var padlen = 3 - _length % 3;
+        for (var i = 0; i < padlen; i += 1) {
+          _base64 += '=';
+        }
+      }
+    };
+
+    _this.toString = function() {
+      return _base64;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // base64DecodeInputStream
+  //---------------------------------------------------------------------
+
+  var base64DecodeInputStream = function(str) {
+
+    var _str = str;
+    var _pos = 0;
+    var _buffer = 0;
+    var _buflen = 0;
+
+    var _this = {};
+
+    _this.read = function() {
+
+      while (_buflen < 8) {
+
+        if (_pos >= _str.length) {
+          if (_buflen == 0) {
+            return -1;
+          }
+          throw 'unexpected end of file./' + _buflen;
+        }
+
+        var c = _str.charAt(_pos);
+        _pos += 1;
+
+        if (c == '=') {
+          _buflen = 0;
+          return -1;
+        } else if (c.match(/^\s$/) ) {
+          // ignore if whitespace.
+          continue;
+        }
+
+        _buffer = (_buffer << 6) | decode(c.charCodeAt(0) );
+        _buflen += 6;
+      }
+
+      var n = (_buffer >>> (_buflen - 8) ) & 0xff;
+      _buflen -= 8;
+      return n;
+    };
+
+    var decode = function(c) {
+      if (0x41 <= c && c <= 0x5a) {
+        return c - 0x41;
+      } else if (0x61 <= c && c <= 0x7a) {
+        return c - 0x61 + 26;
+      } else if (0x30 <= c && c <= 0x39) {
+        return c - 0x30 + 52;
+      } else if (c == 0x2b) {
+        return 62;
+      } else if (c == 0x2f) {
+        return 63;
+      } else {
+        throw 'c:' + c;
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // gifImage (B/W)
+  //---------------------------------------------------------------------
+
+  var gifImage = function(width, height) {
+
+    var _width = width;
+    var _height = height;
+    var _data = new Array(width * height);
+
+    var _this = {};
+
+    _this.setPixel = function(x, y, pixel) {
+      _data[y * _width + x] = pixel;
+    };
+
+    _this.write = function(out) {
+
+      //---------------------------------
+      // GIF Signature
+
+      out.writeString('GIF87a');
+
+      //---------------------------------
+      // Screen Descriptor
+
+      out.writeShort(_width);
+      out.writeShort(_height);
+
+      out.writeByte(0x80); // 2bit
+      out.writeByte(0);
+      out.writeByte(0);
+
+      //---------------------------------
+      // Global Color Map
+
+      // black
+      out.writeByte(0x00);
+      out.writeByte(0x00);
+      out.writeByte(0x00);
+
+      // white
+      out.writeByte(0xff);
+      out.writeByte(0xff);
+      out.writeByte(0xff);
+
+      //---------------------------------
+      // Image Descriptor
+
+      out.writeString(',');
+      out.writeShort(0);
+      out.writeShort(0);
+      out.writeShort(_width);
+      out.writeShort(_height);
+      out.writeByte(0);
+
+      //---------------------------------
+      // Local Color Map
+
+      //---------------------------------
+      // Raster Data
+
+      var lzwMinCodeSize = 2;
+      var raster = getLZWRaster(lzwMinCodeSize);
+
+      out.writeByte(lzwMinCodeSize);
+
+      var offset = 0;
+
+      while (raster.length - offset > 255) {
+        out.writeByte(255);
+        out.writeBytes(raster, offset, 255);
+        offset += 255;
+      }
+
+      out.writeByte(raster.length - offset);
+      out.writeBytes(raster, offset, raster.length - offset);
+      out.writeByte(0x00);
+
+      //---------------------------------
+      // GIF Terminator
+      out.writeString(';');
+    };
+
+    var bitOutputStream = function(out) {
+
+      var _out = out;
+      var _bitLength = 0;
+      var _bitBuffer = 0;
+
+      var _this = {};
+
+      _this.write = function(data, length) {
+
+        if ( (data >>> length) != 0) {
+          throw 'length over';
+        }
+
+        while (_bitLength + length >= 8) {
+          _out.writeByte(0xff & ( (data << _bitLength) | _bitBuffer) );
+          length -= (8 - _bitLength);
+          data >>>= (8 - _bitLength);
+          _bitBuffer = 0;
+          _bitLength = 0;
+        }
+
+        _bitBuffer = (data << _bitLength) | _bitBuffer;
+        _bitLength = _bitLength + length;
+      };
+
+      _this.flush = function() {
+        if (_bitLength > 0) {
+          _out.writeByte(_bitBuffer);
+        }
+      };
+
+      return _this;
+    };
+
+    var getLZWRaster = function(lzwMinCodeSize) {
+
+      var clearCode = 1 << lzwMinCodeSize;
+      var endCode = (1 << lzwMinCodeSize) + 1;
+      var bitLength = lzwMinCodeSize + 1;
+
+      // Setup LZWTable
+      var table = lzwTable();
+
+      for (var i = 0; i < clearCode; i += 1) {
+        table.add(String.fromCharCode(i) );
+      }
+      table.add(String.fromCharCode(clearCode) );
+      table.add(String.fromCharCode(endCode) );
+
+      var byteOut = byteArrayOutputStream();
+      var bitOut = bitOutputStream(byteOut);
+
+      // clear code
+      bitOut.write(clearCode, bitLength);
+
+      var dataIndex = 0;
+
+      var s = String.fromCharCode(_data[dataIndex]);
+      dataIndex += 1;
+
+      while (dataIndex < _data.length) {
+
+        var c = String.fromCharCode(_data[dataIndex]);
+        dataIndex += 1;
+
+        if (table.contains(s + c) ) {
+
+          s = s + c;
+
+        } else {
+
+          bitOut.write(table.indexOf(s), bitLength);
+
+          if (table.size() < 0xfff) {
+
+            if (table.size() == (1 << bitLength) ) {
+              bitLength += 1;
+            }
+
+            table.add(s + c);
+          }
+
+          s = c;
+        }
+      }
+
+      bitOut.write(table.indexOf(s), bitLength);
+
+      // end code
+      bitOut.write(endCode, bitLength);
+
+      bitOut.flush();
+
+      return byteOut.toByteArray();
+    };
+
+    var lzwTable = function() {
+
+      var _map = {};
+      var _size = 0;
+
+      var _this = {};
+
+      _this.add = function(key) {
+        if (_this.contains(key) ) {
+          throw 'dup key:' + key;
+        }
+        _map[key] = _size;
+        _size += 1;
+      };
+
+      _this.size = function() {
+        return _size;
+      };
+
+      _this.indexOf = function(key) {
+        return _map[key];
+      };
+
+      _this.contains = function(key) {
+        return typeof _map[key] != 'undefined';
+      };
+
+      return _this;
+    };
+
+    return _this;
+  };
+
+  var createDataURL = function(width, height, getPixel) {
+    var gif = gifImage(width, height);
+    for (var y = 0; y < height; y += 1) {
+      for (var x = 0; x < width; x += 1) {
+        gif.setPixel(x, y, getPixel(x, y) );
+      }
+    }
+
+    var b = byteArrayOutputStream();
+    gif.write(b);
+
+    var base64 = base64EncodeOutputStream();
+    var bytes = b.toByteArray();
+    for (var i = 0; i < bytes.length; i += 1) {
+      base64.writeByte(bytes[i]);
+    }
+    base64.flush();
+
+    return 'data:image/gif;base64,' + base64;
+  };
+
+  //---------------------------------------------------------------------
+  // returns qrcode function.
+
+  return qrcode;
+}();
+
+// multibyte support
+!function() {
+
+  qrcode.stringToBytesFuncs['UTF-8'] = function(s) {
+    // http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
+    function toUTF8Array(str) {
+      var utf8 = [];
+      for (var i=0; i < str.length; i++) {
+        var charcode = str.charCodeAt(i);
+        if (charcode < 0x80) utf8.push(charcode);
+        else if (charcode < 0x800) {
+          utf8.push(0xc0 | (charcode >> 6),
+              0x80 | (charcode & 0x3f));
+        }
+        else if (charcode < 0xd800 || charcode >= 0xe000) {
+          utf8.push(0xe0 | (charcode >> 12),
+              0x80 | ((charcode>>6) & 0x3f),
+              0x80 | (charcode & 0x3f));
+        }
+        // surrogate pair
+        else {
+          i++;
+          // UTF-16 encodes 0x10000-0x10FFFF by
+          // subtracting 0x10000 and splitting the
+          // 20 bits of 0x0-0xFFFFF into two halves
+          charcode = 0x10000 + (((charcode & 0x3ff)<<10)
+            | (str.charCodeAt(i) & 0x3ff));
+          utf8.push(0xf0 | (charcode >>18),
+              0x80 | ((charcode>>12) & 0x3f),
+              0x80 | ((charcode>>6) & 0x3f),
+              0x80 | (charcode & 0x3f));
+        }
+      }
+      return utf8;
+    }
+    return toUTF8Array(s);
+  };
+
+}();
+
+(function (factory) {
+  if (typeof define === 'function' && define.amd) {
+      define([], factory);
+  } else if (typeof exports === 'object') {
+      module.exports = factory();
+  }
+}(function () {
+    return qrcode;
+}));
+
+const KEY='rev_v1',KEYBG='rev_bg_v1',ROUNDS=6;
+const ICON={
+ reg:'<path d="M3 10l9-6 9 6M5 10v8M9 10v8M15 10v8M19 10v8M3 20h18"/>',
+ opp:'<path d="M6 21V4M6 5h11l-2 4 2 4H6"/>',
+ arm:'<path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M12 9l1 2 2 .3-1.6 1.5.4 2.2L12 14l-1.8 1 .4-2.2L9 11.3 11 11z"/>',
+ eli:'<path d="M6 4h12l3 5-9 11L3 9zM3 9h18"/>',
+ int:'<path d="M5 20l4-1 10-10-3-3L6 16zM14 6l3 3"/>',
+ ext:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>'};
+const RL={
+ reg:{n:'Правительство',goal:'Удержать власть. Очки даёт рост единства элит, лояльности армии и легитимности и снижение недовольства.',
+  a:[['Уступки и реформы','пойти навстречу требованиям','Уступки'],['Удерживать курс','ничего не менять','Курс'],['Подавить протест','полиция, запреты, аресты','Подавление']]},
+ opp:{n:'Оппозиция',goal:'Сменить власть. Очки даёт рост недовольства и падение единства элит, лояльности армии и легитимности.',
+  a:[['Переговоры с властью','диалог и компромисс','Диалог'],['Организация и агитация','копить силы, строить сеть','Агитация'],['Выйти на улицы','массовые акции','Улицы']]},
+ arm:{n:'Армия и силовики',goal:'Сохранить единство и престиж армии. Очки даёт рост лояльности армии и легитимности и снижение недовольства.',
+  a:[['Выполнять приказы','остаться верными власти','Приказы'],['Остаться в казармах','нейтралитет','Казармы'],['Отказаться стрелять','перейти на сторону народа','Отказ']]},
+ eli:{n:'Элиты',goal:'Сохранить собственность и положение при любой власти. Очки даёт единство элит, легитимность и порядок.',
+  a:[['Поддержать власть','лоббировать и финансировать','Поддержка'],['Торговаться и выжидать','ждать, кто окажется сильнее','Торг'],['Сделка с оппозицией','заранее договориться о будущем','Сделка']]},
+ int:{n:'Интеллигенция и СМИ',goal:'Влиять на повестку и менять правила. Очки даёт рост недовольства и падение легитимности режима.',
+  a:[['Поддержать курс','объяснять и оправдывать','Поддержка'],['Критиковать','статьи, ток-шоу, соцсети','Критика'],['Манифест: режим нелегитимен','публично разорвать с властью','Манифест']]},
+ ext:{n:'Внешняя держава',goal:'Получить предсказуемого партнёра. Очки даёт рост единства элит и снижение недовольства.',
+  a:[['Гарантии режиму','кредиты и поддержка','Гарантии'],['Наблюдать','не вмешиваться','Наблюдение'],['Санкции и помощь оппозиции','давление и тайная поддержка','Санкции']]}};
+const EVD=[
+ {n:'Скачок цен',th:'Теории: Маркс, Гёрр (относительная депривация)',
+  lore:'За месяц хлеб и топливо в Арвании подорожали на треть, а зарплаты остались прежними. Люди сравнивают то, что имеют, с тем, что считали справедливым. В очередях растёт раздражение, на заводах звучат первые требования.',
+  rule:'',
+  i:{reg:'Бюджет пуст. Уступки опустошат казну, а молчание подольёт масла.',opp:'Первый шанс превратить недовольство в организованное требование.',arm:'Солдатский паёк дорожает вместе со всем. Семьи офицеров стоят в тех же очередях.',eli:'Торговые сети зарабатывают на росте цен, но остановка заводов бьёт по прибыли.',int:'Репортажи из очередей собирают рекордные просмотры. Вопрос в том, чью сторону принять.',ext:'Нестабильная Арвания угрожает поставкам зерна и вашим инвестициям.'},
+  q:'Почему революции чаще вспыхивают не там, где живут беднее всего, а там, где растёт разрыв между ожиданиями и возможностями?'},
+ {n:'Скандал в верхах',th:'Теории: Парето (циркуляция элит), Ленин («верхи не могут»)',
+  lore:'Газета публикует расследование: министры и крупные подрядчики делили госзаказы. Часть элиты обвиняет другую, на закрытых совещаниях звучат угрозы. Если верхи не договорятся, их ссора станет видна всей стране.',
+  rule:'',
+  i:{reg:'Скандал бьёт по доверию. Нужно решить: жертвовать министрами или прикрывать их.',opp:'Коррупция лучший довод: власть не только слаба, но и нечестна.',arm:'Генералы тоже получали заказы, и им не нужно, чтобы расследование зашло слишком далеко.',eli:'Одни кланы проигрывают борьбу за заказы и ищут новых покровителей.',int:'Редакции получили документы. Публикация сделает их героями или мишенью.',ext:'Ваши компании участвовали в тех же тендерах. Огласка опасна и вам.'},
+  q:'Почему раскол элит считается одним из главных признаков революционной ситуации?'},
+ {n:'Поражение на границе',th:'Теории: Скочпол, Голдстоун (кризис государства)',
+  lore:'В коротком пограничном конфликте армия потеряла позиции и технику. Солдаты вернулись без выплат, офицеры винят штабы, штабы винят правительство. Армия впервые сомневается, ради чего она держит порядок.',
+  rule:'',
+  i:{reg:'Поражение разрушило образ сильной власти. Армия нужна как опора, и её нельзя обижать.',opp:'Семьи погибших лучшие свидетели против власти. Но армию лучше не оскорблять.',arm:'Престиж подорван, выплаты задерживают, а виноватого ищут среди силовиков.',eli:'Военные заказы остановились, поставщики в долгах.',int:'Журналисты спрашивают: кто отдал приказ и кто на этом заработал?',ext:'Сосед, победивший Арванию, вам не друг. Можно поддержать правительство или воспользоваться слабостью.'},
+  q:'Как военное поражение разрушает государство? Какие исторические примеры вы можете привести?'},
+ {n:'Оттепель',th:'Теории: Токвиль, Дэвис (J-кривая)',
+  lore:'После тяжёлых месяцев власть объявила о частичных реформах: смягчена цензура, обещаны выборы мэров. Жизнь стала лучше, и люди ждут большего. Чем быстрее растут ожидания, тем больнее разрыв с реальностью.',
+  rule:'Уступки правительства сейчас дают +1 к недовольству вместо −2: ожидания растут быстрее реформ.',
+  i:{reg:'Реформы нужны, чтобы остудить улицу, но каждая уступка выглядит слабостью.',opp:'Власть дрогнула. Диалог даст место в системе, давление даст больше.',arm:'Смягчение режима значит меньше полномочий у силовиков.',eli:'Новые правила игры. Кто успеет приспособиться, выиграет.',int:'Цензура ослабла, можно говорить громче. Но можно помочь власти объяснить реформы.',ext:'Реформы нравятся вашим избирателям. Но революция вам не нужна.'},
+  q:'Почему реформы иногда ускоряют революцию? Как власти не попасть в эту ловушку?'},
+ {n:'Кровь на площади',th:'Теории: Тилли (мобилизация ресурсов), символы и «мученики»',
+  lore:'Во время акции протеста погиб студент. Видео разошлись по сети, на похороны пришли десятки тысяч. Для одних он жертва произвола, для других провокатор. Нейтральных почти не осталось.',
+  rule:'Выход на улицы даёт +3 к недовольству, подавление стоит −3 к легитимности.',
+  i:{reg:'Любое решение прочтут как приговор: уступить значит признать вину, подавить значит добавить жертв.',opp:'Появился символ. Вопрос в том, превратить ли похороны в марш.',arm:'Приказ идти на людей может прийти завтра. Среди солдат есть ровесники погибшего.',eli:'Столица парализована. Бизнес считает убытки и присматривается к тем, кто завтра будет у власти.',int:'Ваше слово сейчас весит больше, чем когда-либо. Как и ответственность за него.',ext:'Пресса вашей страны требует реакции. Осторожные формулировки перестали работать.'},
+  q:'Как жертва превращается в символ и какие ресурсы нужны для массовой мобилизации?'},
+ {n:'Решающий день',th:'Теории: Бринтон (стадии), роль армии (Скочпол)',
+  lore:'Всеобщая забастовка парализовала порты и заводы, колонны идут к президентскому дворцу. Начальник штаба ждёт приказа. Исход этого дня зависит от того, на чью сторону встанут те, у кого оружие.',
+  rule:'Нейтралитет армии в этот день стоит −2 к лояльности армии, отказ стрелять −4.',
+  i:{reg:'Дворец окружён. Вам нужны армия, элиты и последний шанс договориться.',opp:'Вы в шаге от цели. Ошибка вернёт всё назад: кровь на площади достанется вам.',arm:'Решаете именно вы. Выполнить приказ значит остаться с властью, отказаться значит остаться с народом.',eli:'Те, кто заранее договорился с оппозицией, сохранят положение. Остальные рискуют всем.',int:'Последний призыв: убедить колеблющихся.',ext:'Через час придётся признавать или осуждать то, что произойдёт.'},
+  q:'Почему исход революций так часто решают силовики? Что определяет их выбор?'}];
+const SC=[['D','Недовольство низов','«низы не хотят»'],['E','Единство элит','раскол ослабляет власть'],['A','Лояльность армии','готовность выполнять приказ'],['L','Легитимность','признание права власти']];
+const BONUS={reg:'стабилизация +12, затяжной кризис +4',opp:'революция +14, затяжной кризис +5',arm:'революция +10, если вы отказались стрелять в последних двух раундах; стабилизация +8 (+2, если отказывались); кризис +4',eli:'революция +8, если в последних двух раундах была сделка с оппозицией; стабилизация +8; кризис +4',int:'революция +8, кризис +6, стабилизация +3',ext:'стабилизация +8 (+2, если вводили санкции); кризис +4; революция +4, если помогали оппозиции'};
+function bonus(id,out,picks){const l2=picks.slice(-2);
+ const t={reg:{rev:0,cri:4,stb:12},opp:{rev:14,cri:5,stb:0},arm:{rev:l2.includes(2)?10:0,cri:4,stb:picks.includes(2)?2:8},eli:{rev:l2.includes(2)?8:0,cri:4,stb:8},int:{rev:8,cri:6,stb:3},ext:{rev:picks.includes(2)?4:0,cri:4,stb:picks.includes(2)?2:8}};
+ return t[id][out]}
+const OUT={rev:['Революция','Верхи не смогли управлять по-старому, низы не захотели жить по-старому, а армия и элиты не защитили власть. Теперь по Бринтону вопрос в том, кто придёт к власти дальше: умеренные, радикалы или «термидор».'],
+ cri:['Затяжной кризис','Революции не произошло, но и порядок не вернулся. Недовольство велико, а верхи ещё держатся: расколов недостаточно. Это «замороженный» кризис, который может вспыхнуть при новом шоке.'],
+ stb:['Режим устоял','Недовольство остыло, элиты и армия сохранили единство. Обратите внимание, чем это куплено: уступками, силой или внешней поддержкой.']};
+
+const START={D:3,E:7,A:7,L:6};
+const ROLEIDS=['reg','opp','arm','eli','int','ext'];
+const EFF={
+ reg:[[-2,-1,0,1],[0,0,0,0],[-1,0,-1,-2]],
+ opp:[[-1,0,0,1],[1,0,0,0],[2,-1,0,-1]],
+ arm:[[0,0,1,0],[0,0,-1,0],[1,0,-3,-2]],
+ eli:[[0,1,0,1],[0,-1,0,0],[1,-2,0,-1]],
+ int:[[-1,0,0,1],[0,0,0,-1],[1,-1,0,-2]],
+ ext:[[-1,0,0,1],[0,0,0,0],[1,-1,0,-1]]};
+const W={reg:[-1,1,1,1],opp:[1,-1,-1,-1],arm:[-1,0,1,1],eli:[-1,1,0,1],int:[1,0,0,-1],ext:[-1,1,0,0]};
+const EVS=[
+ {shock:[2,0,0,0],ov:{}},
+ {shock:[0,-1,0,-1],ov:{}},
+ {shock:[0,0,-1,-1],ov:{}},
+ {shock:[0,0,0,0],ov:{'reg0':[1,-1,0,1]}},
+ {shock:[2,0,0,-1],ov:{'opp2':[3,-1,0,-1],'reg2':[-1,0,-1,-3]}},
+ {shock:[2,0,0,0],ov:{'arm2':[1,0,-4,-2],'arm1':[0,0,-2,0]}}];
+const IX=[
+ {if:{reg:2,opp:2},d:[2,0,0,-1],t:'Жертвы на площади'},
+ {if:{reg:2,arm:2},d:[2,-1,0,-2],t:'Приказ не выполнен'},
+ {if:{eli:2,opp:2},d:[0,-1,0,-1],t:'Союз улицы и верхов'},
+ {if:{reg:0,opp:0},d:[-2,1,0,1],t:'Реформа через диалог'},
+ {if:{ext:2,reg:2},d:[1,0,0,-1],t:'Международная изоляция'}];
+const CAP=2;const cl=v=>Math.max(0,Math.min(10,v));
+const H=s=>(s.E+s.A+s.L)/3;
+function resolve(sc,r,ch,roles){
+  const ev=EVS[r],tot=[0,0,0,0],src=[];
+  const add=(d,t,id,a)=>{if(d.some(x=>x)){d.forEach((x,i)=>tot[i]+=x);src.push({t,d,id,a})}};
+  add(ev.shock,'Событие раунда');
+  const act={};roles.forEach(id=>act[id]=ch[id]==null?1:ch[id]);
+  roles.forEach(id=>{const k=id+act[id];add(ev.ov[k]||EFF[id][act[id]],id,id,act[id])});
+  IX.forEach(x=>{if(Object.keys(x.if).every(id=>act[id]===x.if[id]))add(x.d,x.t)});
+  const K=['D','E','A','L'],ns={};K.forEach((k,i)=>ns[k]=cl(sc[k]+Math.max(-CAP,Math.min(CAP,tot[i]))));
+  const real=K.map(k=>ns[k]-sc[k]);
+  return {act,ns,real,src,tot};
+}
+
+
+/* ---------- хранилище: Firebase или локальный тестовый режим ---------- */
+function mkLocal(code){
+ const K='revdb_'+code,ls=new Map();let id=0;
+ const get=()=>{try{return JSON.parse(localStorage.getItem(K))||{}}catch(e){return{}}};
+ const at=(t,p)=>p.split('/').filter(Boolean).reduce((a,k)=>a==null?null:a[k],t);
+ const fire=()=>{const t=get();ls.forEach(l=>{let v=at(t,l.path);if(v===undefined)v=null;const s=JSON.stringify(v);if(s!==l.last){l.last=s;l.cb(JSON.parse(s))}})};
+ window.addEventListener('storage',e=>{if(e.key===K)fire()});
+ const setp=(p,val)=>{const t=get(),ks=p.split('/').filter(Boolean);let o=t;ks.slice(0,-1).forEach(k=>{if(typeof o[k]!=='object'||o[k]===null)o[k]={};o=o[k]});const last=ks[ks.length-1];if(val===null||val===undefined)delete o[last];else o[last]=JSON.parse(JSON.stringify(val));try{localStorage.setItem(K,JSON.stringify(t))}catch(e){}fire()};
+ return{local:true,
+  set:(p,v)=>{setp(p,v);return Promise.resolve()},remove:p=>{setp(p,null);return Promise.resolve()},
+  on(p,cb){const l={path:p,cb,last:undefined},k=++id;ls.set(k,l);setTimeout(()=>{let v=at(get(),p);if(v===undefined)v=null;l.last=JSON.stringify(v);cb(JSON.parse(l.last))},0);return()=>ls.delete(k)},
+  once(p){let v=at(get(),p);if(v===undefined)v=null;return Promise.resolve(JSON.parse(JSON.stringify(v)))},
+  claim(p,val){const v=at(get(),p);if(v&&v.pid!==val.pid)return Promise.resolve(false);setp(p,val);return Promise.resolve(true)}}}
+function mkFB(code){
+ if(!firebase.apps.length)firebase.initializeApp(CFG);
+ const db=firebase.database(),root=db.ref('revolyuciya/'+code);
+ db.ref('.info/serverTimeOffset').on('value',s=>{OFF=s.val()||0});
+ const clean=v=>v==null?null:JSON.parse(JSON.stringify(v));
+ return{local:false,
+  set:(p,v)=>root.child(p).set(clean(v)),remove:p=>root.child(p).remove(),
+  on(p,cb){const r=root.child(p),f=s=>cb(s.val());r.on('value',f);return()=>r.off('value',f)},
+  once:p=>root.child(p).once('value').then(s=>s.val()),
+  claim:(p,val)=>root.child(p).transaction(cur=>(cur&&cur.pid!==val.pid)?undefined:val).then(r=>!!r.committed)}}
+function qrSVG(text,px){const q=qrcode(0,'M');q.addData(text);q.make();const n=q.getModuleCount(),m=2;let d='';for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+=`M${c+m} ${r+m}h1v1h-1z`;return `<svg viewBox="0 0 ${n+2*m} ${n+2*m}" width="${px}" height="${px}" role="img" aria-label="QR-код для входа в игру" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#14161B"/></svg>`}
+const genCode=()=>{const a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<4;i++)s+=a[Math.floor(Math.random()*a.length)];return s};
+
+/* ---------- новые виды: вход, лобби, телефон команды ---------- */
+const joinURL=()=>BASE+'?g='+CODE,screenURL=()=>BASE+'?g='+CODE+'&v=screen';
+const connected=id=>!!SL[id];
+const testBanner=()=>FBOK?'':`<div class="panel" style="background:var(--gold-soft);border-color:var(--gold)">Тестовый режим: Firebase не подключён, игра работает только между вкладками одного браузера. Подключение базы описано в README.</div>`;
+function landingView(){const hc=lsGet('rev_host');
+ return `<div class="setup"><div><div class="eyebrow">Политическая конфликтология · Тема 6</div><h1>Революционная ситуация</h1></div>
+ <p class="lead">Ролевая игра на смартфонах. Ведущий создаёт игру, команды входят по коду или QR и тайно выбирают решения у себя в телефоне, а проектор показывает общее табло.</p>${testBanner()}
+ <div class="panel"><div class="lbl">Я ведущий</div><div class="actions"><button class="btn main" data-act="create">Создать игру</button>${hc?`<button class="btn" data-act="resume">Продолжить игру ${esc(hc)}</button>`:''}</div></div>
+ <div class="panel"><div class="lbl">Войти в игру по коду</div><div class="actions"><input class="codein" id="codein" maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="КОД" aria-label="Код игры"><button class="btn main" data-act="enter">Войти</button></div><label class="note" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="asscreen"> Это экран проектора</label>${JOINERR?`<div class="note" style="color:var(--red)">${esc(JOINERR)}</div>`:''}</div></div>`}
+function joinView(){
+ if(!LOADED)return `<div class="setup"><p class="lead">Подключение к игре ${esc(CODE)}…</p></div>`;
+ if(!META)return `<div class="setup"><div><div class="eyebrow">Игра ${esc(CODE)}</div><h1>Игра не найдена</h1></div><p class="lead">Проверьте код: ведущий создаёт игру на этой же странице.</p><div><button class="btn" data-act="home">На главную</button></div></div>`;
+ const n=META.n||4;
+ return `<div class="setup"><div><div class="eyebrow">Игра ${esc(CODE)}</div><h1>Выберите команду</h1></div><p class="lead">Нажмите на роль, которую вам назвал ведущий. Занятые роли недоступны.</p>
+ ${JOINERR?`<div class="panel" style="border-color:var(--red);color:var(--red)">${esc(JOINERR)}</div>`:''}
+ <div class="roles">${ROLEIDS.slice(0,n).map(id=>{const mine=SL[id]&&SL[id].pid===PID,busy=SL[id]&&!mine;return `<div style="--rc:var(--r-${id})"><span class="ic" style="width:34px;height:34px;color:var(--rc)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICON[id]}</svg></span><p style="margin:0"><b>${RL[id].n}</b><span>${RL[id].goal}</span><button class="btn ${busy?'':'main'}" style="margin-top:8px" ${busy?'disabled':''} data-act="claim" data-t="${id}">${mine?'Вернуться в роль':busy?'Занято':'Играть за эту роль'}</button></p></div>`}).join('')}</div></div>`}
+function joinPanel(big){return `<div class="panel joinp"><div class="qr">${qrSVG(joinURL(),big?260:190)}</div><div><div class="lbl">Подключение команд</div><div class="codebig">${esc(CODE)}</div><div class="note" style="margin:0">Отсканируйте QR-код или откройте<br><b>${esc(joinURL().replace(/^https?:\/\//,''))}</b><br>и введите код.</div>${scr()?'':`<div class="actions" style="margin-top:10px"><button class="btn" data-act="proj">Открыть экран проектора</button><button class="linkbtn" data-act="copyscr">скопировать ссылку на экран</button></div>`}</div></div>`}
+function lobbyView(){return `<div class="setup"><div><div class="eyebrow">Политическая конфликтология · Тема 6</div><h1>Революционная ситуация</h1></div>${joinPanel(true)}<div class="roles">${ROLEIDS.slice(0,S.n).map(id=>`<div style="--rc:var(--r-${id})"><span class="ic" style="width:34px;height:34px;color:var(--rc)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICON[id]}</svg></span><p style="margin:0"><b>${RL[id].n}</b><span>${connected(id)?'● команда на связи':'ждём команду'}</span></p></div>`).join('')}</div></div>`}
+function waitView(){return `<div class="setup"><div><div class="eyebrow">Политическая конфликтология</div><h1>Революционная ситуация</h1></div><p class="lead">${ROLE==='host'?'Загрузка игры…':'Ведущий готовит игру. Страница обновится сама, когда игра начнётся.'}</p></div>`}
+function playerView(){
+ const id=ME.role,st=`style="--rc:var(--r-${id})"`,e=EVD[S.r],c=S.cur,res=c.res;
+ const sub=S.phase==='play'?`Раунд ${S.r+1} из ${ROUNDS}`:S.phase==='final'?'Игра окончена':'Ожидание начала';
+ const head=`<div class="phead" ${st}>${ic(id)}<div><b>${RL[id].n}</b><span>${sub}</span></div><button class="linkbtn" data-act="leave">выйти</button></div>`;
+ if(S.phase==='setup')return `<div class="pl">${head}<div class="panel"><div class="lbl">Ваша цель</div><p class="lore" style="font-size:17px">${RL[id].goal}</p><p class="note">Ведущий скоро начнёт игру. Оставьте страницу открытой.</p></div></div>`;
+ if(S.phase==='final'){const out=finalStatus(),[t,d]=OUT[out],fs=finalScores(),ids=roles().slice().sort((a,b)=>fs[b].sum-fs[a].sum),pos=ids.indexOf(id)+1;
+  return `<div class="pl">${head}<div class="panel"><div class="eyebrow">Исход</div><div class="win" style="font-size:44px;color:${out==='rev'?'var(--red)':out==='stb'?'var(--ok)':'var(--gold)'}">${t}</div><p class="lore" style="font-size:16px;margin-top:8px">${d}</p></div>
+  <div class="panel"><div class="lbl">Ваш результат</div>${ids.map((x,i)=>`<div class="rank${x===id?' lead':''}" style="--rc:var(--r-${x})"><div class="pos">${i+1}</div><div class="nm">${ic(x)}${RL[x].n}</div><div class="score" style="font-size:34px">${fs[x].sum}</div><div class="sub">раунды ${fs[x].base} + бонус ${fs[x].bn}</div></div>`).join('')}<div class="note">Ваше место: ${pos}. Бонус зависит от исхода: ${BONUS[id]}.</div></div></div>`}
+ const ev=`<div class="panel round"><div class="eyebrow">Событие</div><h2 style="font-size:34px">${e.n}</h2><span class="theory">${e.th}</span><p class="lore" style="font-size:16px">${e.lore}</p>${e.rule?`<div class="rule"><b>Правило раунда</b>${e.rule}</div>`:''}</div>`;
+ const gz=`<div class="panel"><div class="lbl">Состояние страны</div>${gauges()}</div>`;
+ const intr=`<div class="panel" ${st}><div class="intr"><b>Ваш интерес:</b> ${e.i[id]}</div><div class="goal" style="margin-top:6px">${RL[id].goal}</div></div>`;
+ let body='';
+ if(c.rev){const p=res.pts[id],a=res.act[id];
+  body=`${verdictView(res)}<div class="panel" ${st}><div class="lbl">Ваше решение и очки</div><div class="res"><span>${RL[id].a[a][0]}</span><span class="pt">+${p}</span></div>${res.best===id?'<div class="note">в том числе +2 за лучшую речь</div>':''}</div>${srcView(res)}<div class="panel"><div class="lbl">Вопрос для обсуждения</div><div style="font-size:17px">${e.q}</div></div><div class="panel"><div class="lbl">Влияние команд</div>${board()}</div><div class="note">Ждите следующего раунда, страница обновится сама.</div>`}
+ else if(c.ph==='speech'){const o=order(),cu=c.sp>=0?o[c.sp]:null,left=spLeft(),over=cu&&c.spEnd&&left===0;
+  const q=o.map((x,i)=>`<div class="spk${x===cu?' now':''}" style="--rc:var(--r-${x})">${ic(x)}<b>${RL[x].n}</b><span>${i+1}. ${c.done.includes(x)?'выступила':x===cu?'выступает':'ждёт'}</span></div>`).join('');
+  body=`${intr}<div class="panel"><div class="lbl">Публичные выступления</div>${cu===id?`<div class="speaker" ${st}><div class="tname">Ваша очередь</div><div class="spt${over?' over':''}" id="spt">${over?'Время вышло':fmt(left)}</div><div class="note" style="margin:0">Скажите стране, что вы намерены делать и чего требуете. Можно блефовать.</div></div>`:cu?`<div class="speaker" style="--rc:var(--r-${cu})"><div class="tname">Выступает: ${RL[cu].n}</div><div class="spt${over?' over':''}" id="spt">${over?'Время вышло':fmt(left)}</div></div>`:`<div class="note">Выступления скоро начнутся. Готовьте речь.</div>`}<div class="spklist">${q}</div></div>`}
+ else{const mine=CH[id],opts=mine!=null?`<div class="locked"><span>Решение отправлено: <b>${RL[id].a[mine][0]}</b></span><button data-act="punch">изменить</button></div>`:`<div class="opts">${RL[id].a.map((a,i)=>`<button class="opt big" data-act="pch" data-v="${i}">${a[0]}<small>${a[1]}</small></button>`).join('')}</div>`;
+  const vt=VT[id],others=roles().filter(x=>x!==id),tally={};Object.values(VT).forEach(x=>tally[x]=(tally[x]||0)+1);
+  body=`${intr}<div class="panel"><div class="lbl">Кулуарные переговоры</div><div class="tm"><b id="tm">${fmt(tmLeft())}</b><span class="hint note" style="margin:0">Договаривайтесь с другими командами устно. Выбор тайный.</span></div></div><div class="panel" ${st}><div class="lbl">Ваше решение</div>${opts}<div class="note">До открытия решений его можно изменить.</div></div>
+  <div class="panel"><div class="lbl">Лучшая речь раунда</div><div class="actions">${others.map(x=>`<button class="btn${vt===x?' main':''}" data-act="pvote" data-t="${x}">${RL[x].n}</button>`).join('')}</div><div class="note">Проголосуйте за самую убедительную речь, за себя нельзя.</div></div>`}
+ return `<div class="pl">${head}${ev}${body}${gz}</div>`}
+
+const TH=1.0;
+const K4=['D','E','A','L'],KN={D:'Недовольство',E:'Элиты',A:'Армия',L:'Легитимность',H:'Верхи'};
+const ss={get(k){try{return sessionStorage.getItem(k)}catch(e){return null}},set(k,v){try{sessionStorage.setItem(k,v)}catch(e){}}};
+const fresh=()=>({ch:{},rev:false,res:null,ph:'speech',sp:-1,spEnd:null,done:[],best:null});
+const DSP={2:120,3:90,4:60,5:45,6:30};
+function norm(v){if(!v.cur)v.cur=fresh();const c=v.cur,f=fresh();if(c.rev&&!c.res)c.rev=false;if(!c.ph)c.ph=c.rev?'choose':'speech';if(!Array.isArray(c.done))c.done=[];if(!c.ch)c.ch={};if(c.sp==null)c.sp=-1;if(c.spEnd===undefined)c.spEnd=null;if(c.best===undefined)c.best=null;if(!v.sp)v.sp=60;if(!v.kul)v.kul=90;if(!Array.isArray(v.hist))v.hist=[];return v}
+const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},lsDel=k=>{try{localStorage.removeItem(k)}catch(e){}};
+const QS=new URLSearchParams(location.search),BASE=location.href.split('?')[0].split('#')[0];
+const CFG=window.FIREBASE_CONFIG||null,FBOK=!!(CFG&&CFG.apiKey&&window.firebase);
+let OFF=0;const nowS=()=>Date.now()+OFF;
+let CODE=(QS.get('g')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,4),VIEW=QS.get('v')||'';
+let PID=lsGet('rev_pid');if(!PID){PID=Math.random().toString(36).slice(2,10);lsSet('rev_pid',PID)}
+let ME=null;try{ME=JSON.parse(lsGet('rev_pl'))}catch(e){}if(ME&&(ME.code!==CODE||VIEW==='join'))ME=null;
+let S=norm({phase:'setup',n:4,r:0,hist:[],cur:fresh(),sp:60,kul:90});
+let READY=false,META=undefined,LOADED=false,SL={},CH={},VT={},BGDATA=null,DB=null,SUBR=-1,UNS=[],LASTJ='',MAN={},OPEN=false,SHOWQR=false,JOINERR='';
+let PEEK=ss.get('rev_peek')==='1',confirmNew=false;
+function decide(){return !CODE?'landing':VIEW==='screen'?'screen':ME?'player':(VIEW!=='join'&&lsGet('rev_host')===CODE)?'host':'join'}
+let ROLE=decide();
+const scr=()=>ROLE==='screen';
+const roles=()=>ROLEIDS.slice(0,S.n);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const before=()=>S.hist.length?S.hist[S.hist.length-1].ns:START;
+const tmLeft=()=>S.tmEnd?Math.max(0,Math.ceil((S.tmEnd-nowS())/1000)):S.kul;
+const spLeft=()=>S.cur.spEnd?Math.max(0,Math.ceil((S.cur.spEnd-nowS())/1000)):S.sp;
+const order=()=>{const r=roles(),k=S.r%r.length;return r.slice(k).concat(r.slice(0,k))};
+const estRound=()=>2+S.n*(S.sp+15)/60+S.kul/60+1+3;
+const estTotal=()=>Math.round(15+ROUNDS*estRound());
+const fmt=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+const ic=id=>`<span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true">${ICON[id]}</svg></span>`;
+const sgn=v=>(v>0?'+':v<0?'−':'')+Math.abs(v);
+const danger=(k,v)=>k==='D'?v>0:v<0;
+const dl=(k,v)=>v?`<span class="dl ${danger(k,v)?'up':'dn'}">${KN[k]} ${sgn(v)}</span>`:'';
+const REV=s=>s.D>=8&&H(s)<=4.5;
+function judge(s,r){if(REV(s))return 'rev';if(r>=ROUNDS-1)return (s.D>=6||H(s)<=5.5)?'cri':'stb';return null}
+function doReveal(){
+  const b=before(),o=resolve(b,S.r,CH,roles()),pts={};
+  roles().forEach(id=>{const v=K4.reduce((a,k,i)=>a+W[id][i]*o.real[i],0);pts[id]=Math.max(0,v)});
+  const best=S.cur.best&&roles().includes(S.cur.best)?S.cur.best:null;if(best)pts[best]+=2;
+  S.cur.res={...o,before:b,pts,best,status:judge(o.ns,S.r)};S.cur.rev=true}
+function totals(){const t={};roles().forEach(id=>t[id]=0);S.hist.forEach(h=>roles().forEach(id=>t[id]+=h.pts[id]||0));if(S.cur.rev)roles().forEach(id=>t[id]+=S.cur.res.pts[id]||0);return t}
+function finalStatus(){const h=S.hist[S.hist.length-1];return h.status}
+function finalScores(){const out=finalStatus(),t={};roles().forEach(id=>{const base=S.hist.reduce((a,h)=>a+(h.pts[id]||0),0),picks=S.hist.map(h=>h.act[id]),bn=bonus(id,out,picks);t[id]={base,bn,sum:base+bn}});return t}
+
+/* ---------- фон ---------- */
+function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function mapSVG(){const R=rng(7),cx=500,cy=300,pts=[];
+ const rad=(a,ph)=>230*(1+.18*Math.cos(2*a+1+ph)+.12*Math.cos(3*a+2)+.07*Math.cos(5*a+.5)+.04*Math.cos(9*a));
+ const outline=(sc,ph)=>{let d='';for(let i=0;i<=96;i++){const a=i/96*Math.PI*2,r=rad(a,ph)*sc;d+=(i?'L':'M')+(cx+r*Math.cos(a)*1.4).toFixed(1)+' '+(cy+r*Math.sin(a)*1.0).toFixed(1)}return d+'Z'};
+ let g=`<path d="${outline(1,0)}" fill="rgba(239,233,221,.05)" stroke="#EFE9DD" stroke-width="2.4"/>`;
+ [.84,.67,.5,.33].forEach((s,i)=>g+=`<path d="${outline(s,.25*(i+1))}" fill="none" stroke="#EFE9DD" stroke-opacity=".28" stroke-width="1.2"/>`);
+ for(let k=0;k<6;k++){const a=k*Math.PI/3+R()*.5,x0=cx+(R()-.5)*60,y0=cy+(R()-.5)*40;let d=`M${x0.toFixed(0)} ${y0.toFixed(0)}`;
+  for(let j=1;j<=6;j++){const r=rad(a,0)*j/6*1.02;d+=`L${(cx+r*Math.cos(a)*1.4+(R()-.5)*26).toFixed(0)} ${(cy+r*Math.sin(a)+(R()-.5)*26).toFixed(0)}`}
+  g+=`<path d="${d}" fill="none" stroke="#EFE9DD" stroke-opacity=".55" stroke-width="1.6" stroke-dasharray="9 5"/>`}
+ g+=`<path d="M300 150C380 210 420 250 470 290S560 380 640 420" fill="none" stroke="#6FA3C7" stroke-opacity=".6" stroke-width="2.4"/>`;
+ for(let i=0;i<9;i++){const a=R()*Math.PI*2,r=R()*.8*rad(a,0);g+=`<circle cx="${(cx+r*Math.cos(a)*1.4).toFixed(0)}" cy="${(cy+r*Math.sin(a)).toFixed(0)}" r="4.5" fill="#EFE9DD" fill-opacity=".6"/>`}
+ g+=`<circle cx="${cx}" cy="${cy}" r="11" fill="none" stroke="#E0533D" stroke-width="3"/><circle cx="${cx}" cy="${cy}" r="4" fill="#E0533D"/>`;
+ for(let i=0;i<8;i++){const x=640+R()*110,y=170+R()*90;g+=`<path d="M${x.toFixed(0)} ${(y+12).toFixed(0)}l8-16 8 16z" fill="none" stroke="#EFE9DD" stroke-opacity=".5" stroke-width="1.4"/>`}
+ for(let i=1;i<10;i++)g+=`<path d="M${i*100} 0V600" stroke="#EFE9DD" stroke-opacity=".07"/>`;
+ for(let i=1;i<6;i++)g+=`<path d="M0 ${i*100}H1000" stroke="#EFE9DD" stroke-opacity=".07"/>`;
+ return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600">${g}</svg>`)}
+let MAPURL=mapSVG();
+function applyBg(){const el=document.getElementById('bg');el.style.backgroundImage=`url("${BGDATA||MAPURL}")`;el.style.opacity=BGDATA?'.3':(ROLE==='player'||ROLE==='join'?'.18':'.4')}
+function setBg(file){const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const m=1280,k=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);if(DB)DB.set('bg',c.toDataURL('image/jpeg',.7))};im.src=fr.result};fr.readAsDataURL(file)}
+
+/* ---------- виды ---------- */
+function refTable(){
+ const rows=ROLEIDS.map(id=>RL[id].a.map((a,i)=>`<tr>${i?'':`<th rowspan="3">${esc(RL[id].n)}</th>`}<td>${esc(a[0])}</td>${EFF[id][i].map((v,j)=>`<td class="c">${v?sgn(v):'·'}</td>`).join('')}</tr>`).join('')).join('');
+ return `<div class="wrap"><table class="mx"><tr><th>Команда</th><th>Решение</th><th>Недовольство</th><th>Элиты</th><th>Армия</th><th>Легитимность</th></tr>${rows}</table></div>
+ <p class="note">Плюс значит рост шкалы. Изменение каждой шкалы за раунд складывается из события и решений всех ролей, но не больше ±2.</p>
+ <div class="wrap"><table class="mx"><tr><th>Сочетание решений</th><th>Добавка</th></tr>${IX.map(x=>`<tr><td>${x.t}: ${Object.keys(x.if).map(id=>RL[id].n+' — '+RL[id].a[x.if[id]][0]).join(' и ')}</td><td>${K4.map((k,i)=>x.d[i]?KN[k]+' '+sgn(x.d[i]):'').filter(Boolean).join(', ')}</td></tr>`).join('')}</table></div>`}
+function setupView(){
+ const hasBg=!!BGDATA;
+ return `<div class="setup"><div><div class="eyebrow">Политическая конфликтология · Тема 6</div><h1>Революционная ситуация</h1></div>
+ <p class="lead">Вымышленная Арвания на грани кризиса. Команды играют социальные силы: власть, оппозицию, армию, элиты, интеллигенцию и внешнюю державу. В каждом из шести раундов происходит событие, команды тайно выбирают линию поведения, а четыре шкалы страны показывают, куда движется кризис. Революция происходит, когда низы не хотят жить по-старому, а верхи не могут управлять по-старому.</p>
+ <div><div class="lbl">Число команд</div><div class="seg">${[2,3,4,5,6].map(n=>`<button data-act="tc" data-v="${n}" class="${S.n==n?'on':''}">${n}</button>`).join('')}</div></div>
+ <div><div class="lbl">Роли</div><div class="roles">${ROLEIDS.map((id,i)=>`<div class="${i<S.n?'':'off'}" style="--rc:var(--r-${id})"><span class="ic" style="width:34px;height:34px;color:var(--rc)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICON[id]}</svg></span><p style="margin:0"><b>${RL[id].n}</b>${i<S.n?(connected(id)?' <span class="live">● на связи</span>':''):' <span style="display:inline;color:var(--mute)">· играет автомат, всегда «выжидает»</span>'}<span>${RL[id].goal}</span></p></div>`).join('')}</div></div>
+ <div class="panel"><div class="lbl">Регламент раунда и общее время</div>
+  <div class="note" style="margin:0 0 10px">Раунд состоит из события (2 мин), публичных выступлений всех команд, кулуарных переговоров, тайного выбора и разбора результата (около 4 мин). Выступление выглядит так: команда объявляет всей стране, что она намерена делать, и чего требует. Можно блефовать. После выступлений класс выбирает лучшую речь, и её команда получает +2 очка.</div>
+  <div class="lbl">Время выступления одной команды</div><div class="seg">${[30,45,60,90,120].map(n=>`<button data-act="sp" data-v="${n}" class="${S.sp==n?'on':''}">${n} с</button>`).join('')}</div>
+  <div class="lbl" style="margin-top:12px">Кулуарные переговоры</div><div class="seg">${[60,90,120].map(n=>`<button data-act="kul" data-v="${n}" class="${S.kul==n?'on':''}">${n} с</button>`).join('')}</div>
+  <p class="note" style="margin-bottom:0">Один раунд ≈ ${Math.round(estRound())} мин, шесть раундов с вступлением и итогами ≈ <b>${estTotal()} мин</b>. ${Math.abs(estTotal()-90)<=5?'Это укладывается в две пары.':estTotal()<85?'Можно увеличить время выступления.':'Можно сократить выступления.'}</p></div>
+ <div class="panel"><div class="lbl">Как считается итог</div><div class="note" style="margin:0">Шкалы идут от 0 до 10. «Сила верхов» это среднее значение единства элит, лояльности армии и легитимности. <b>Революция</b> наступает, когда недовольство низов не меньше 8, а сила верхов не больше 4,5. Если после шестого раунда революции нет, исход зависит от шкал: <b>затяжной кризис</b> или <b>стабилизация</b>. Очки раунда команда получает за сдвиг шкал в свою пользу, в конце добавляется бонус за исход.</div></div>
+ <details class="panel" ${OPEN?'open':''}><summary>Справка ведущего: как решения меняют шкалы</summary>${refTable()}</details>
+ <div class="panel"><div class="lbl">Фон табло</div><div class="actions"><label class="btn" style="cursor:pointer">Загрузить свою картинку<input type="file" id="bgfile" accept="image/*" style="display:none"></label>${hasBg?'<button class="btn" data-act="bgreset">Вернуть карту Арвании</button>':''}<span class="hint note" style="margin:0">По умолчанию условная контурная карта вымышленной страны.</span></div></div>
+ ${joinPanel(false)}${testBanner()}
+ <div class="panel"><div class="lbl">Как проходит игра</div><div class="note" style="margin:0">Команды входят по QR-коду или коду и выбирают роль. Экран проектора открывается отдельной ссылкой и показывает общее табло. Решения команды отправляют тайно с телефонов, а проектор показывает только «решение принято». Если у команды нет телефона, ведущий выбирает за неё кнопкой «выбрать за команду». Ведущий должен оставаться в игре: именно его окно считает результаты раунда.</div></div>
+ <div><button class="btn main" data-act="start">Начать игру</button></div></div>`}
+
+function gauges(){const b=S.cur.rev?S.cur.res.before:before(),n=S.cur.rev?S.cur.res.ns:b,rv=S.cur.rev;
+ const g=(k,name,sub,v,pv,real)=>`<div class="gauge"><div class="gn">${name}<small>${sub}</small></div><div class="gv">${Number.isInteger(v)?v:v.toFixed(1)}${rv&&real?' '+dl(k,real):''}</div><div class="track" role="img" aria-label="${name}: ${v} из 10"><i style="width:${v*10}%"></i>${k==='D'?'<u style="left:80%"></u>':''}${k==='H'?'<u style="left:45%"></u>':''}${rv&&pv!==v?`<em style="left:calc(${pv*10}% - 1px)"></em>`:''}</div></div>`;
+ return SC.map(([k,nm,sb],i)=>g(k,nm,sb,n[k],b[k],rv?S.cur.res.real[i]:0)).join('')+g('H','Сила верхов','среднее: элиты, армия, легитимность',+H(n).toFixed(1),+H(b).toFixed(1),rv?+(H(n)-H(b)).toFixed(1):0)}
+function planeView(){const pts=[START].concat(S.hist.map(h=>h.ns));if(S.cur.rev)pts.push(S.cur.res.ns);
+ const x0=46,y0=10,w=316,h=262,X=d=>x0+d/10*w,Y=hh=>y0+(10-hh)/10*h;
+ const line=pts.map((s,i)=>(i?'L':'M')+X(s.D).toFixed(1)+' '+Y(H(s)).toFixed(1)).join('');
+ const dots=pts.map((s,i)=>`<circle cx="${X(s.D).toFixed(1)}" cy="${Y(H(s)).toFixed(1)}" r="${i===pts.length-1?7:5}" fill="${i===0?'#9AA0A8':i===pts.length-1?'#E3B04B':'#EFE9DD'}"/><text x="${(X(s.D)+9).toFixed(1)}" y="${(Y(H(s))-7).toFixed(1)}" style="fill:#EFE9DD">${i}</text>`).join('');
+ const last=pts[pts.length-1];
+ return `<svg class="chart" viewBox="0 0 380 320" role="img" aria-label="Траектория страны на плоскости недовольство низов и сила верхов"><rect x="${x0}" y="${y0}" width="${w}" height="${h}" fill="none" stroke="#363B46"/>
+ <rect x="${X(8)}" y="${Y(4.5)}" width="${X(10)-X(8)}" height="${Y(0)-Y(4.5)}" fill="#E0533D" fill-opacity=".28"/><text x="${X(10)-5}" y="${Y(0)-8}" text-anchor="end" style="fill:#E0533D;font-weight:500">РЕВОЛЮЦИЯ</text>
+ <rect x="${x0}" y="${y0}" width="${X(6)-x0}" height="${Y(5.5)-y0}" fill="#7BAE7F" fill-opacity=".14"/><text x="${x0+6}" y="${y0+16}" style="fill:#7BAE7F">СТАБИЛЬНОСТЬ</text>
+ <path d="${line}" fill="none" stroke="#EFE9DD" stroke-opacity=".7" stroke-width="2" stroke-dasharray="5 4"/>${dots}
+ <circle class="halo" cx="${X(last.D).toFixed(1)}" cy="${Y(H(last)).toFixed(1)}" r="8" fill="none" stroke="#E3B04B" stroke-width="2"/>
+ <text x="${x0}" y="${y0+h+14}" text-anchor="middle">0</text><text x="${x0+w}" y="${y0+h+14}" text-anchor="middle">10</text><text x="${x0+w/2}" y="${y0+h+30}" text-anchor="middle">Недовольство низов →</text><text x="${x0-8}" y="${y0+8}" text-anchor="end">10</text><text x="${x0-8}" y="${y0+h}" text-anchor="end">0</text>
+ <text transform="translate(12 ${y0+h/2+40}) rotate(-90)">Сила верхов →</text></svg>
+ <div class="note" style="margin-top:0">Точки пронумерованы по раундам, 0 — начало игры. Двигаться в красный угол значит приближаться к революции.</div>`}
+function board(){const t=totals(),ids=roles().slice().sort((a,b)=>t[b]-t[a]),top=t[ids[0]];
+ return ids.map((id,i)=>{const lastp=S.cur.rev?S.cur.res.pts[id]:(S.hist.length?S.hist[S.hist.length-1].pts[id]:0);
+  return `<div class="rank${t[id]===top&&top>0?' lead':''}" style="--rc:var(--r-${id})"><div class="pos">${i+1}</div><div class="nm">${ic(id)}${RL[id].n}</div><div class="score">${t[id]}</div><div class="sub">${S.hist.length||S.cur.rev?`в последнем раунде +${lastp}`:'очки появятся после первого раунда'}</div></div>`}).join('')}
+function sideView(id,cur){const e=EVD[S.r],c=CH[id],cl=connected(id)?'<span class="live">● на связи</span>':'',st=`style="--rc:var(--r-${id})"`,it=`<div class="intr"><b>Интерес:</b> ${e.i[id]}</div><div class="goal">${RL[id].goal}</div>`;
+ if(cur.rev){const a=cur.res.act[id],p=cur.res.pts[id],top=Math.max(...roles().map(x=>cur.res.pts[x])),w=top>0&&p===top;
+  return `<div class="side${w?' champ':''}" ${st}><div class="tname">${ic(id)}${RL[id].n}${w?'<span class="badge">Лучший в раунде</span>':''}</div><div class="res"><span>${RL[id].a[a][0]}</span><span class="pt">+${p}</span></div>${cur.res.best===id?'<div class="note" style="margin:0">в том числе +2 за лучшую речь</div>':''}</div>`}
+ if(scr())return `<div class="side" ${st}><div class="tname">${ic(id)}${RL[id].n}${cl}</div>${it}<div class="locked" style="${c!=null?'':'opacity:.55;color:var(--mute)'}"><span>${c!=null?'Решение принято':'Ожидает решения'}</span></div></div>`;
+ if(c==null&&connected(id)&&!MAN[id])return `<div class="side" ${st}><div class="tname">${ic(id)}${RL[id].n}${cl}</div>${it}<div class="locked" style="opacity:.75"><span>Ждём решение с телефона</span><button data-act="man" data-t="${id}">выбрать за команду</button></div></div>`;
+ if(c!=null)return `<div class="side" ${st}><div class="tname">${ic(id)}${RL[id].n}${cl}</div>${it}<div class="locked"><span>Решение принято${PEEK?': <b>'+RL[id].a[c][0]+'</b>':''}</span><button data-act="unch" data-t="${id}">изменить</button></div></div>`;
+ return `<div class="side" ${st}><div class="tname">${ic(id)}${RL[id].n}${cl}</div>${it}<div class="opts">${RL[id].a.map((a,i)=>`<button class="opt" data-act="ch" data-t="${id}" data-v="${i}">${a[0]}<small>${a[1]}</small></button>`).join('')}</div></div>`}
+function srcView(res){const rows=res.src.map(s=>{const who=s.id?`${RL[s.id].n}: ${RL[s.id].a[s.a][2]}`:s.t;return `<div><span class="who">${esc(who)}</span>${K4.map((k,i)=>dl(k,s.d[i])).join('')}</div>`}).join('');
+ const capped=res.tot.some(v=>Math.abs(v)>2);
+ return `<div class="panel"><div class="lbl">Что произошло</div><div class="src">${rows||'<div>Ничего не изменилось</div>'}</div>${capped?'<div class="note">Изменение любой шкалы за раунд ограничено двумя пунктами.</div>':''}</div>`}
+function verdictView(res){if(!res.status)return '';const [t,d]=OUT[res.status];return `<div class="verdict ${res.status==='rev'?'rev':''}"><b>${res.status==='rev'?'Революционная ситуация созрела. ':''}${t}</b>${d}</div>`}
+function speechView(){const c=S.cur,o=order(),cu=c.sp>=0?o[c.sp]:null,left=spLeft(),over=cu&&c.spEnd&&left===0,e=EVD[S.r];
+ const list=o.map((id,i)=>{const st=c.done.includes(id)?'выступила':id===cu?'выступает':'ждёт';return `<div class="spk${id===cu?' now':''}" style="--rc:var(--r-${id})">${ic(id)}<b>${RL[id].n}</b><span>${i+1}. ${st}</span></div>`}).join('');
+ const ctrl=scr()?'':`<div class="actions">${c.sp<0?`<button class="btn main" data-act="spnext">Начать выступления</button>`:c.sp>=o.length-1?`<button class="btn main" data-act="spnext">Завершить выступления</button>`:`<button class="btn main" data-act="spnext">Следующая команда</button>`}<button class="btn" data-act="spend">Пропустить выступления</button></div>`;
+ return `<div class="panel"><div class="lbl">Публичные выступления · ${S.sp} с на команду</div><div class="spklist">${list}</div>
+  ${cu?`<div class="speaker" style="--rc:var(--r-${cu})"><div class="tname">${ic(cu)}${RL[cu].n}</div><div class="spt${over?' over':''}" id="spt">${over?'Время вышло':fmt(left)}</div><div class="intr"><b>Что сказать стране:</b> что вы намерены делать и чего требуете. Можно блефовать. Ваш интерес: ${e.i[cu]}</div></div>`:`<div class="note">Каждая команда по очереди выступает перед страной. Порядок меняется от раунда к раунду.</div>`}${ctrl}</div>`}
+function bestView(){const rs=roles();if(S.cur.rev)return '';const tl={};Object.values(VT).forEach(x=>tl[x]=(tl[x]||0)+1);const any=Object.keys(SL).length>0;
+ return `<div class="panel"><div class="lbl">Лучшая речь раунда · +2 очка</div><div class="actions">${rs.map(id=>`<button class="btn${S.cur.best===id?' main':''}" ${scr()?'disabled':''} data-act="best" data-t="${id}">${RL[id].n}${tl[id]?' · голосов: '+tl[id]:''}</button>`).join('')}</div><div class="note">${any?'Команды голосуют на телефонах, за себя голосовать нельзя. Ведущий отмечает победителя. ':'Класс выбирает самую убедительную речь голосованием руками. Ведущий отмечает команду. '}${scr()&&S.cur.best?' Выбрана: '+RL[S.cur.best].n+'.':''}</div></div>`}
+function gameView(){const e=EVD[S.r],cur=S.cur,rs=roles(),have=rs.filter(id=>CH[id]!=null).length,last=S.r===ROUNDS-1,res=cur.res;
+ const pips=[...Array(ROUNDS).keys()].map(i=>`<span class="pip ${i<S.r||(i===S.r&&cur.rev)?'done':i===S.r?'now':''}"></span>`).join('');
+ const auto=ROLEIDS.slice(S.n).map(id=>RL[id].n);
+ const act=cur.ph==='speech'&&!cur.rev?'':scr()?(cur.rev?'':`<span class="hint">Решения приняли ${have} из ${rs.length}</span>`):cur.rev?`<button class="btn" data-act="fix">Исправить выбор</button><button class="btn main" data-act="next">${res.status||last?'Подвести итоги':'Следующий раунд'}</button>`
+  :`<button class="btn main" data-act="reveal" ${have<rs.length?'disabled':''}>Открыть решения</button><span class="hint">Решения приняли ${have} из ${rs.length}</span>`;
+ return `<div class="top"><div class="brand"><small>Раунд ${S.r+1} из ${ROUNDS}</small>Революционная ситуация</div><div class="pips" aria-hidden="true">${pips}</div>
+ <div class="actions">${scr()?'':confirmNew?`<button class="btn warn" data-act="new2">Да, начать заново</button><button class="btn" data-act="cancel">Отмена</button>`:`<button class="btn" data-act="peek">Показывать выбор: ${PEEK?'вкл':'выкл'}</button><button class="btn" data-act="qr">Код ${esc(CODE)}</button><button class="btn" data-act="proj">Экран проектора</button><button class="btn" data-act="new">Новая игра</button>`}</div></div>
+ ${SHOWQR&&!scr()?joinPanel(false):''}
+ <div class="grid"><div class="col">
+  <div class="panel round"><div class="eyebrow">Событие</div><h2>${e.n}</h2><span class="theory">${e.th}</span><p class="lore">${e.lore}</p>
+   ${e.rule?`<div class="rule"><b>Правило раунда</b>${e.rule}</div>`:''}
+   ${cur.rev||cur.ph==='speech'?'':`<div class="tm">${scr()?'':`<button class="btn" data-act="tm">${S.tmEnd?'Остановить':'Кулуарные переговоры '+S.kul+' с'}</button>`}<b id="tm">${fmt(tmLeft())}</b><span class="hint note" style="margin:0">Команды договариваются в кулуарах, затем выбирают тайно.</span></div>`}</div>
+  ${cur.rev||cur.ph!=='speech'?'':speechView()}
+  ${!cur.rev&&cur.ph==='choose'?bestView():''}
+  ${cur.rev?verdictView(res)+srcView(res)+`<div class="panel"><div class="lbl">Вопрос для обсуждения</div><div style="font-size:18px">${e.q}</div></div>`:''}
+  ${!cur.rev&&cur.ph==='speech'?'':`<div class="teams">${rs.map(id=>sideView(id,cur)).join('')}</div>`}
+  ${auto.length&&!cur.rev&&cur.ph==='choose'?`<div class="auto">Автоматически выжидают: ${auto.join(', ')}.</div>`:''}
+  <div class="actions">${act}</div></div>
+  <div class="col"><div class="panel"><div class="lbl">Состояние страны</div>${gauges()}</div><div class="panel"><div class="lbl">Карта революционной ситуации</div>${planeView()}</div><div class="panel"><div class="lbl">Влияние команд</div>${board()}</div></div></div>`}
+function finalView(){const out=finalStatus(),[t,d]=OUT[out],fs=finalScores(),ids=roles().slice().sort((a,b)=>fs[b].sum-fs[a].sum),top=fs[ids[0]].sum;
+ const hist=`<div class="wrap"><table class="mx"><tr><th>Раунд</th>${roles().map(id=>`<th>${RL[id].n}</th>`).join('')}</tr>${S.hist.map((h,i)=>`<tr><td>${i+1}. ${EVD[i].n}</td>${roles().map(id=>`<td>${RL[id].a[h.act[id]][2]}</td>`).join('')}</tr>`).join('')}</table></div>`;
+ return `<div class="top"><div class="brand"><small>Итоги</small>Революционная ситуация</div><div class="actions">${scr()?'':`<button class="btn" data-act="back">Вернуться к последнему раунду</button><button class="btn main" data-act="again">Сыграть ещё раз</button>`}</div></div>
+ <div class="grid"><div class="col"><div class="panel"><div class="eyebrow">Исход</div><div class="win" style="color:${out==='rev'?'var(--red)':out==='stb'?'var(--ok)':'var(--gold)'}">${t}</div><p class="lore" style="margin-top:10px">${d}</p></div>
+  <div class="panel"><div class="lbl">Итоговый рейтинг: очки раундов и бонус за исход</div>${ids.map((id,i)=>`<div class="rank${fs[id].sum===top?' lead':''}" style="--rc:var(--r-${id})"><div class="pos">${i+1}</div><div class="nm">${ic(id)}${RL[id].n}${fs[id].sum===top?'<span class="badge">Победитель</span>':''}</div><div class="score">${fs[id].sum}</div><div class="sub">раунды ${fs[id].base} + бонус ${fs[id].bn}</div></div>`).join('')}</div>
+  <div class="panel"><div class="lbl">Кто как выбирал</div>${hist}</div>
+  <div class="panel"><div class="lbl">Вопросы для обсуждения</div><ol class="q"><li>Какой из трёх факторов оказался решающим: недовольство низов, раскол элит или позиция армии?</li><li>Был ли момент, когда власть ещё могла выйти из кризиса и что она могла сделать иначе?</li><li>Где в игре проявился парадокс Токвиля и J-кривая Дэвиса?</li><li>Помогли или помешали умеренные решения (диалог, реформы)? Как это соотносится со стадиями по Бринтону?</li><li>Какие реальные революции напоминает ваш сценарий и чем они отличаются?</li></ol></div></div>
+  <div class="col"><div class="panel"><div class="lbl">Траектория страны</div>${planeView()}</div><div class="panel"><div class="lbl">Состояние страны в конце</div>${gauges()}</div></div></div>`}
+function render(){
+ if(DB&&S.r!==SUBR)resub();
+ let h;
+ if(ROLE==='landing')h=landingView();
+ else if(ROLE==='join')h=joinView();
+ else if(!READY)h=waitView();
+ else if(ROLE==='player')h=playerView();
+ else if(scr()&&S.phase==='setup')h=lobbyView();
+ else h=S.phase==='setup'?setupView():S.phase==='final'?finalView():gameView();
+ const keep=document.getElementById('codein')?document.getElementById('codein').value:null;
+ document.getElementById('app').innerHTML=h;
+ if(keep!=null&&document.getElementById('codein'))document.getElementById('codein').value=keep;
+ save();notifyTurn()}
+let LASTTURN='';
+function notifyTurn(){if(ROLE!=='player'||!READY||S.phase!=='play'||S.cur.ph!=='speech'||S.cur.sp<0)return;const o=order(),k=S.r+':'+S.cur.sp;if(o[S.cur.sp]===ME.role&&LASTTURN!==k){LASTTURN=k;try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}}}
+function save(){if(ROLE!=='host'||!DB||!READY)return;const j=JSON.stringify(S);if(j===LASTJ)return;LASTJ=j;DB.set('state',JSON.parse(j))}
+function resub(){UNS.forEach(f=>f());UNS=[];SUBR=S.r;CH={};VT={};UNS.push(DB.on('choices/'+S.r,v=>{CH=v||{};render()}));UNS.push(DB.on('votes/'+S.r,v=>{VT=v||{};render()}))}
+function connect(){
+ if(!CODE||DB)return;
+ DB=FBOK?mkFB(CODE):mkLocal(CODE);
+ DB.on('meta',v=>{META=v;LOADED=true;render()});
+ DB.on('slots',v=>{SL=v||{};render()});
+ if(ROLE==='host')DB.once('state').then(v=>{if(v)S=norm(v);READY=true;LASTJ=JSON.stringify(S);render()});
+ else DB.on('state',v=>{if(ROLE==='host')return;if(v){S=norm(v);READY=true}else READY=false;render()});
+ if(ROLE==='host'||ROLE==='screen')DB.on('bg',v=>{BGDATA=v;applyBg()});
+}
+function setUrl(){try{history.replaceState(null,'','?g='+CODE+(VIEW?'&v='+VIEW:''))}catch(e){}}
+setInterval(()=>{const sp=document.getElementById('spt');if(sp&&S.cur.spEnd){const l=spLeft();if(l===0){if(!sp.classList.contains('over')){sp.classList.add('over');sp.textContent='Время вышло'}}else sp.textContent=fmt(l)}const el=document.getElementById('tm');if(el)el.textContent=fmt(tmLeft());if(S.tmEnd&&nowS()>=S.tmEnd&&ROLE==='host'){S.tmEnd=null;render()}},500);
+document.addEventListener('change',e=>{if(e.target.id==='bgfile'&&e.target.files[0])setBg(e.target.files[0])});
+document.addEventListener('toggle',e=>{if(e.target.tagName==='DETAILS')OPEN=e.target.open},true);
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,v=b.dataset.v,t=b.dataset.t;
+ /* вход и роли */
+ if(a==='create'){CODE=genCode();VIEW='';lsSet('rev_host',CODE);ROLE='host';setUrl();connect();DB.set('meta',{n:S.n,t:Date.now()});READY=true;render();return}
+ if(a==='resume'){CODE=lsGet('rev_host');ROLE='host';setUrl();connect();render();return}
+ if(a==='enter'){const c=(document.getElementById('codein').value||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,4),sc=document.getElementById('asscreen').checked;if(c.length<4){JOINERR='Введите код из четырёх символов';render();return}JOINERR='';CODE=c;VIEW=sc?'screen':'';ME=null;ROLE=decide();setUrl();connect();render();return}
+ if(a==='home'){CODE='';ROLE='landing';try{history.replaceState(null,'',BASE)}catch(x){}render();return}
+ if(a==='claim'){DB.claim('slots/'+t,{pid:PID,ts:Date.now()}).then(ok=>{if(ok){ME={code:CODE,role:t};lsSet('rev_pl',JSON.stringify(ME));ROLE='player';JOINERR='';applyBg()}else JOINERR='Эта роль уже занята';render()});return}
+ if(a==='leave'){if(ME)DB.remove('slots/'+ME.role);lsDel('rev_pl');ME=null;ROLE=decide();render();return}
+ if(ROLE==='player'){
+  if(a==='pch')DB.set('choices/'+S.r+'/'+ME.role,+v);
+  else if(a==='punch')DB.remove('choices/'+S.r+'/'+ME.role);
+  else if(a==='pvote')DB.set('votes/'+S.r+'/'+ME.role,t);
+  return}
+ if(ROLE==='screen')return;
+ /* ведущий */
+ if(a==='tc'){S.n=+v;S.sp=DSP[S.n];DB.set('meta/n',S.n)}
+ else if(a==='sp')S.sp=+v;
+ else if(a==='kul')S.kul=+v;
+ else if(a==='spnext'){const o=order(),c=S.cur;if(c.sp>=0)c.done.push(o[c.sp]);c.sp++;if(c.sp>=o.length){c.ph='choose';c.sp=-1;c.spEnd=null}else c.spEnd=nowS()+S.sp*1000}
+ else if(a==='spend'){const c=S.cur;c.ph='choose';c.sp=-1;c.spEnd=null}
+ else if(a==='best')S.cur.best=(S.cur.best===t?null:t);
+ else if(a==='start'){S.phase='play';S.r=0;S.hist=[];S.cur=fresh();S.tmEnd=null;MAN={};DB.remove('choices');DB.remove('votes')}
+ else if(a==='bgreset')DB.remove('bg');
+ else if(a==='ch')DB.set('choices/'+S.r+'/'+t,+v);
+ else if(a==='unch')DB.remove('choices/'+S.r+'/'+t);
+ else if(a==='man')MAN[t]=true;
+ else if(a==='kick')DB.remove('slots/'+t);
+ else if(a==='reveal')doReveal();
+ else if(a==='fix'){S.cur.rev=false;S.cur.res=null}
+ else if(a==='next'){const res=S.cur.res;S.hist.push(res);S.tmEnd=null;MAN={};if(res.status){S.phase='final';S.cur=fresh()}else{S.r++;S.cur=fresh()}}
+ else if(a==='back'){S.phase='play';const l=S.hist.pop();S.r=S.hist.length;S.cur={ch:{},rev:true,res:l,ph:'choose',sp:-1,spEnd:null,done:[],best:l.best||null}}
+ else if(a==='new')confirmNew=true;
+ else if(a==='cancel')confirmNew=false;
+ else if(a==='new2'||a==='again'){confirmNew=false;S.tmEnd=null;S.phase='setup';S.hist=[];S.cur=fresh();S.r=0;MAN={};DB.remove('choices');DB.remove('votes')}
+ else if(a==='tm')S.tmEnd=S.tmEnd?null:nowS()+S.kul*1000;
+ else if(a==='qr')SHOWQR=!SHOWQR;
+ else if(a==='proj'){let w=null;try{w=window.open(screenURL(),'rev_screen','popup,width=1280,height=800')}catch(x){}if(!w)SHOWQR=true}
+ else if(a==='copyscr'){try{navigator.clipboard.writeText(screenURL())}catch(x){}b.textContent='ссылка скопирована'}
+ else if(a==='peek'){PEEK=!PEEK;ss.set('rev_peek',PEEK?'1':'0')}
+ render()});
+if(CODE)connect();
+applyBg();render();
+
+</script></body></html>

@@ -1,15 +1,30 @@
 {
   "rules": {
-    "secret": { ".read": false, ".write": false },
+    "secret": {
+      ".read": false,
+      ".write": false
+    },
     "board": {
       ".read": false,
-      "json": { ".read": true },
+      "json": {
+        ".read": true
+      },
       ".write": "newData.child('key').val() === root.child('secret').val()"
     },
     "koleso": {
       ".read": false,
-      "json": { ".read": true },
+      "json": {
+        ".read": true
+      },
       ".write": "newData.child('key').val() === root.child('secret').val()"
+    },
+    "revolyuciya": {
+      ".read": false,
+      "$code": {
+        ".validate": "$code.matches(/^[A-Z0-9]{4}$/)",
+        ".read": true,
+        ".write": true
+      }
     }
   }
 }
