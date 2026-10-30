@@ -110,6 +110,10 @@ details summary{cursor:pointer;color:var(--gold)}
 .win{font:700 clamp(40px,6vw,72px)/1.02 var(--fd);text-transform:uppercase}
 ol.q{margin:8px 0 0;padding-left:22px;display:flex;flex-direction:column;gap:8px;max-width:72ch}
 
+.evimg{width:100%;height:230px;object-fit:cover;object-position:center;border-radius:6px;border:1px solid var(--line);display:block;margin-bottom:14px}
+.evimg.e3{object-position:center 30%}.evimg.e2{object-position:center 55%}
+.pl .evimg{height:170px}
+@media (max-width:760px){.evimg{height:170px}}
 .live{font:500 11px var(--fb);letter-spacing:.06em;text-transform:uppercase;color:var(--ok);margin-left:auto;white-space:nowrap}
 .codein{width:7ch;font:700 30px var(--fd);text-transform:uppercase;letter-spacing:.12em;text-align:center;padding:8px;border:2px solid var(--line);border-radius:4px;background:var(--card);color:var(--ink)}
 .codebig{font:700 clamp(54px,9vw,96px)/1 var(--fd);letter-spacing:.14em;color:var(--gold);margin:2px 0 6px}
@@ -2491,6 +2495,9 @@ const OUT={rev:['Революция','Верхи не смогли управл�
  cri:['Затяжной кризис','Революции не произошло, но и порядок не вернулся. Недовольство велико, а верхи ещё держатся: расколов недостаточно. Это «замороженный» кризис, который может вспыхнуть при новом шоке.'],
  stb:['Режим устоял','Недовольство остыло, элиты и армия сохранили единство. Обратите внимание, чем это куплено: уступками, силой или внешней поддержкой.']};
 
+const EVIMG=['e1','e2','e3','e4','e5','e6'],OUTIMG={rev:'o-rev',cri:'e5',stb:'e4'};
+const evimg=(i,cls)=>`<img class="evimg ${cls||''}" src="img/${EVIMG[i]}.jpg" alt="" loading="lazy">`,outimg=o=>`<img class="evimg" src="img/${OUTIMG[o]}.jpg" alt="">`;
+
 const START={D:3,E:7,A:7,L:6};
 const ROLEIDS=['reg','opp','arm','eli','int','ext'];
 const EFF={
@@ -2580,9 +2587,9 @@ function playerView(){
  const head=`<div class="phead" ${st}>${ic(id)}<div><b>${RL[id].n}</b><span>${sub}</span></div><button class="linkbtn" data-act="leave">выйти</button></div>`;
  if(S.phase==='setup')return `<div class="pl">${head}<div class="panel"><div class="lbl">Ваша цель</div><p class="lore" style="font-size:17px">${RL[id].goal}</p><p class="note">Ведущий скоро начнёт игру. Оставьте страницу открытой.</p></div></div>`;
  if(S.phase==='final'){const out=finalStatus(),[t,d]=OUT[out],fs=finalScores(),ids=roles().slice().sort((a,b)=>fs[b].sum-fs[a].sum),pos=ids.indexOf(id)+1;
-  return `<div class="pl">${head}<div class="panel"><div class="eyebrow">Исход</div><div class="win" style="font-size:44px;color:${out==='rev'?'var(--red)':out==='stb'?'var(--ok)':'var(--gold)'}">${t}</div><p class="lore" style="font-size:16px;margin-top:8px">${d}</p></div>
+  return `<div class="pl">${head}<div class="panel">${outimg(out)}<div class="eyebrow">Исход</div><div class="win" style="font-size:44px;color:${out==='rev'?'var(--red)':out==='stb'?'var(--ok)':'var(--gold)'}">${t}</div><p class="lore" style="font-size:16px;margin-top:8px">${d}</p></div>
   <div class="panel"><div class="lbl">Ваш результат</div>${ids.map((x,i)=>`<div class="rank${x===id?' lead':''}" style="--rc:var(--r-${x})"><div class="pos">${i+1}</div><div class="nm">${ic(x)}${RL[x].n}</div><div class="score" style="font-size:34px">${fs[x].sum}</div><div class="sub">раунды ${fs[x].base} + бонус ${fs[x].bn}</div></div>`).join('')}<div class="note">Ваше место: ${pos}. Бонус зависит от исхода: ${BONUS[id]}.</div></div></div>`}
- const ev=`<div class="panel round"><div class="eyebrow">Событие</div><h2 style="font-size:34px">${e.n}</h2><span class="theory">${e.th}</span><p class="lore" style="font-size:16px">${e.lore}</p>${e.rule?`<div class="rule"><b>Правило раунда</b>${e.rule}</div>`:''}</div>`;
+ const ev=`<div class="panel round">${evimg(S.r,'e'+(S.r+1))}<div class="eyebrow">Событие</div><h2 style="font-size:34px">${e.n}</h2><span class="theory">${e.th}</span><p class="lore" style="font-size:16px">${e.lore}</p>${e.rule?`<div class="rule"><b>Правило раунда</b>${e.rule}</div>`:''}</div>`;
  const gz=`<div class="panel"><div class="lbl">Состояние страны</div>${gauges()}</div>`;
  const intr=`<div class="panel" ${st}><div class="intr"><b>Ваш интерес:</b> ${e.i[id]}</div><div class="goal" style="margin-top:6px">${RL[id].goal}</div></div>`;
  let body='';
@@ -2731,7 +2738,7 @@ function gameView(){const e=EVD[S.r],cur=S.cur,rs=roles(),have=rs.filter(id=>CH[
  <div class="actions">${scr()?'':confirmNew?`<button class="btn warn" data-act="new2">Да, начать заново</button><button class="btn" data-act="cancel">Отмена</button>`:`<button class="btn" data-act="peek">Показывать выбор: ${PEEK?'вкл':'выкл'}</button><button class="btn" data-act="qr">Код ${esc(CODE)}</button><button class="btn" data-act="proj">Экран проектора</button><button class="btn" data-act="new">Новая игра</button>`}</div></div>
  ${SHOWQR&&!scr()?joinPanel(false):''}
  <div class="grid"><div class="col">
-  <div class="panel round"><div class="eyebrow">Событие</div><h2>${e.n}</h2><span class="theory">${e.th}</span><p class="lore">${e.lore}</p>
+  <div class="panel round">${evimg(S.r,'e'+(S.r+1))}<div class="eyebrow">Событие</div><h2>${e.n}</h2><span class="theory">${e.th}</span><p class="lore">${e.lore}</p>
    ${e.rule?`<div class="rule"><b>Правило раунда</b>${e.rule}</div>`:''}
    ${cur.rev||cur.ph==='speech'?'':`<div class="tm">${scr()?'':`<button class="btn" data-act="tm">${S.tmEnd?'Остановить':'Кулуарные переговоры '+S.kul+' с'}</button>`}<b id="tm">${fmt(tmLeft())}</b><span class="hint note" style="margin:0">Команды договариваются в кулуарах, затем выбирают тайно.</span></div>`}</div>
   ${cur.rev||cur.ph!=='speech'?'':speechView()}
@@ -2744,7 +2751,7 @@ function gameView(){const e=EVD[S.r],cur=S.cur,rs=roles(),have=rs.filter(id=>CH[
 function finalView(){const out=finalStatus(),[t,d]=OUT[out],fs=finalScores(),ids=roles().slice().sort((a,b)=>fs[b].sum-fs[a].sum),top=fs[ids[0]].sum;
  const hist=`<div class="wrap"><table class="mx"><tr><th>Раунд</th>${roles().map(id=>`<th>${RL[id].n}</th>`).join('')}</tr>${S.hist.map((h,i)=>`<tr><td>${i+1}. ${EVD[i].n}</td>${roles().map(id=>`<td>${RL[id].a[h.act[id]][2]}</td>`).join('')}</tr>`).join('')}</table></div>`;
  return `<div class="top"><div class="brand"><small>Итоги</small>Революционная ситуация</div><div class="actions">${scr()?'':`<button class="btn" data-act="back">Вернуться к последнему раунду</button><button class="btn main" data-act="again">Сыграть ещё раз</button>`}</div></div>
- <div class="grid"><div class="col"><div class="panel"><div class="eyebrow">Исход</div><div class="win" style="color:${out==='rev'?'var(--red)':out==='stb'?'var(--ok)':'var(--gold)'}">${t}</div><p class="lore" style="margin-top:10px">${d}</p></div>
+ <div class="grid"><div class="col"><div class="panel">${outimg(out)}<div class="eyebrow">Исход</div><div class="win" style="color:${out==='rev'?'var(--red)':out==='stb'?'var(--ok)':'var(--gold)'}">${t}</div><p class="lore" style="margin-top:10px">${d}</p></div>
   <div class="panel"><div class="lbl">Итоговый рейтинг: очки раундов и бонус за исход</div>${ids.map((id,i)=>`<div class="rank${fs[id].sum===top?' lead':''}" style="--rc:var(--r-${id})"><div class="pos">${i+1}</div><div class="nm">${ic(id)}${RL[id].n}${fs[id].sum===top?'<span class="badge">Победитель</span>':''}</div><div class="score">${fs[id].sum}</div><div class="sub">раунды ${fs[id].base} + бонус ${fs[id].bn}</div></div>`).join('')}</div>
   <div class="panel"><div class="lbl">Кто как выбирал</div>${hist}</div>
   <div class="panel"><div class="lbl">Вопросы для обсуждения</div><ol class="q"><li>Какой из трёх факторов оказался решающим: недовольство низов, раскол элит или позиция армии?</li><li>Был ли момент, когда власть ещё могла выйти из кризиса и что она могла сделать иначе?</li><li>Где в игре проявился парадокс Токвиля и J-кривая Дэвиса?</li><li>Помогли или помешали умеренные решения (диалог, реформы)? Как это соотносится со стадиями по Бринтону?</li><li>Какие реальные революции напоминает ваш сценарий и чем они отличаются?</li></ol></div></div>
