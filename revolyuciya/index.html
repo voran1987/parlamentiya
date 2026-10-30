@@ -127,6 +127,9 @@ ol.q{margin:8px 0 0;padding-left:22px;display:flex;flex-direction:column;gap:8px
 .iscales{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:14px}
 .iscales>div{padding:12px 14px;border:1px solid var(--line);border-radius:4px;background:var(--card2)}.iscales b{display:block;font:700 20px var(--fd);text-transform:uppercase}.iscales span{color:var(--mute);font-size:14px}
 .pl .islide h2{font-size:34px}.pl .islide p,.pl .isteps,.pl .ilist{font-size:16px}.pl .intro{padding:16px}
+.hints{display:flex;flex-wrap:wrap;gap:4px 6px;margin-top:6px}
+.hn{font-style:normal;font-size:12px;font-weight:400;padding:1px 8px;border-radius:999px;border:1px solid var(--line);color:var(--mute)}
+.hn.g{color:var(--ok);border-color:var(--ok)}.hn.b{color:var(--red);border-color:var(--red)}
 .live{font:500 11px var(--fb);letter-spacing:.06em;text-transform:uppercase;color:var(--ok);margin-left:auto;white-space:nowrap}
 .codein{width:7ch;font:700 30px var(--fd);text-transform:uppercase;letter-spacing:.12em;text-align:center;padding:8px;border:2px solid var(--line);border-radius:4px;background:var(--card);color:var(--ink)}
 .codebig{font:700 clamp(54px,9vw,96px)/1 var(--fd);letter-spacing:.14em;color:var(--gold);margin:2px 0 6px}
@@ -2595,6 +2598,13 @@ function joinPanel(big){return `<div class="panel joinp"><div class="qr">${qrSVG
 function lobbyView(){return `<div class="setup"><div><div class="eyebrow">Политическая конфликтология · Тема 6</div><h1>Революционная ситуация</h1></div>${joinPanel(true)}<div class="roles">${ROLEIDS.slice(0,S.n).map(id=>`<div style="--rc:var(--r-${id})"><span class="ic" style="width:34px;height:34px;color:var(--rc)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICON[id]}</svg></span><p style="margin:0"><b>${RL[id].n}</b><span>${connected(id)?'● команда на связи':'ждём команду'}</span></p></div>`).join('')}</div></div>`}
 function waitView(){return `<div class="setup"><div><div class="eyebrow">Политическая конфликтология</div><h1>Революционная ситуация</h1></div><p class="lead">${ROLE==='host'?'Загрузка игры…':'Ведущий готовит игру. Страница обновится сама, когда игра начнётся.'}</p></div>`}
 
+/* подсказки: как решение само по себе меняет шкалы (с учётом правила раунда) */
+const HN=['недовольство','элиты','армия','легитимность'];
+function hint(id,i){const e=EVS[S.r].ov[id+i]||EFF[id][i],w=W[id];
+ const out=e.map((v,k)=>{if(!v)return '';const a=Math.abs(v)>=2?(v>0?'↑↑':'↓↓'):(v>0?'↑':'↓'),c=w[k]===0?'':(w[k]*v>0?'g':'b');return `<i class="hn ${c}">${HN[k]} ${a}</i>`}).join('');
+ return `<span class="hints">${out||'<i class="hn">без прямого эффекта</i>'}</span>`}
+const hintNote=`<div class="note">Стрелки показывают, как решение само по себе меняет шкалы: зелёное выгодно вашей роли, красное невыгодно. Итог зависит и от решений других команд.</div>`;
+
 /* ---------- вводный экран: лор и правила ---------- */
 const INTRO_N=6;
 function introHTML(i,me){
@@ -2650,7 +2660,7 @@ function playerView(){
  else if(c.ph==='speech'){const o=order(),cu=c.sp>=0?o[c.sp]:null,left=spLeft(),over=cu&&c.spEnd&&left===0;
   const q=o.map((x,i)=>`<div class="spk${x===cu?' now':''}" style="--rc:var(--r-${x})">${ic(x)}<b>${RL[x].n}</b><span>${i+1}. ${c.done.includes(x)?'выступила':x===cu?'выступает':'ждёт'}</span></div>`).join('');
   body=`${intr}<div class="panel"><div class="lbl">Публичные выступления</div>${cu===id?`<div class="speaker" ${st}><div class="tname">Ваша очередь</div><div class="spt${over?' over':''}" id="spt">${over?'Время вышло':fmt(left)}</div><div class="note" style="margin:0">Скажите стране, что вы намерены делать и чего требуете. Можно блефовать.</div></div>`:cu?`<div class="speaker" style="--rc:var(--r-${cu})"><div class="tname">Выступает: ${RL[cu].n}</div><div class="spt${over?' over':''}" id="spt">${over?'Время вышло':fmt(left)}</div></div>`:`<div class="note">Выступления скоро начнутся. Готовьте речь.</div>`}<div class="spklist">${q}</div></div>`}
- else{const mine=CH[id],opts=mine!=null?`<div class="locked"><span>Решение отправлено: <b>${RL[id].a[mine][0]}</b></span><button data-act="punch">изменить</button></div>`:`<div class="opts">${RL[id].a.map((a,i)=>`<button class="opt big" data-act="pch" data-v="${i}">${a[0]}<small>${a[1]}</small></button>`).join('')}</div>`;
+ else{const mine=CH[id],opts=mine!=null?`<div class="locked"><span>Решение отправлено: <b>${RL[id].a[mine][0]}</b></span><button data-act="punch">изменить</button></div>`:`<div class="opts">${RL[id].a.map((a,i)=>`<button class="opt big" data-act="pch" data-v="${i}">${a[0]}<small>${a[1]}</small>${hint(id,i)}</button>`).join('')}</div>${hintNote}`;
   const vt=VT[id],others=roles().filter(x=>x!==id),tally={};Object.values(VT).forEach(x=>tally[x]=(tally[x]||0)+1);
   body=`${intr}<div class="panel"><div class="lbl">Кулуарные переговоры</div><div class="tm"><b id="tm">${fmt(tmLeft())}</b><span class="hint note" style="margin:0">Договаривайтесь с другими командами устно. Выбор тайный.</span></div></div><div class="panel" ${st}><div class="lbl">Ваше решение</div>${opts}<div class="note">До открытия решений его можно изменить.</div></div>
   <div class="panel"><div class="lbl">Лучшая речь раунда</div><div class="actions">${others.map(x=>`<button class="btn${vt===x?' main':''}" data-act="pvote" data-t="${x}">${RL[x].n}</button>`).join('')}</div><div class="note">Проголосуйте за самую убедительную речь, за себя нельзя.</div></div>`}
@@ -2769,7 +2779,7 @@ function sideView(id,cur){const e=EVD[S.r],c=CH[id],cl=connected(id)?'<span clas
  if(scr())return `<div class="side" ${st}><div class="tname">${ic(id)}${RL[id].n}${cl}</div>${it}<div class="locked" style="${c!=null?'':'opacity:.55;color:var(--mute)'}"><span>${c!=null?'Решение принято':'Ожидает решения'}</span></div></div>`;
  if(c==null&&connected(id)&&!MAN[id])return `<div class="side" ${st}><div class="tname">${ic(id)}${RL[id].n}${cl}</div>${it}<div class="locked" style="opacity:.75"><span>Ждём решение с телефона</span><button data-act="man" data-t="${id}">выбрать за команду</button></div></div>`;
  if(c!=null)return `<div class="side" ${st}><div class="tname">${ic(id)}${RL[id].n}${cl}</div>${it}<div class="locked"><span>Решение принято${PEEK?': <b>'+RL[id].a[c][0]+'</b>':''}</span><button data-act="unch" data-t="${id}">изменить</button></div></div>`;
- return `<div class="side" ${st}><div class="tname">${ic(id)}${RL[id].n}${cl}</div>${it}<div class="opts">${RL[id].a.map((a,i)=>`<button class="opt" data-act="ch" data-t="${id}" data-v="${i}">${a[0]}<small>${a[1]}</small></button>`).join('')}</div></div>`}
+ return `<div class="side" ${st}><div class="tname">${ic(id)}${RL[id].n}${cl}</div>${it}<div class="opts">${RL[id].a.map((a,i)=>`<button class="opt" data-act="ch" data-t="${id}" data-v="${i}">${a[0]}<small>${a[1]}</small>${hint(id,i)}</button>`).join('')}</div></div>`}
 function srcView(res){const rows=res.src.map(s=>{const who=s.id?`${RL[s.id].n}: ${RL[s.id].a[s.a][2]}`:s.t;return `<div><span class="who">${esc(who)}</span>${K4.map((k,i)=>dl(k,s.d[i])).join('')}</div>`}).join('');
  const capped=res.tot.some(v=>Math.abs(v)>2);
  return `<div class="panel"><div class="lbl">Что произошло</div><div class="src">${rows||'<div>Ничего не изменилось</div>'}</div>${capped?'<div class="note">Изменение любой шкалы за раунд ограничено двумя пунктами.</div>':''}</div>`}
