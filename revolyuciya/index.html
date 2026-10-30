@@ -142,6 +142,12 @@ ol.q{margin:8px 0 0;padding-left:22px;display:flex;flex-direction:column;gap:8px
 .mscale{position:relative;margin-top:8px;display:flex;justify-content:space-between;font-size:12px;color:var(--mute);padding-top:14px}
 .mscale i{position:absolute;left:0;right:0;top:0;height:8px;border-radius:4px;background:linear-gradient(90deg,#3f5a6b,#8a8f6a,#d9a441,#e0533d,#a3271a)}
 .mlog{margin:10px 0 0;padding-left:18px;font-size:14px;color:var(--mute)}
+.scene{font-style:italic;color:#cfc9bd;border-left:3px solid var(--red);padding-left:12px;margin:12px 0}
+.news{margin:12px 0;background:rgba(255,255,255,.04);border-radius:8px;padding:10px 12px}
+.news .lbl{margin-bottom:6px}.hl{font-size:14px;padding:5px 0;border-top:1px solid var(--line)}.hl:first-of-type{border-top:0}
+.voices{display:grid;gap:8px;margin:12px 0}
+blockquote{margin:0;padding:8px 12px;border-left:3px solid var(--gold);background:rgba(227,176,75,.06);border-radius:0 8px 8px 0}
+blockquote p{margin:0 0 4px;font-size:15px}blockquote cite{font-style:normal;font-size:12px;color:var(--mute);letter-spacing:.04em}
 .live{font:500 11px var(--fb);letter-spacing:.06em;text-transform:uppercase;color:var(--ok);margin-left:auto;white-space:nowrap}
 .codein{width:7ch;font:700 30px var(--fd);text-transform:uppercase;letter-spacing:.12em;text-align:center;padding:8px;border:2px solid var(--line);border-radius:4px;background:var(--card);color:var(--ink)}
 .codebig{font:700 clamp(54px,9vw,96px)/1 var(--fd);letter-spacing:.14em;color:var(--gold);margin:2px 0 6px}
@@ -2526,6 +2532,30 @@ const OUT={rev:['Революция','Верхи не смогли управл�
 const EVIMG=['e1','e2','e3','e4','e5','e6'],OUTIMG={rev:'o-rev',cri:'e5',stb:'e4'};
 const evimg=(i,cls)=>`<img class="evimg ${cls||''}" src="img/${EVIMG[i]}.jpg" alt="" loading="lazy">`,outimg=o=>`<img class="evimg" src="img/${OUTIMG[o]}.jpg" alt="">`;
 
+/* действующие лица: Алдер Корвин (президент), Эрвин Холт (министр финансов), Мара Сельден (лидер «Союза перемен»),
+   Рольф Вайс (начальник штаба), Юлиан Торн (владелец угольно-портового холдинга), Ирма Лейн («Вестник Валдории»),
+   Томас Брен (шахтёр), Ян Мервин (студент), посол Дорн */
+const EVX=[
+ {sc:'Шесть утра, Валдор. У булочной на Мельничной улице очередь тянется на два квартала. Продавщица вывешивает новый ценник, и кто-то в толпе молча снимает шапку, будто на похоронах. На шахте «Северная» ночная смена не вышла из раздевалки: Томас Брен прочитал вслух расчётный листок, и все замолчали.',
+  hd:['«Вестник Валдории»: хлеб подорожал на 31% за месяц','Минфин: «Временные трудности, паниковать не нужно»','Шахтёры «Северной» потребовали встречи с директором'],
+  vc:[['Томас Брен, шахтёр','Мы добываем уголь для всей страны, а на хлеб у меня не хватает. Скажите, кто здесь чего не понимает?'],['Эрвин Холт, министр финансов','Казна пуста. Любая уступка сегодня — это дыра, которую завтра нечем будет закрыть.'],['Мара Сельден, «Союз перемен»','Люди не требуют чуда. Они требуют, чтобы с ними разговаривали.']]},
+ {sc:'Поздний вечер. Ирма Лейн сидит в редакции с папкой, которую принёс анонимный курьер: накладные на поставки, подписи двух министров и зятя генерала. Завтра утром выйдет номер. На даче Юлиана Торна горит свет: он обзванивает тех, кто ещё вчера считался союзниками.',
+  hd:['«Вестник Валдории»: «Миллиарды на гвоздях». Расследование о госзаказах','Министр транспорта: «Это провокация конкурентов»','Источник во дворце: президент требует назвать виновных до утра'],
+  vc:[['Ирма Лейн, журналистка','Я не хотела падения власти. Но если эти накладные лежат в папке, значит, кому-то очень нужно, чтобы они лежали там.'],['Юлиан Торн, владелец холдинга','Вчера мы делили заказы. Сегодня каждый делит, кого сдать первым.'],['Алдер Корвин, президент','Я не стану жертвовать людьми из-за газетной статьи. Но и защищать воров перед страной не буду.']]},
+ {sc:'Пограничный перевал на севере. Колонна вернулась без трети техники, раненых везут в тыловой госпиталь, где не хватает бинтов. В штабе Рольф Вайс молча раскладывает на столе карты. Рядом лежит письмо от вдов погибших: «Нам обещали выплаты. Где они?»',
+  hd:['Минобороны: «Тактическое отступление на заранее подготовленные позиции»','В Форте Эрен задержаны выплаты семьям военнослужащих','Сосед выдвинул новые условия на переговорах'],
+  vc:[['Рольф Вайс, начальник штаба','Мы воевали так, как нам позволили. Пусть те, кто писал приказы, объяснят, почему мы отступили.'],['Ирма Лейн, журналистка','Вопрос не в том, что случилось на перевале. Вопрос в том, кто на этом заработал и кто за это ответит.'],['Посол Дорн, внешняя держава','Мы заинтересованы в предсказуемой Валдории. Предсказуемость сейчас дорого стоит.']]},
+ {sc:'Столица. Вечером на проспекте Мира открыли кафе без цензурных проверок и выпустили задержанных после первых протестов. На площади непривычно людно и непривычно спокойно. Но на рынке Мара Сельден слышит новое: «Раз они уступили, значит, можно просить больше».',
+  hd:['Президент объявил амнистию и выборы мэров','Журналисты вернулись в эфир: «Мы теперь можем говорить?»','Профсоюзы шахтёров: «Это только начало»'],
+  vc:[['Алдер Корвин, президент','Я не слабый, я разумный. Давайте остудим страну, пока она не сожгла сама себя.'],['Мара Сельден, «Союз перемен»','Мы получили стул за столом. Вопрос: ради стула остаться или встать и потребовать стол?'],['Эрвин Холт, министр финансов','Реформы дорогие, а ожидания дороже. Мы обещали больше, чем можем оплатить.']]},
+ {sc:'Площадь Согласия, вечер. Ян Мервин вышел с плакатом «Хлеб и честность», и его уже нет. Видео с места расходятся по сети быстрее, чем успевают опровергать. Утром у морга стоит тысяча человек, к полудню десять тысяч, к вечеру — вся улица. Томас Брен привёл шахтёров колонной.',
+  hd:['На площади Согласия погиб студент. Власти: «Расследуем»','Свидетели: «Стреляли не по команде, но кто-то отдал приказ»','Похороны Яна Мервина собрали десятки тысяч'],
+  vc:[['Мать Яна Мервина','Мой сын шёл с плакатом. Пусть мне покажут, где здесь вооружённый мятеж.'],['Рольф Вайс, начальник штаба','Среди солдат есть ровесники погибшего. Я не уверен, что смогу отдать приказ, который понимаю и сам.'],['Юлиан Торн, владелец холдинга','Столица стоит третий день, я теряю деньги. Скоро я начну разговаривать с теми, кого вчера считал врагами.']]},
+ {sc:'Рассвет, Валдор. Порты Меррен и Каллас остановлены, грузчики не вышли на смену. Колонны идут к дворцу с двух сторон. Алдер Корвин стоит у окна. Рольф Вайс уже час сидит с трубкой телефона в руках и не набирает номер. Посол Дорн ждёт в машине у границы: ему нужно знать, чью сторону признавать.',
+  hd:['Всеобщая забастовка: порты, заводы и вокзалы остановлены','Колонны подходят к президентскому дворцу','Штаб армии: «Приказ пока не поступал»'],
+  vc:[['Алдер Корвин, президент','Я прошу об одном: не дайте стране утонуть в крови. Скажите, что вы на стороне порядка.'],['Мара Сельден, «Союз перемен»','Мы не просим оружия. Мы просим, чтобы вы сегодня не подняли его против своих.'],['Рольф Вайс, начальник штаба','Всю жизнь я выполнял приказы. Сегодня впервые должен решить сам.']]}];
+EVX.forEach((x,i)=>Object.assign(EVD[i],x));
+
 const START={D:3,E:7,A:7,L:6};
 const ROLEIDS=['reg','opp','arm','eli','int','ext'];
 const EFF={
@@ -2617,6 +2647,8 @@ function hint(id,i){const e=EVS[S.r].ov[id+i]||EFF[id][i],w=W[id];
  return `<span class="hints">${out||'<i class="hn">без прямого эффекта</i>'}</span>`}
 const hintNote=`<div class="note">Стрелки показывают, как решение само по себе меняет шкалы: зелёное выгодно вашей роли, красное невыгодно. Итог зависит и от решений других команд.</div>`;
 
+function evExtra(e){return `<p class="scene">${e.sc}</p><div class="news"><div class="lbl">Лента новостей</div>${e.hd.map(h=>`<div class="hl">${h}</div>`).join('')}</div><div class="voices">${e.vc.map(v=>`<blockquote><p>«${v[1]}»</p><cite>${v[0]}</cite></blockquote>`).join('')}</div>`}
+
 /* ---------- вводный экран: лор и правила ---------- */
 const INTRO_N=6;
 function introHTML(i,me){
@@ -2663,7 +2695,7 @@ function playerView(){
  if(S.phase==='final'){const out=finalStatus(),[t,d]=OUT[out],fs=finalScores(),ids=roles().slice().sort((a,b)=>fs[b].sum-fs[a].sum),pos=ids.indexOf(id)+1;
   return `<div class="pl">${head}<div class="panel">${outimg(out)}<div class="eyebrow">Исход</div><div class="win" style="font-size:44px;color:${out==='rev'?'var(--red)':out==='stb'?'var(--ok)':'var(--gold)'}">${t}</div><p class="lore" style="font-size:16px;margin-top:8px">${d}</p></div>
   <div class="panel"><div class="lbl">Ваш результат</div>${ids.map((x,i)=>`<div class="rank${x===id?' lead':''}" style="--rc:var(--r-${x})"><div class="pos">${i+1}</div><div class="nm">${ic(x)}${RL[x].n}</div><div class="score" style="font-size:34px">${fs[x].sum}</div><div class="sub">раунды ${fs[x].base} + бонус ${fs[x].bn}</div></div>`).join('')}<div class="note">Ваше место: ${pos}. Бонус зависит от исхода: ${BONUS[id]}.</div></div></div>`}
- const ev=`<div class="panel round">${evimg(S.r,'e'+(S.r+1))}<div class="eyebrow">Событие</div><h2 style="font-size:34px">${e.n}</h2><span class="theory">${e.th}</span><p class="lore" style="font-size:16px">${e.lore}</p>${e.rule?`<div class="rule"><b>Правило раунда</b>${e.rule}</div>`:''}</div>`;
+ const ev=`<div class="panel round">${evimg(S.r,'e'+(S.r+1))}<div class="eyebrow">Событие</div><h2 style="font-size:34px">${e.n}</h2><span class="theory">${e.th}</span><p class="lore" style="font-size:16px">${e.lore}</p>${evExtra(e)}${e.rule?`<div class="rule"><b>Правило раунда</b>${e.rule}</div>`:''}</div>`;
  const gz=`<div class="panel"><div class="lbl">Карта Валдории</div>${mapView(true)}</div><div class="panel"><div class="lbl">Состояние страны</div>${gauges()}</div>`;
  const intr=`<div class="panel" ${st}><div class="intr"><b>Ваш интерес:</b> ${e.i[id]}</div><div class="goal" style="margin-top:6px">${RL[id].goal}</div></div>`;
  let body='';
@@ -2854,7 +2886,7 @@ function gameView(){const e=EVD[S.r],cur=S.cur,rs=roles(),have=rs.filter(id=>CH[
  <div class="actions">${scr()?'':confirmNew?`<button class="btn warn" data-act="new2">Да, начать заново</button><button class="btn" data-act="cancel">Отмена</button>`:`<button class="btn" data-act="peek">Показывать выбор: ${PEEK?'вкл':'выкл'}</button><button class="btn" data-act="qr">Код ${esc(CODE)}</button><button class="btn" data-act="proj">Экран проектора</button><button class="btn" data-act="new">Новая игра</button>`}</div></div>
  ${SHOWQR&&!scr()?joinPanel(false):''}
  <div class="grid"><div class="col">
-  <div class="panel round">${evimg(S.r,'e'+(S.r+1))}<div class="eyebrow">Событие</div><h2>${e.n}</h2><span class="theory">${e.th}</span><p class="lore">${e.lore}</p>
+  <div class="panel round">${evimg(S.r,'e'+(S.r+1))}<div class="eyebrow">Событие</div><h2>${e.n}</h2><span class="theory">${e.th}</span><p class="lore">${e.lore}</p>${evExtra(e)}
    ${e.rule?`<div class="rule"><b>Правило раунда</b>${e.rule}</div>`:''}
    ${cur.rev||cur.ph==='speech'?'':`<div class="tm">${scr()?'':`<button class="btn" data-act="tm">${S.tmEnd?'Остановить':'Кулуарные переговоры '+S.kul+' с'}</button>`}<b id="tm">${fmt(tmLeft())}</b><span class="hint note" style="margin:0">Команды договариваются в кулуарах, затем выбирают тайно.</span></div>`}</div>
   ${cur.rev||cur.ph!=='speech'?'':speechView()}
