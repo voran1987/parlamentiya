@@ -130,6 +130,18 @@ ol.q{margin:8px 0 0;padding-left:22px;display:flex;flex-direction:column;gap:8px
 .hints{display:flex;flex-wrap:wrap;gap:4px 6px;margin-top:6px}
 .hn{font-style:normal;font-size:12px;font-weight:400;padding:1px 8px;border-radius:999px;border:1px solid var(--line);color:var(--mute)}
 .hn.g{color:var(--ok);border-color:var(--ok)}.hn.b{color:var(--red);border-color:var(--red)}
+.geo{display:block;width:100%;height:auto;border-radius:8px;border:1px solid var(--line)}
+.geo .rg{stroke:#14171c;stroke-width:2.5;stroke-linejoin:round;transition:fill 1.2s}
+.geo .rn{font:600 15px system-ui;fill:#efe9dd;fill-opacity:.85;text-anchor:middle;letter-spacing:.05em;paint-order:stroke;stroke:#000;stroke-opacity:.4;stroke-width:3px}
+.geo .rv{font:700 14px system-ui;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#000;stroke-opacity:.45;stroke-width:3px}
+.geo .cn{font:13px system-ui;fill:#efe9dd;paint-order:stroke;stroke:#000;stroke-opacity:.65;stroke-width:3px}
+.geo .lb{font:700 13px system-ui;fill:#14171c}
+.geo .pulse{fill:none;stroke:#e0533d;stroke-width:3;transform-box:fill-box;transform-origin:center;animation:mp 1.8s ease-out infinite}
+.geo .pulse.b{animation-delay:.9s}
+@keyframes mp{0%{transform:scale(.4);opacity:1}100%{transform:scale(2.6);opacity:0}}
+.mscale{position:relative;margin-top:8px;display:flex;justify-content:space-between;font-size:12px;color:var(--mute);padding-top:14px}
+.mscale i{position:absolute;left:0;right:0;top:0;height:8px;border-radius:4px;background:linear-gradient(90deg,#3f5a6b,#8a8f6a,#d9a441,#e0533d,#a3271a)}
+.mlog{margin:10px 0 0;padding-left:18px;font-size:14px;color:var(--mute)}
 .live{font:500 11px var(--fb);letter-spacing:.06em;text-transform:uppercase;color:var(--ok);margin-left:auto;white-space:nowrap}
 .codein{width:7ch;font:700 30px var(--fd);text-transform:uppercase;letter-spacing:.12em;text-align:center;padding:8px;border:2px solid var(--line);border-radius:4px;background:var(--card);color:var(--ink)}
 .codebig{font:700 clamp(54px,9vw,96px)/1 var(--fd);letter-spacing:.14em;color:var(--gold);margin:2px 0 6px}
@@ -2652,7 +2664,7 @@ function playerView(){
   return `<div class="pl">${head}<div class="panel">${outimg(out)}<div class="eyebrow">Исход</div><div class="win" style="font-size:44px;color:${out==='rev'?'var(--red)':out==='stb'?'var(--ok)':'var(--gold)'}">${t}</div><p class="lore" style="font-size:16px;margin-top:8px">${d}</p></div>
   <div class="panel"><div class="lbl">Ваш результат</div>${ids.map((x,i)=>`<div class="rank${x===id?' lead':''}" style="--rc:var(--r-${x})"><div class="pos">${i+1}</div><div class="nm">${ic(x)}${RL[x].n}</div><div class="score" style="font-size:34px">${fs[x].sum}</div><div class="sub">раунды ${fs[x].base} + бонус ${fs[x].bn}</div></div>`).join('')}<div class="note">Ваше место: ${pos}. Бонус зависит от исхода: ${BONUS[id]}.</div></div></div>`}
  const ev=`<div class="panel round">${evimg(S.r,'e'+(S.r+1))}<div class="eyebrow">Событие</div><h2 style="font-size:34px">${e.n}</h2><span class="theory">${e.th}</span><p class="lore" style="font-size:16px">${e.lore}</p>${e.rule?`<div class="rule"><b>Правило раунда</b>${e.rule}</div>`:''}</div>`;
- const gz=`<div class="panel"><div class="lbl">Состояние страны</div>${gauges()}</div>`;
+ const gz=`<div class="panel"><div class="lbl">Карта Валдории</div>${mapView(true)}</div><div class="panel"><div class="lbl">Состояние страны</div>${gauges()}</div>`;
  const intr=`<div class="panel" ${st}><div class="intr"><b>Ваш интерес:</b> ${e.i[id]}</div><div class="goal" style="margin-top:6px">${RL[id].goal}</div></div>`;
  let body='';
  if(c.rev){const p=res.pts[id],a=res.act[id];
@@ -2665,6 +2677,48 @@ function playerView(){
   body=`${intr}<div class="panel"><div class="lbl">Кулуарные переговоры</div><div class="tm"><b id="tm">${fmt(tmLeft())}</b><span class="hint note" style="margin:0">Договаривайтесь с другими командами устно. Выбор тайный.</span></div></div><div class="panel" ${st}><div class="lbl">Ваше решение</div>${opts}<div class="note">До открытия решений его можно изменить.</div></div>
   <div class="panel"><div class="lbl">Лучшая речь раунда</div><div class="actions">${others.map(x=>`<button class="btn${vt===x?' main':''}" data-act="pvote" data-t="${x}">${RL[x].n}</button>`).join('')}</div><div class="note">Проголосуйте за самую убедительную речь, за себя нельзя.</div></div>`}
  return `<div class="pl">${head}${ev}${body}${gz}</div>`}
+
+
+/* ---------- карта Валдории: регионы по недовольству + города с событиями ---------- */
+const MP={a:[400,250],b:[600,230],c:[520,380],d:[300,340]};
+const MR={
+ n:{t:'СЕВЕР',p:[[260,110],[450,80],[650,100],[800,150],MP.b,MP.a],l:[540,170]},
+ w:{t:'ЗЕРНОВЫЕ РАВНИНЫ',p:[[130,200],[260,110],MP.a,MP.d,[120,300]],l:[240,255]},
+ s:{t:'ПОБЕРЕЖЬЕ',p:[[120,300],MP.d,MP.c,[650,470],[520,500],[400,470],[290,480],[180,400]],l:[380,430]},
+ e:{t:'УГОЛЬНЫЙ БАССЕЙН',p:[[800,150],[880,260],[850,380],[760,450],[650,470],MP.c,MP.b],l:[740,230]},
+ c:{t:'СТОЛИЧНЫЙ ОКРУГ',p:[MP.a,MP.b,MP.c,MP.d],l:[470,345]}};
+const MK=['n','w','s','e','c'];
+const MC={v:['Валдор',470,295],m:['Порт Меррен',455,487],k:['Порт Каллас',320,470],sh:['Шахтёрск',730,310],o:['Ольвия',215,205],f:['Форт Эрен',560,120]};
+/* базовые сдвиги региона к общему недовольству и всплески по событиям раундов (n,w,s,e,c) */
+const MBASE=[0,-1,0,1,.5];
+const MBUMP=[[0,0,0,1,1],[0,0,0,0,0],[2,0,0,0,0],[0,-.5,0,-.5,-1],[0,0,0,1,2],[1,1,2,1,1]];
+const MEV=[[['v',1],['sh',0]],[['v',1]],[['f',1],['v',0]],[['o',0]],[['v',1],['sh',0]],[['v',1],['m',1],['k',0]]];
+const MPL=[
+ ['Валдор: очереди у магазинов','Шахтёрск: сходки на шахтах'],
+ ['Валдор: утечка из министерства'],
+ ['Форт Эрен: отход частей','Валдор: траурные митинги'],
+ ['Ольвия: освобождение задержанных'],
+ ['Валдор: разгон демонстрации','Шахтёрск: солидарная забастовка'],
+ ['Валдор: площадь','Порт Меррен: блокада','Порт Каллас: остановка погрузки']];
+function mcol(v){const st=[[0,'#3f5a6b'],[3,'#8a8f6a'],[5.5,'#d9a441'],[7.5,'#e0533d'],[10,'#a3271a']],h=s=>[1,3,5].map(k=>parseInt(s.substr(k,2),16));
+ v=Math.max(0,Math.min(10,v));for(let i=1;i<st.length;i++)if(v<=st[i][0]){const[a,ca]=st[i-1],[b,cb]=st[i],t=(v-a)/(b-a);return'#'+h(ca).map((x,j)=>Math.round(x+(h(cb)[j]-x)*t).toString(16).padStart(2,'0')).join('')}return st[4][1]}
+const MCACHE={};
+function medge(a,b){const sw=a[0]<b[0]||(a[0]===b[0]&&a[1]<=b[1]),p=sw?a:b,q=sw?b:a,k=p.join()+'|'+q.join();
+ if(!MCACHE[k]){let s=1;for(const ch of k)s=(s*31+ch.charCodeAt(0))%2147483647;const r=()=>(s=(s*16807)%2147483647)/2147483647,pts=[],n=5,dx=q[0]-p[0],dy=q[1]-p[1],L=Math.hypot(dx,dy)||1;
+  for(let i=1;i<n;i++)pts.push([p[0]+dx*i/n+(-dy/L)*(r()-.5)*18,p[1]+dy*i/n+(dx/L)*(r()-.5)*18]);MCACHE[k]=pts}
+ return sw?MCACHE[k]:MCACHE[k].slice().reverse()}
+function mpath(pl){let d='M'+pl[0].join(' ');pl.forEach((a,i)=>{const b=pl[(i+1)%pl.length];medge(a,b).forEach(p=>d+='L'+p[0].toFixed(0)+' '+p[1].toFixed(0));d+='L'+b.join(' ')});return d+'Z'}
+function mapView(compact){const rv=S.cur.rev,st=rv?S.cur.res.ns:before(),r=Math.min(S.r,ROUNDS-1),D=st.D;
+ const val=MK.map((k,i)=>Math.max(0,Math.min(10,D+MBASE[i]+MBUMP[r][i])));
+ const bg=BGDATA||'img/bg.jpg';
+ let g=`<rect width="1000" height="600" fill="#1b2a38"/><image href="${bg}" x="0" y="0" width="1000" height="600" preserveAspectRatio="xMidYMid slice" opacity=".55"/><rect width="1000" height="600" fill="#0f1620" opacity=".35"/>`;
+ MK.forEach((k,i)=>g+=`<path d="${mpath(MR[k].p)}" class="rg" fill="${mcol(val[i])}" fill-opacity=".72"/>`);
+ g+=`<path d="M470 295C500 330 470 400 455 487" fill="none" stroke="#6fa3c7" stroke-opacity=".75" stroke-width="3"/>`;
+ MK.forEach((k,i)=>g+=`<text x="${MR[k].l[0]}" y="${MR[k].l[1]}" class="rn">${MR[k].t}</text><text x="${MR[k].l[0]}" y="${MR[k].l[1]+18}" class="rv">${val[i].toFixed(1)}</text>`);
+ const evs=MEV[r].map(x=>x[0]);
+ Object.entries(MC).forEach(([id,[n,x,y]])=>{g+=`<circle cx="${x}" cy="${y}" r="${id==='v'?7:5}" fill="#efe9dd"/><text x="${x+12}" y="${y+5}" class="cn">${n}</text>`});
+ evs.forEach(id=>{const[,x,y]=MC[id];g+=`<circle cx="${x}" cy="${y}" r="16" class="pulse"/><circle cx="${x}" cy="${y}" r="16" class="pulse b"/><circle cx="${x}" cy="${y}" r="11" fill="#e0533d" stroke="#14171c" stroke-width="2"/><text x="${x}" y="${y+4.5}" class="lb" text-anchor="middle">!</text>`});
+ return `<svg class="geo" viewBox="0 0 1000 600" role="img" aria-label="Карта Валдории: недовольство по регионам">${g}</svg><div class="mscale"><i></i><span>спокойно</span><span>кипит</span></div>${compact?'':`<ul class="mlog">${MPL[r].map(s=>`<li>${s}</li>`).join('')}</ul>`}`}
 
 const TH=1.0;
 const K4=['D','E','A','L'],KN={D:'Недовольство',E:'Элиты',A:'Армия',L:'Легитимность',H:'Верхи'};
@@ -2809,7 +2863,7 @@ function gameView(){const e=EVD[S.r],cur=S.cur,rs=roles(),have=rs.filter(id=>CH[
   ${!cur.rev&&cur.ph==='speech'?'':`<div class="teams">${rs.map(id=>sideView(id,cur)).join('')}</div>`}
   ${auto.length&&!cur.rev&&cur.ph==='choose'?`<div class="auto">Автоматически выжидают: ${auto.join(', ')}.</div>`:''}
   <div class="actions">${act}</div></div>
-  <div class="col"><div class="panel"><div class="lbl">Состояние страны</div>${gauges()}</div><div class="panel"><div class="lbl">Карта революционной ситуации</div>${planeView()}</div><div class="panel"><div class="lbl">Влияние команд</div>${board()}</div></div></div>`}
+  <div class="col"><div class="panel"><div class="lbl">Карта Валдории · недовольство по регионам</div>${mapView()}</div><div class="panel"><div class="lbl">Состояние страны</div>${gauges()}</div><div class="panel"><div class="lbl">Карта революционной ситуации</div>${planeView()}</div><div class="panel"><div class="lbl">Влияние команд</div>${board()}</div></div></div>`}
 function finalView(){const out=finalStatus(),[t,d]=OUT[out],fs=finalScores(),ids=roles().slice().sort((a,b)=>fs[b].sum-fs[a].sum),top=fs[ids[0]].sum;
  const hist=`<div class="wrap"><table class="mx"><tr><th>Раунд</th>${roles().map(id=>`<th>${RL[id].n}</th>`).join('')}</tr>${S.hist.map((h,i)=>`<tr><td>${i+1}. ${EVD[i].n}</td>${roles().map(id=>`<td>${RL[id].a[h.act[id]][2]}</td>`).join('')}</tr>`).join('')}</table></div>`;
  return `<div class="top"><div class="brand"><small>Итоги</small>Революционная ситуация</div><div class="actions">${scr()?'':`<button class="btn" data-act="back">Вернуться к последнему раунду</button><button class="btn main" data-act="again">Сыграть ещё раз</button>`}</div></div>
