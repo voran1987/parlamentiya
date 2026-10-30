@@ -1,5 +1,5 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Революционная ситуация</title>
+<meta http-equiv="Cache-Control" content="no-cache"><title>Революционная ситуация</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Roboto:wght@400;500&display=swap">
@@ -148,6 +148,7 @@ ol.q{margin:8px 0 0;padding-left:22px;display:flex;flex-direction:column;gap:8px
 .voices{display:grid;gap:8px;margin:12px 0}
 blockquote{margin:0;padding:8px 12px;border-left:3px solid var(--gold);background:rgba(227,176,75,.06);border-radius:0 8px 8px 0}
 blockquote p{margin:0 0 4px;font-size:15px}blockquote cite{font-style:normal;font-size:12px;color:var(--mute);letter-spacing:.04em}
+.ver{position:fixed;right:8px;bottom:6px;font:11px system-ui;color:#6b7280;opacity:.8;pointer-events:none;z-index:9}
 .live{font:500 11px var(--fb);letter-spacing:.06em;text-transform:uppercase;color:var(--ok);margin-left:auto;white-space:nowrap}
 .codein{width:7ch;font:700 30px var(--fd);text-transform:uppercase;letter-spacing:.12em;text-align:center;padding:8px;border:2px solid var(--line);border-radius:4px;background:var(--card);color:var(--ink)}
 .codebig{font:700 clamp(54px,9vw,96px)/1 var(--fd);letter-spacing:.14em;color:var(--gold);margin:2px 0 6px}
@@ -2904,6 +2905,7 @@ function finalView(){const out=finalStatus(),[t,d]=OUT[out],fs=finalScores(),ids
   <div class="panel"><div class="lbl">Кто как выбирал</div>${hist}</div>
   <div class="panel"><div class="lbl">Вопросы для обсуждения</div><ol class="q"><li>Какой из трёх факторов оказался решающим: недовольство низов, раскол элит или позиция армии?</li><li>Был ли момент, когда власть ещё могла выйти из кризиса и что она могла сделать иначе?</li><li>Где в игре проявился парадокс Токвиля и J-кривая Дэвиса?</li><li>Помогли или помешали умеренные решения (диалог, реформы)? Как это соотносится со стадиями по Бринтону?</li><li>Какие реальные революции напоминает ваш сценарий и чем они отличаются?</li></ol></div></div>
   <div class="col"><div class="panel"><div class="lbl">Траектория страны</div>${planeView()}</div><div class="panel"><div class="lbl">Состояние страны в конце</div>${gauges()}</div></div></div>`}
+const VER='версия 30.10 · 23:20 · сцены и новости';
 function render(){
  if(DB&&S.r!==SUBR)resub();
  let h;
@@ -2914,7 +2916,7 @@ function render(){
  else if(scr()&&S.phase==='setup')h=lobbyView();
  else h=S.phase==='setup'?setupView():S.phase==='intro'?introView():S.phase==='final'?finalView():gameView();
  const keep=document.getElementById('codein')?document.getElementById('codein').value:null;
- document.getElementById('app').innerHTML=h;
+ document.getElementById('app').innerHTML=h+`<div class="ver">${VER}</div>`;
  if(keep!=null&&document.getElementById('codein'))document.getElementById('codein').value=keep;
  save();notifyTurn()}
 let LASTTURN='';
