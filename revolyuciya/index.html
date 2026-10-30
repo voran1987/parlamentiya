@@ -114,6 +114,19 @@ ol.q{margin:8px 0 0;padding-left:22px;display:flex;flex-direction:column;gap:8px
 .evimg.e3{object-position:center 50%}.evimg.e2{object-position:center 55%}
 .pl .evimg{height:170px}
 @media (max-width:760px){.evimg{height:170px}}
+
+.intro{padding:clamp(18px,3vw,40px)}
+.islide h2{font-size:clamp(36px,6vw,76px);margin:6px 0 16px}
+.islide p{font-size:clamp(18px,2.1vw,27px);line-height:1.45;max-width:46em;margin:0 0 14px}
+.islide .inote{font-size:clamp(15px,1.5vw,19px);color:var(--mute)}
+.irole{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;margin-bottom:12px}
+.irole>div{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;align-items:start;padding:12px 14px;border:1px solid var(--line);border-left:4px solid var(--rc);border-radius:4px;background:var(--card2)}
+.irole>div.me{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.irole .ic{width:30px;height:30px}.irole p{margin:0!important;font-size:15px!important}.irole b{font:700 20px var(--fd);text-transform:uppercase;display:block}.irole span{color:var(--mute);font-size:14px;display:block}
+.isteps,.ilist{font-size:clamp(17px,2vw,25px);line-height:1.4;max-width:46em;padding-left:1.2em;display:flex;flex-direction:column;gap:10px;margin:0}
+.iscales{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:14px}
+.iscales>div{padding:12px 14px;border:1px solid var(--line);border-radius:4px;background:var(--card2)}.iscales b{display:block;font:700 20px var(--fd);text-transform:uppercase}.iscales span{color:var(--mute);font-size:14px}
+.pl .islide h2{font-size:34px}.pl .islide p,.pl .isteps,.pl .ilist{font-size:16px}.pl .intro{padding:16px}
 .live{font:500 11px var(--fb);letter-spacing:.06em;text-transform:uppercase;color:var(--ok);margin-left:auto;white-space:nowrap}
 .codein{width:7ch;font:700 30px var(--fd);text-transform:uppercase;letter-spacing:.12em;text-align:center;padding:8px;border:2px solid var(--line);border-radius:4px;background:var(--card);color:var(--ink)}
 .codebig{font:700 clamp(54px,9vw,96px)/1 var(--fd);letter-spacing:.14em;color:var(--gold);margin:2px 0 6px}
@@ -2581,10 +2594,49 @@ function joinView(){
 function joinPanel(big){return `<div class="panel joinp"><div class="qr">${qrSVG(joinURL(),big?260:190)}</div><div><div class="lbl">Подключение команд</div><div class="codebig">${esc(CODE)}</div><div class="note" style="margin:0">Отсканируйте QR-код или откройте<br><b>${esc(joinURL().replace(/^https?:\/\//,''))}</b><br>и введите код.</div>${scr()?'':`<div class="actions" style="margin-top:10px"><button class="btn" data-act="proj">Открыть экран проектора</button><button class="linkbtn" data-act="copyscr">скопировать ссылку на экран</button></div>`}</div></div>`}
 function lobbyView(){return `<div class="setup"><div><div class="eyebrow">Политическая конфликтология · Тема 6</div><h1>Революционная ситуация</h1></div>${joinPanel(true)}<div class="roles">${ROLEIDS.slice(0,S.n).map(id=>`<div style="--rc:var(--r-${id})"><span class="ic" style="width:34px;height:34px;color:var(--rc)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICON[id]}</svg></span><p style="margin:0"><b>${RL[id].n}</b><span>${connected(id)?'● команда на связи':'ждём команду'}</span></p></div>`).join('')}</div></div>`}
 function waitView(){return `<div class="setup"><div><div class="eyebrow">Политическая конфликтология</div><h1>Революционная ситуация</h1></div><p class="lead">${ROLE==='host'?'Загрузка игры…':'Ведущий готовит игру. Страница обновится сама, когда игра начнётся.'}</p></div>`}
+
+/* ---------- вводный экран: лор и правила ---------- */
+const INTRO_N=6;
+function introHTML(i,me){
+ const rs=roles();
+ const sl=[
+ `<div class="eyebrow">Республика Валдория</div><h2>Страна на грани</h2>
+  <p>Валдория — небольшая приморская республика с портами, зерновыми равнинами и угольными шахтами. Двадцать лет здесь было спокойно: власть обещала порядок, а граждане мирились с неравенством.</p>
+  <p>Но последние годы всё изменилось. Цены растут быстрее зарплат, чиновники и подрядчики делят государственные деньги, а армия недавно потеряла позиции на границе. Люди ждут перемен, и никто не знает, чем они кончатся.</p>
+  <p><b>Вам предстоит прожить шесть критических раундов страны.</b> Каждая команда — одна из общественных сил со своими интересами. Исход зависит от вас.</p>`,
+ `<div class="eyebrow">Участники</div><h2>Кто есть кто</h2>
+  <div class="irole">${rs.map(id=>`<div class="${me===id?'me':''}" style="--rc:var(--r-${id})">${ic(id)}<p><b>${RL[id].n}${me===id?' · это вы':''}</b><span>${RL[id].goal}</span></p></div>`).join('')}</div>
+  ${S.n<6?`<p class="inote">Остальные силы (${ROLEIDS.slice(S.n).map(x=>RL[x].n).join(', ')}) играет автомат: он всегда «выжидает».</p>`:''}`,
+ `<div class="eyebrow">Правила</div><h2>Как проходит раунд</h2>
+  <ol class="isteps"><li><b>Событие.</b> Ведущий зачитывает его, и страна получает «шок».</li>
+  <li><b>Публичные выступления.</b> Каждая команда по очереди (${S.sp} с) говорит стране, что намерена делать и чего требует. Блефовать можно.</li>
+  <li><b>Кулуарные переговоры.</b> ${S.kul} с на то, чтобы договориться с другими командами устно.</li>
+  <li><b>Тайный выбор.</b> Каждая команда выбирает одно из трёх решений своей роли.</li>
+  <li><b>Открытие решений.</b> Шкалы страны пересчитываются, команды голосуют за лучшую речь (+2 очка).</li></ol>`,
+ `<div class="eyebrow">Что на кону</div><h2>Четыре шкалы страны</h2>
+  <div class="iscales"><div><b>Недовольство низов</b><span>«низы не хотят жить по-старому»</span></div><div><b>Единство элит</b><span>раскол ослабляет власть</span></div><div><b>Лояльность армии</b><span>готовность выполнять приказы</span></div><div><b>Легитимность</b><span>признание права власти</span></div></div>
+  <p><b>Революция</b> наступает, когда недовольство низов 8 и выше, а сила верхов (среднее трёх остальных шкал) 4,5 и ниже. Это «верхи не могут, низы не хотят» по Ленину. Игра при этом заканчивается досрочно.</p>
+  <p>Если революции нет, исход после шестого раунда зависит от шкал: <b>затяжной кризис</b> или <b>стабилизация</b>.</p>`,
+ `<div class="eyebrow">Очки</div><h2>Как выигрывают</h2>
+  <ul class="ilist"><li>Очки раунда команда получает за то, насколько шкалы сдвинулись <b>в её пользу</b>.</li>
+  <li><b>+2 очка</b> за лучшую речь раунда по голосованию команд.</li>
+  <li>В конце добавляется <b>бонус за исход</b>, он у каждой роли свой. Оппозиция выигрывает от революции, правительство от стабилизации.</li>
+  <li>Побеждает команда с наибольшей суммой очков. Это не обязательно та, чья сторона одержала верх.</li>
+  <li>Выступать и договариваться можно как угодно, но <b>выбор решения тайный</b>: не показывайте экран соседям.</li></ul>`,
+ `<div class="eyebrow">Начало</div><h2>Валдория, раунд 1</h2>
+  <p>Первое событие: <b>${EVD[0].n}</b>.</p><p>${EVD[0].lore}</p><p class="inote">${EVD[0].th}</p>`];
+ return `<div class="islide">${sl[i]}</div>`}
+function introView(){const i=S.intro||0,last=i===INTRO_N-1;
+ const dots=[...Array(INTRO_N).keys()].map(k=>`<span class="pip ${k<i?'done':k===i?'now':''}"></span>`).join('');
+ return `<div class="top"><div class="brand"><small>Введение · ${i+1} из ${INTRO_N}</small>Революционная ситуация</div><div class="pips" aria-hidden="true">${dots}</div>
+ <div class="actions">${scr()?'':`${i>0?'<button class="btn" data-act="iprev">Назад</button>':''}${last?'<button class="btn main" data-act="ibegin">Начать первый раунд</button>':'<button class="btn main" data-act="inext">Далее</button>'}<button class="btn" data-act="qr">Код ${esc(CODE)}</button><button class="linkbtn" data-act="ibegin">пропустить введение</button>`}</div></div>
+ ${SHOWQR&&!scr()?joinPanel(false):''}<div class="panel intro">${introHTML(i)}</div>`}
+
 function playerView(){
  const id=ME.role,st=`style="--rc:var(--r-${id})"`,e=EVD[S.r],c=S.cur,res=c.res;
- const sub=S.phase==='play'?`Раунд ${S.r+1} из ${ROUNDS}`:S.phase==='final'?'Игра окончена':'Ожидание начала';
+ const sub=S.phase==='intro'?'Введение':S.phase==='play'?`Раунд ${S.r+1} из ${ROUNDS}`:S.phase==='final'?'Игра окончена':'Ожидание начала';
  const head=`<div class="phead" ${st}>${ic(id)}<div><b>${RL[id].n}</b><span>${sub}</span></div><button class="linkbtn" data-act="leave">выйти</button></div>`;
+ if(S.phase==='intro')return `<div class="pl">${head}<div class="panel intro">${introHTML(S.intro||0,id)}</div><div class="note" style="text-align:center">Ведущий листает введение, страница обновится сама.</div></div>`;
  if(S.phase==='setup')return `<div class="pl">${head}<div class="panel"><div class="lbl">Ваша цель</div><p class="lore" style="font-size:17px">${RL[id].goal}</p><p class="note">Ведущий скоро начнёт игру. Оставьте страницу открытой.</p></div></div>`;
  if(S.phase==='final'){const out=finalStatus(),[t,d]=OUT[out],fs=finalScores(),ids=roles().slice().sort((a,b)=>fs[b].sum-fs[a].sum),pos=ids.indexOf(id)+1;
   return `<div class="pl">${head}<div class="panel">${outimg(out)}<div class="eyebrow">Исход</div><div class="win" style="font-size:44px;color:${out==='rev'?'var(--red)':out==='stb'?'var(--ok)':'var(--gold)'}">${t}</div><p class="lore" style="font-size:16px;margin-top:8px">${d}</p></div>
@@ -2609,7 +2661,7 @@ const K4=['D','E','A','L'],KN={D:'Недовольство',E:'Элиты',A:'А
 const ss={get(k){try{return sessionStorage.getItem(k)}catch(e){return null}},set(k,v){try{sessionStorage.setItem(k,v)}catch(e){}}};
 const fresh=()=>({ch:{},rev:false,res:null,ph:'speech',sp:-1,spEnd:null,done:[],best:null});
 const DSP={2:120,3:90,4:60,5:45,6:30};
-function norm(v){if(!v.cur)v.cur=fresh();const c=v.cur,f=fresh();if(c.rev&&!c.res)c.rev=false;if(!c.ph)c.ph=c.rev?'choose':'speech';if(!Array.isArray(c.done))c.done=[];if(!c.ch)c.ch={};if(c.sp==null)c.sp=-1;if(c.spEnd===undefined)c.spEnd=null;if(c.best===undefined)c.best=null;if(!v.sp)v.sp=60;if(!v.kul)v.kul=90;if(!Array.isArray(v.hist))v.hist=[];return v}
+function norm(v){if(!v.cur)v.cur=fresh();const c=v.cur,f=fresh();if(c.rev&&!c.res)c.rev=false;if(!c.ph)c.ph=c.rev?'choose':'speech';if(!Array.isArray(c.done))c.done=[];if(!c.ch)c.ch={};if(c.sp==null)c.sp=-1;if(c.spEnd===undefined)c.spEnd=null;if(c.best===undefined)c.best=null;if(!v.sp)v.sp=60;if(!v.kul)v.kul=90;if(!Array.isArray(v.hist))v.hist=[];if(v.intro==null)v.intro=0;return v}
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},lsDel=k=>{try{localStorage.removeItem(k)}catch(e){}};
 const QS=new URLSearchParams(location.search),BASE=location.href.split('?')[0].split('#')[0];
 const CFG=window.FIREBASE_CONFIG||null,FBOK=!!(CFG&&CFG.apiKey&&window.firebase);
@@ -2764,7 +2816,7 @@ function render(){
  else if(!READY)h=waitView();
  else if(ROLE==='player')h=playerView();
  else if(scr()&&S.phase==='setup')h=lobbyView();
- else h=S.phase==='setup'?setupView():S.phase==='final'?finalView():gameView();
+ else h=S.phase==='setup'?setupView():S.phase==='intro'?introView():S.phase==='final'?finalView():gameView();
  const keep=document.getElementById('codein')?document.getElementById('codein').value:null;
  document.getElementById('app').innerHTML=h;
  if(keep!=null&&document.getElementById('codein'))document.getElementById('codein').value=keep;
@@ -2808,7 +2860,10 @@ document.addEventListener('click',e=>{
  else if(a==='spnext'){const o=order(),c=S.cur;if(c.sp>=0)c.done.push(o[c.sp]);c.sp++;if(c.sp>=o.length){c.ph='choose';c.sp=-1;c.spEnd=null}else c.spEnd=nowS()+S.sp*1000}
  else if(a==='spend'){const c=S.cur;c.ph='choose';c.sp=-1;c.spEnd=null}
  else if(a==='best')S.cur.best=(S.cur.best===t?null:t);
- else if(a==='start'){S.phase='play';S.r=0;S.hist=[];S.cur=fresh();S.tmEnd=null;MAN={};DB.remove('choices');DB.remove('votes')}
+ else if(a==='start'){S.phase='intro';S.intro=0;S.r=0;S.hist=[];S.cur=fresh();S.tmEnd=null;MAN={};DB.remove('choices');DB.remove('votes')}
+ else if(a==='inext')S.intro=Math.min(INTRO_N-1,(S.intro||0)+1);
+ else if(a==='iprev')S.intro=Math.max(0,(S.intro||0)-1);
+ else if(a==='ibegin'){S.phase='play';S.r=0;S.cur=fresh();SHOWQR=false}
  else if(a==='bgreset')DB.remove('bg');
  else if(a==='ch')DB.set('choices/'+S.r+'/'+t,+v);
  else if(a==='unch')DB.remove('choices/'+S.r+'/'+t);
