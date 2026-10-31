@@ -2481,7 +2481,7 @@ const RL={
  reg:{n:'Правительство',goal:'Удержать власть. Очки даёт рост единства элит, лояльности армии и легитимности и снижение недовольства.',
   a:[['Уступки и реформы','пойти навстречу требованиям','Уступки'],['Удерживать курс','ничего не менять','Курс'],['Подавить протест','полиция, запреты, аресты','Подавление']]},
  opp:{n:'Оппозиция',goal:'Сменить власть. Очки даёт рост недовольства и падение единства элит, лояльности армии и легитимности.',
-  a:[['Переговоры с властью','диалог и компромисс','Диалог'],['Организация и агитация','копить силы, строить сеть','Агитация'],['Выйти на улицы','массовые акции','Улицы']]},
+  a:[['Переговоры с властью','диалог и компромисс','Диалог'],['Организация и агитация','копить силы, строить сеть','Агитация'],['Выйти на улицы','массовые акции; подряд — слабее','Улицы']]},
  arm:{n:'Армия и силовики',goal:'Сохранить единство и престиж армии. Очки даёт рост лояльности армии и легитимности и снижение недовольства.',
   a:[['Выполнять приказы','остаться верными власти','Приказы'],['Остаться в казармах','нейтралитет','Казармы'],['Отказаться стрелять','перейти на сторону народа','Отказ']]},
  eli:{n:'Элиты',goal:'Сохранить собственность и положение при любой власти. Очки даёт единство элит, легитимность и порядок.',
@@ -2582,12 +2582,13 @@ const IX=[
  {if:{ext:2,reg:2},d:[1,0,0,-1],t:'Международная изоляция'}];
 const CAP=2;const cl=v=>Math.max(0,Math.min(10,v));
 const H=s=>(s.E+s.A+s.L)/3;
-function resolve(sc,r,ch,roles){
+function resolve(sc,r,ch,roles,streak){
   const ev=EVS[r],tot=[0,0,0,0],src=[];
   const add=(d,t,id,a)=>{if(d.some(x=>x)){d.forEach((x,i)=>tot[i]+=x);src.push({t,d,id,a})}};
   add(ev.shock,'Событие раунда');
   const act={};roles.forEach(id=>act[id]=ch[id]==null?1:ch[id]);
   roles.forEach(id=>{const k=id+act[id];add(ev.ov[k]||EFF[id][act[id]],id,id,act[id])});
+  if(act.opp===2&&streak>0)add([-Math.min(streak,2),0,0,0],'Усталость протеста');
   IX.forEach(x=>{if(Object.keys(x.if).every(id=>act[id]===x.if[id]))add(x.d,x.t)});
   const K=['D','E','A','L'],ns={};K.forEach((k,i)=>ns[k]=cl(sc[k]+Math.max(-CAP,Math.min(CAP,tot[i]))));
   const real=K.map(k=>ns[k]-sc[k]);
@@ -2788,7 +2789,7 @@ const dl=(k,v)=>v?`<span class="dl ${danger(k,v)?'up':'dn'}">${KN[k]} ${sgn(v)}<
 const REV=s=>s.D>=8&&H(s)<=4.5;
 function judge(s,r){if(REV(s))return 'rev';if(r>=ROUNDS-1)return (s.D>=6||H(s)<=5.5)?'cri':'stb';return null}
 function doReveal(){
-  const b=before(),o=resolve(b,S.r,CH,roles()),pts={};
+  const b=before(),o=resolve(b,S.r,CH,roles(),(()=>{let k=0;for(let i=S.hist.length-1;i>=0&&S.hist[i].act.opp===2;i--)k++;return k})()),pts={};
   roles().forEach(id=>{const v=K4.reduce((a,k,i)=>a+W[id][i]*o.real[i],0);pts[id]=Math.max(0,v)});
   const best=S.cur.best&&roles().includes(S.cur.best)?S.cur.best:null;if(best)pts[best]+=2;
   S.cur.res={...o,before:b,pts,best,status:judge(o.ns,S.r)};S.cur.rev=true}
@@ -2822,7 +2823,7 @@ function refTable(){
  const rows=ROLEIDS.map(id=>RL[id].a.map((a,i)=>`<tr>${i?'':`<th rowspan="3">${esc(RL[id].n)}</th>`}<td>${esc(a[0])}</td>${EFF[id][i].map((v,j)=>`<td class="c">${v?sgn(v):'·'}</td>`).join('')}</tr>`).join('')).join('');
  return `<div class="wrap"><table class="mx"><tr><th>Команда</th><th>Решение</th><th>Недовольство</th><th>Элиты</th><th>Армия</th><th>Легитимность</th></tr>${rows}</table></div>
  <p class="note">Плюс значит рост шкалы. Изменение каждой шкалы за раунд складывается из события и решений всех ролей, но не больше ±2.</p>
- <div class="wrap"><table class="mx"><tr><th>Сочетание решений</th><th>Добавка</th></tr>${IX.map(x=>`<tr><td>${x.t}: ${Object.keys(x.if).map(id=>RL[id].n+' — '+RL[id].a[x.if[id]][0]).join(' и ')}</td><td>${K4.map((k,i)=>x.d[i]?KN[k]+' '+sgn(x.d[i]):'').filter(Boolean).join(', ')}</td></tr>`).join('')}</table></div>`}
+ <div class="wrap"><table class="mx"><tr><th>Сочетание решений</th><th>Добавка</th></tr>${IX.map(x=>`<tr><td>${x.t}: ${Object.keys(x.if).map(id=>RL[id].n+' — '+RL[id].a[x.if[id]][0]).join(' и ')}</td><td>${K4.map((k,i)=>x.d[i]?KN[k]+' '+sgn(x.d[i]):'').filter(Boolean).join(', ')}</td></tr>`).join('')}<tr><td>Усталость протеста: Оппозиция — выход на улицы 2-й раунд подряд (3-й и далее сильнее)</td><td>Недовольство −1 (затем −2)</td></tr></table></div>`}
 function setupView(){
  const hasBg=!!BGDATA;
  return `<div class="setup"><div><div class="eyebrow">Политическая конфликтология · Тема 6</div><h1>Революционная ситуация</h1></div>
@@ -2905,7 +2906,7 @@ function finalView(){const out=finalStatus(),[t,d]=OUT[out],fs=finalScores(),ids
   <div class="panel"><div class="lbl">Кто как выбирал</div>${hist}</div>
   <div class="panel"><div class="lbl">Вопросы для обсуждения</div><ol class="q"><li>Какой из трёх факторов оказался решающим: недовольство низов, раскол элит или позиция армии?</li><li>Был ли момент, когда власть ещё могла выйти из кризиса и что она могла сделать иначе?</li><li>Где в игре проявился парадокс Токвиля и J-кривая Дэвиса?</li><li>Помогли или помешали умеренные решения (диалог, реформы)? Как это соотносится со стадиями по Бринтону?</li><li>Какие реальные революции напоминает ваш сценарий и чем они отличаются?</li></ol></div></div>
   <div class="col"><div class="panel"><div class="lbl">Траектория страны</div>${planeView()}</div><div class="panel"><div class="lbl">Состояние страны в конце</div>${gauges()}</div></div></div>`}
-const VER='версия 30.10 · 23:20 · сцены и новости';
+const VER='версия 31.10 · усталость протеста';
 function render(){
  if(DB&&S.r!==SUBR)resub();
  let h;
