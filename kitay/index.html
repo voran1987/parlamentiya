@@ -102,10 +102,10 @@ a{color:var(--blue)}
 @media(max-width:720px){.panel{padding:16px}.topline{padding:16px}.joinbox{grid-template-columns:1fr}.qr{min-width:130px;min-height:130px}.code{font-size:52px}.metric-main{grid-template-columns:72px 1fr}.metric-ring{width:72px;height:72px}.brandname{font-size:24px}.mark{min-width:58px;height:58px;font-size:25px}}
 
 </style>
-<!-- Как и в оригинальной «Революционной ситуации», используется конфигурация Firebase из корня репозитория. -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-<script src="../firebase-config.js"></script>
+<!-- Supabase Edge Function protects host and player writes with room-specific secrets. -->
+
+
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
 <style>
 /* Географическая карта: реальные тайлы OpenStreetMap вместо схемы; архивные фотографии Wikimedia Commons. */
@@ -171,7 +171,7 @@ a{color:var(--blue)}
 /*
   КНР: БАЛАНС СИЛ — политологический учебный симулятор.
   6 раундов, 6 делегаций, три решения для каждой в каждом раунде.
-  Режим offline: вкладки одного браузера; режим online: Firebase Realtime Database.
+  Синхронизация через защищённую серверную функцию Supabase; обновление раз в 1,8 секунды.
   История условная; решения и количественные эффекты — игровые допущения.
 */
 const GAME='КНР: баланс сил', TOTAL=6, ROOT='china_world_politics', KEY='cnmp_';
@@ -281,16 +281,63 @@ function memdb(code){
  function save(path,val){const root=read(),p=path.split('/').filter(Boolean);let node=root;p.slice(0,-1).forEach(k=>{node[k]??={};node=node[k]});if(val===null)delete node[p[p.length-1]];else node[p[p.length-1]]=JSON.parse(JSON.stringify(val));localStorage.setItem(storeKey,JSON.stringify(root));notify()}
  return {local:true,set:async(p,v)=>save(p,v),once:async p=>at(read(),p)??null,on(p,cb){const key=++seq;listeners.set(key,{path:p,cb,last:undefined});const v=at(read(),p)??null;listeners.get(key).last=JSON.stringify(v);cb(v);return()=>listeners.delete(key)},claim:async(p,v)=>{let old=at(read(),p);if(old&&old.pid!==v.pid)return false;save(p,v);return true}};
 }
-function fbdb(code){if(!firebase.apps.length)firebase.initializeApp(window.FIREBASE_CONFIG);const root=firebase.database().ref(ROOT+'/'+code);
- return {local:false,set:(p,v)=>root.child(p).set(v),once:p=>root.child(p).once('value').then(s=>s.val()),on(p,cb){const ref=root.child(p),f=s=>cb(s.val());ref.on('value',f,err=>failure('Нет доступа к Firebase: '+err.message));return()=>ref.off('value',f)},claim:(p,v)=>root.child(p).transaction(old=>old&&old.pid!==v.pid?undefined:v).then(r=>!!r.committed)};
+const SB_EDGE='https://logzbhhftwvqsrqvmnik.supabase.co/functions/v1/china-game';
+const makeSecret=()=>Array.from(crypto.getRandomValues(new Uint8Array(32)),n=>n.toString(16).padStart(2,'0')).join('');
+function sbdb(code){
+ let seq=0, last={}, lastFault='', wait=null, timer=null;
+ const listeners=new Map();
+ const getAt=(obj,path)=>path.split('/').filter(Boolean).reduce((a,k)=>a==null?null:a[k],obj);
+ async function call(op,body={}){
+  const hostToken=MODE==='host'?HOST_TOKEN:null;
+  const request={op,code,...body,hostToken:body.hostToken||hostToken,playerToken:CLIENT_TOKEN};
+  let response;
+  try {response=await fetch(SB_EDGE,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(request),cache:'no-store'});}
+  catch(e){throw Error('Нет связи с Supabase. Проверьте интернет-соединение: '+e.message)}
+  const json=await response.json().catch(()=>({error:'Недействительный ответ сервера'}));
+  if(!response.ok)throw Error(json.error||'Ошибка сервера Supabase ('+response.status+')');
+  return json;
+ }
+ async function refresh(){
+  if(wait)return wait;
+  wait=(async()=>{
+   try{
+    const result=await call('read');
+    last=result.snapshot||{};
+    if(lastFault){lastFault='';error='';}
+    for(const info of listeners.values()){
+     const value=getAt(last,info.path)??null;
+     const serialized=JSON.stringify(value);
+     if(info.json!==serialized){info.json=serialized;info.callback(value)}
+    }
+    return last;
+   }catch(e){
+    if(lastFault!==e.message){lastFault=e.message;initialized=true;failure('Supabase: '+e.message)}
+    throw e;
+   }
+  })();
+  try{return await wait}finally{wait=null}
+ }
+ function schedule(){if(!timer){timer=setInterval(()=>refresh().catch(()=>{}),1800);refresh().catch(()=>{})}}
+ return {
+  local:false,
+  create:(m,s,hostToken)=>call('create',{meta:m,state:s,hostToken}),
+  ready:()=>refresh(),
+  on(p,callback){let k=++seq;listeners.set(k,{path:p,callback,json:undefined});schedule();return ()=>{listeners.delete(k);if(!listeners.size&&timer){clearInterval(timer);timer=null}}},
+  once:async p=>getAt(await refresh(),p)??null,
+  set:async(path,value)=>{await call('set',{path,value});await refresh()},
+  claim:async(path,value)=>{const role=path.split('/')[1];const result=await call('claim',{role,pid:value.pid});if(result.ok)await refresh();return !!result.ok}
+ };
 }
+
 const base=location.href.split(/[?#]/)[0],params=new URLSearchParams(location.search);
 let CODE=(params.get('g')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,4),V=params.get('v')||'';
 const LGET=k=>{try{return localStorage.getItem(KEY+k)}catch{return null}};
 const LSET=(k,v)=>{try{localStorage.setItem(KEY+k,v)}catch{}};
 let PID=LGET('pid');if(!PID){PID=(globalThis.crypto&&crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2));LSET('pid',PID)}
-const online=!!(window.FIREBASE_CONFIG&&window.FIREBASE_CONFIG.apiKey&&window.firebase?.database);
-let MODE=!CODE?'landing':V==='screen'?'screen':V==='host'&&LGET('host')===CODE?'host':V==='join'?'join':V==='player'&&LGET('role_'+CODE)?'player':LGET('host')===CODE?'host':LGET('role_'+CODE)?'player':'join';
+const online=!!SB_EDGE;
+const CLIENT_TOKEN=LGET('supabase_player_token')||makeSecret();LSET('supabase_player_token',CLIENT_TOKEN);
+let HOST_TOKEN=CODE?LGET('supabase_host_token_'+CODE):null;
+let MODE=!CODE?'landing':V==='screen'?'screen':V==='host'&&HOST_TOKEN?'host':V==='join'?'join':V==='player'&&LGET('role_'+CODE)?'player':HOST_TOKEN?'host':LGET('role_'+CODE)?'player':'join';
 let DB=null,unsubs=[],meta=null,S=null,SEATS={},CHOICES={},VOTES={},initialized=false,loading=false,error='',joinErr='',peek=false,localControl={},newConfirm=false;
 let ME=LGET('role_'+CODE)||null;const isHost=()=>MODE==='host',isScreen=()=>MODE==='screen',active=()=>ids.slice(0,meta?.n||6);
 const states=()=>[INITIAL,...(S?.hist||[]).map(h=>h.after),...(S?.stage==='reveal'&&S?.result?[S.result.after]:[])];
@@ -302,10 +349,18 @@ function setStage(stage,extra={}){if(!isHost())return;S={...S,...extra,stage};pe
 async function persist(){if(!DB||!isHost())return;await DB.set('state',S).catch(e=>failure('Не удалось сохранить ход: '+e.message));render()}
 function unsubscribe(){unsubs.forEach(fn=>fn());unsubs=[]}
 function subscribe(){unsubscribe();if(!DB)return;unsubs.push(DB.on('meta',m=>{meta=m;initialized=true;render()}));unsubs.push(DB.on('state',s=>{if(s){S=s;render()}}));unsubs.push(DB.on('seats',s=>{SEATS=s||{};render()}));unsubs.push(DB.on('choices',s=>{CHOICES=s||{};render()}));unsubs.push(DB.on('votes',s=>{VOTES=s||{};render()}));}
-async function connect(){if(!CODE)return;loading=true;error='';try{DB=online?fbdb(CODE):memdb(CODE);subscribe()}catch(e){failure('Ошибка подключения: '+e.message)}finally{loading=false;render()}}
+async function connect(){if(!CODE)return;loading=true;error='';meta=null;S=null;SEATS={};CHOICES={};VOTES={};initialized=false;try{DB=sbdb(CODE);subscribe();await DB.ready()}catch(e){failure('Ошибка подключения: '+e.message)}finally{loading=false;render()}}
 function makeCode(){const abc='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';return Array.from({length:4},()=>abc[Math.floor(Math.random()*abc.length)]).join('')}
-async function create(){CODE=makeCode();MODE='host';LSET('host',CODE);history.replaceState(null,'',base+'?g='+CODE+'&v=host');DB=online?fbdb(CODE):memdb(CODE);meta={n:6,created:Date.now(),version:1};S=fresh();await DB.set('meta',meta);await DB.set('state',S);subscribe();render()}
-async function enter(code,screen=false){const c=(code||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,4);if(c.length!==4){joinErr='Введите четырёхсимвольный код комнаты.';render();return}CODE=c;ME=null;MODE=screen?'screen':'join';joinErr='';history.pushState(null,'',base+'?g='+CODE+'&v='+(screen?'screen':'join'));await connect()}
+async function create(){
+ unsubscribe();error='';meta={n:6,created:Date.now(),version:2};S=fresh();
+ for(let attempt=0;attempt<5;attempt++){
+  CODE=makeCode();MODE='host';HOST_TOKEN=makeSecret();DB=sbdb(CODE);
+  try{await DB.create(meta,S,HOST_TOKEN);LSET('host',CODE);LSET('supabase_host_token_'+CODE,HOST_TOKEN);history.replaceState(null,'',base+'?g='+CODE+'&v=host');subscribe();await DB.ready();render();return}
+  catch(e){if(/Код комнаты занят/.test(e.message))continue;throw e}
+ }
+ throw Error('Не удалось создать уникальный код игровой комнаты');
+}
+async function enter(code,screen=false){const c=(code||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,4);if(c.length!==4){joinErr='Введите четырёхсимвольный код комнаты.';render();return}CODE=c;ME=null;MODE=screen?'screen':'join';HOST_TOKEN=LGET('supabase_host_token_'+CODE);joinErr='';history.pushState(null,'',base+'?g='+CODE+'&v='+(screen?'screen':'join'));await connect()}
 async function selectRole(id){if(!DB||!active().includes(id))return;try{const okay=await DB.claim('seats/'+id,{pid:PID,joined:Date.now()});if(okay){ME=id;LSET('role_'+CODE,id);MODE='player';history.replaceState(null,'',base+'?g='+CODE+'&v=player');render()}else{joinErr='Эту делегацию уже заняли. Обратитесь к ведущему.';render()}}catch(e){joinErr='Не удалось выбрать роль: '+e.message;render()}}
 async function pick(id,index){if(!DB||!S||S.stage!=='choose'||index<0||index>2)return;if(!isHost()&&!(MODE==='player'&&ME===id))return;await DB.set('choices/'+S.r+'/'+id,index).catch(e=>failure(e.message));render()}
 async function vote(id){if(!DB||MODE!=='player'||!ME||ME===id||S.stage!=='choose')return;await DB.set('votes/'+S.r+'/'+PID,id).catch(e=>failure(e.message))}
@@ -413,12 +468,12 @@ function roleGlyph(id){return ({cn:'🏛️',us:'🛰️',ru:'🧭',in:'🤝',eu
 function header(){
  let phase=S?.stage||'',title=MODE==='host'?'ВЕДУЩИЙ':MODE==='screen'?'ПРОЕКТОР':MODE==='player'?'ДЕЛЕГАЦИЯ':MODE==='join'?'ВХОД':'ПОЛИТОЛОГИЧЕСКИЙ СИМУЛЯТОР';
  let right=CODE?`<span class="pill">Комната ${CODE}</span>`:'';
- return `<header class="topline"><div class="brand"><span class="mark">КНР</span><div><div class="eyebrow">Семинар по мировой политике · дипломатический симулятор</div><div class="brandname">Баланс сил</div><div class="mini">Интерактивная игра о переговорах, кризисах и международном торге</div></div></div><div class="row"><span class="status"><span class="dot ${online?'':'local'}"></span>${online?'Firebase · онлайн':'Локальная демонстрация'}</span>${right}<span class="pill">${title}</span>${S&&phase?`<span class="pill">Стадия: ${esc({lobby:'лобби',intro:'введение',talk:'переговоры',speech:'выступления',choose:'решения',reveal:'раскрытие',final:'финал'}[phase]||phase)}</span>`:''}${isHost()&&phase!=='lobby'?btn('Новая игра','reset','ghost'):''}</div></header>`
+ return `<header class="topline"><div class="brand"><span class="mark">КНР</span><div><div class="eyebrow">Семинар по мировой политике · дипломатический симулятор</div><div class="brandname">Баланс сил</div><div class="mini">Интерактивная игра о переговорах, кризисах и международном торге</div></div></div><div class="row"><span class="status"><span class="dot ${online?'':'local'}"></span>${online?'Supabase · онлайн':'Демонстрация'}</span>${right}<span class="pill">${title}</span>${S&&phase?`<span class="pill">Стадия: ${esc({lobby:'лобби',intro:'введение',talk:'переговоры',speech:'выступления',choose:'решения',reveal:'раскрытие',final:'финал'}[phase]||phase)}</span>`:''}${isHost()&&phase!=='lobby'?btn('Новая игра','reset','ghost'):''}</div></header>`
 }
 function landing(){
  return `<div class="stack" style="max-width:1320px;margin:auto"><section class="panel hero"><div class="hero-inner"><div class="hero-copy"><div class="eyebrow">Политология · КНР в мировой политике</div><h1>Китай и борьба за новый мировой порядок</h1><div class="hero-ornament"></div><div class="lead">Дипломатический симулятор о международных кризисах, переговорах и перераспределении влияния. Шесть делегаций, шесть раундов, скрытые решения и три возможных мировых исхода.</div><div class="stats-strip"><div class="strip-card"><div class="mini">Делегации</div><strong>6</strong><div class="tiny">КНР, США, Россия, Индия, ЕС, АСЕАН</div></div><div class="strip-card"><div class="mini">Кризисы</div><strong>6</strong><div class="tiny">Технологии, безопасность, море, маршруты</div></div><div class="strip-card"><div class="mini">Исходы</div><strong>3</strong><div class="tiny">Компромисс, соперничество или кризис</div></div></div><div class="hero-photo"><img loading="lazy" onerror="this.style.display='none'" src="${PHOTO_SET[5].src}" alt="Архивное фото саммита G20 в Китае"><div><b>Дипломатия больших держав</b><span class="mini">Архивный саммит G20 в Ханчжоу, 2016 г. — визуальный контекст игры.</span><a target="_blank" rel="noopener noreferrer" href="${PHOTO_SET[5].source}">Casa Rosada · CC BY 2.5 AR</a></div></div><p class="mini">Полноценный дипломатический стиль: карта региона, стратегические индикаторы, карточки делегаций и экран ведущего для проектора.</p></div><div>${worldPreview('Стратегический театр')}</div></div></section>${modeNotice()}<div class="subgrid-2"><section class="panel">${sectionHead('Преподавателю','Создать игровую комнату','Вы управляете этапами раунда, запускаете таймеры, раскрываете решения и выводите общий экран.')}${btn('Создать игру','create','primary')}<div class="notice">Рекомендуется открыть отдельный экран проектора и дать делегациям QR или код комнаты.</div></section><section class="panel">${sectionHead('Студенту или проектору','Войти по коду','Введите четырёхсимвольный код комнаты или подключитесь как экран проектора.')}<div class="row"><input id="code" class="codeinput" placeholder="КОД" maxlength="4" autocomplete="off" aria-label="Код комнаты">${btn('Войти','enter','primary')}</div><label class="mini" style="display:block;margin-top:10px"><input id="isscreen" type="checkbox"> Открыть экран проектора</label>${joinErr?`<p class="danger">${esc(joinErr)}</p>`:''}</section></div><section class="panel">${sectionHead('Делегации','Участники дипломатической игры','У каждой стороны свой набор интересов, скрытый мандат и логика поведения в каждом раунде.')}<div class="rolegrid" style="margin-top:12px">${ids.map(id=>roleCard(id,true)).join('')}</div></section></div>`
 }
-function modeNotice(){return online?'':`<div class="hintbox"><b>Демонстрационный режим.</b> Игра работает без Firebase: можно открыть несколько вкладок одного браузера и проверить все механики. Для подключения телефонов студентов с разных устройств опубликуйте файл рядом с <code>firebase-config.js</code> и включите правила для ветки <code>china_world_politics</code>.</div>`}
+function modeNotice(){return online?'':`<div class="hintbox">Сервер Supabase временно недоступен.</div>`}
 function roleCard(id,brief=false){
  const rr=R[id]; let occupied=SEATS[id]&&SEATS[id].pid!==PID, mine=SEATS[id]?.pid===PID;
  return `<div class="role" style="--role:${rr.c}"><div class="rolehead"><div><div class="label">${roleGlyph(id)} делегация</div><h3><span class="flag">${rr.flag}</span>${rr.n}</h3></div>${MODE!=='landing'?tag(mine?'Вы':occupied?'Занято':'Свободно',mine?'ok':occupied?'warn':''):''}</div><p>${rr.goal}</p><div class="rolemeta"><div class="roleicon">${roleGlyph(id)}</div><div class="mini">Визуальный акцент делегации помогает быстро ориентироваться на общем экране и на смартфонах студентов.</div></div>${MODE==='join'&&!brief?`<div style="margin-top:14px">${btn(mine?'Вернуться в роль':occupied?'Занято':'Выбрать делегацию','role','primary',`data-id="${id}" ${occupied?'disabled':''}`)}</div>`:''}</div>`
@@ -484,7 +539,7 @@ function finalPage(){
 function resetBox(){return `<section class="panel">${sectionHead('Новая игра','Сбросить текущую комнату','Незавершённая партия будет очищена. Если нужны результаты, сначала сохраните CSV.') }<div class="row">${btn('Сохранить CSV','csv')}${btn('Да, начать заново','resetyes','primary')}${btn('Отмена','resetno')}</div></section>`}
 let confirmReset=false;
 function render(){if(!document.getElementById('app'))return;disposeMaps();let content;if(!CODE)content=landing();else if(MODE==='join')content=join();else if(MODE==='player')content=player();else if(!meta||!S)content=`<section class="panel"><h2>${initialized?'Комната не найдена':'Подключение к комнате…'}</h2><p>${esc(error||'')}</p>${btn('На главную','home')}</section>`;else if(confirmReset&&isHost())content=resetBox();else if(S.stage==='lobby')content=lobby();else if(S.stage==='intro')content=intro();else if(S.stage==='final')content=finalPage();else content=hostGame();
- document.getElementById('app').innerHTML=header()+(error?`<div class="hintbox" style="border-color:var(--red);margin:12px 0">${esc(error)}</div>`:'')+content+`<footer class="footer"><span>Учебная игра «КНР: баланс сил» · 2026</span><span>Сценарии условные · фотографии: Wikimedia Commons (кредиты на фото) · карта: © OpenStreetMap</span></footer>`;qrLater();mountMaps();}
+ document.getElementById('app').innerHTML=header()+(error?`<div class="hintbox" style="border-color:var(--red);margin:12px 0">${esc(error)}</div>`:'')+content+`<footer class="footer"><span>Учебная игра «КНР: баланс сил» · 2026</span><span>Сценарии условные · фото: Wikimedia Commons · карта: Natural Earth · синхронизация: Supabase</span></footer>`;qrLater();mountMaps();}
 function tick(){const el=document.getElementById('countdown');if(el&&S){const s=timerLeft();el.textContent=fmt(s);if(!s)el.style.color='var(--red)'}}
 setInterval(tick,450);
 async function action(a,b){try{switch(a){
