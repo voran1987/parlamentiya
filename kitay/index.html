@@ -525,7 +525,7 @@ function playerDecisions(round, result){
  if(!result||!result.picks)return '';
  return `<section class="panel">${sectionHead('Итоги голосования','Решения всех делегаций','После раскрытия ведущим решения и результаты раунда доступны каждой команде.')}<div class="decision-grid">${active().map(id=>{const choice=result.picks[id],label=EVD[round]?.action[id]?.[choice],points=result.scores?.[id]?.points;return `<div class="decision-card" style="--role:${R[id].c}"><div class="decision-top"><div><div class="label" style="color:${R[id].c}">${roleGlyph(id)} делегация</div><h3 style="margin:4px 0">${R[id].flag} ${R[id].n}</h3></div>${id===ME?tag('Ваша команда','ok'):''}</div><div><b>${choice===undefined?'Нет решения':esc(label||'Неизвестный выбор')}</b></div><div class="mini" style="margin-top:8px">Стратегия: ${esc(STRAT_FAMILY[choice]||'—')}${points!==undefined?' · '+points+' очков':''}</div></div>`}).join('')}</div></section>`;
 }
-function player()
+function player(){
  if(!meta||!S)return `<section class="panel"><h2>Подключение…</h2></section>`;
  if(!ME||!active().includes(ME))return join();
  const e=EVD[S.r]||EVD[0],role=R[ME];const choose=S.stage==='choose',cur=(CHOICES[S.r]||{})[ME];let phaseTitle={lobby:'Ожидаем начало',intro:'Введение',talk:'Кулуарные переговоры',speech:'Публичные выступления',choose:'Примите решение',reveal:'Результаты раунда',final:'Итоги игры'}[S.stage];let picks=EVD[S.r]?.action[ME]||[];
