@@ -52,3 +52,20 @@ https://voran1987.github.io/parlamentiya/kitay/
 ## Если GitHub Pages показывает 404
 
 Проверьте GitHub → Settings → Pages: Source «Deploy from a branch», Branch `main`, Folder `/ (root)`. В разделе Actions проверьте успешное завершение `pages build and deployment`. Адрес игры: https://voran1987.github.io/parlamentiya/kitay/index.html. После публикации обновите страницу без кэша (Ctrl+F5). Эта запись также инициирует новый коммит публикации.
+
+## Фотографии и географическая карта
+
+Версия с дипломатическим редизайном использует интерактивную географическую карту Азии: [Leaflet 1.9.4](https://leafletjs.com) и данные [OpenStreetMap](https://www.openstreetmap.org/copyright). Карта загружается по сети и позволяет масштабировать, перемещать и открывать подписи стратегических точек. При недоступности онлайн-карты отображается альтернативная политическая карта из Wikimedia Commons.
+
+Архивные фотографии используются для визуального сопровождения вымышленных раундов 2027 года — они **не являются фотографиями игровых событий**. Все источники и лицензии доступны из подписей непосредственно в игре:
+
+- Микросхемы: [Khpsoi](https://commons.wikimedia.org/wiki/File:A_semiconductor_wafer_on_a_dicing_(blue)_tape._Few_chips_(dies)_from_the_wafer_have_already_been_picked_up_(removed)_for_further_manufacturing.png), CC BY-SA 4.0.
+- Редкоземельный рудник Баян-Обо: [NASA Earth Observatory](https://commons.wikimedia.org/wiki/File:Baiyunebo_ast_2006181.jpg), общественное достояние.
+- Тайвань: [CEphoto, Uwe Aranas](https://commons.wikimedia.org/wiki/File:Keelung_Taiwan_Ship-ROCN-Ching-Chiang-01.jpg), CC BY-SA 3.0.
+- Контейнерный порт Сингапура: [Aaaatu](https://commons.wikimedia.org/wiki/File:Port_of_Singapore.jpg), CC BY-SA 4.0.
+- Евразийские транспортные маршруты: [Представительство Республики Татарстан в Казахстане](https://commons.wikimedia.org/wiki/File:CKD9C_with_freight_train_at_Alashankou_station.jpg), CC BY 4.0.
+- Дипломатический саммит: [© European Union / Etienne Ansotte](https://commons.wikimedia.org/wiki/File:G20_Summit_in_China_(P-032256-00-22).jpg), CC BY 4.0.
+
+Фотографии загружаются с Wikimedia Commons, а географические тайлы — с OpenStreetMap. Для полной визуализации необходимо интернет-подключение. Бэкенд Firebase, игровые правила и структура базы данных при этом не изменены.
+
+Резервная копия прежнего файла игры: `kitay/backups/index-before-geographic-map-2026-11-01.html`.
