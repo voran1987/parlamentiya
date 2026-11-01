@@ -67,8 +67,10 @@ function mkSB(code) {
   }finally{pending=null}
  }
  function write(op,path,value,extra){
+  // Preserve authorization at click time (the role may change before the queue flushes).
+  const credentials=access();
   const task=queue.catch(()=>{}).then(async()=>{
-   const answer=await sbRequest({op,code,...access(),path,value,...extra});
+   const answer=await sbRequest({op,code,...credentials,path,value,...extra});
    await refresh(true);
    return !!answer.ok;
   });
