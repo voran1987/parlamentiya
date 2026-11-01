@@ -25,3 +25,7 @@ https://voran1987.github.io/parlamentiya/kitay/
 - `kitay/index.html` — самодостаточное игровое приложение.
 - `firebase-config.js` — общий файл конфигурации в корне репозитория.
 - `revolyuciya/` — другая игра, её файлы не изменяются.
+
+## Если GitHub Pages показывает 404
+
+Проверьте GitHub → Settings → Pages: Source «Deploy from a branch», Branch `main`, Folder `/ (root)`. В разделе Actions проверьте успешное завершение `pages build and deployment`. Адрес игры: https://voran1987.github.io/parlamentiya/kitay/index.html. После публикации обновите страницу без кэша (Ctrl+F5). Эта запись также инициирует новый коммит публикации.
