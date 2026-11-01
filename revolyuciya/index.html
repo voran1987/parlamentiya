@@ -163,9 +163,7 @@ blockquote p{margin:0 0 4px;font-size:15px}blockquote cite{font-style:normal;fon
 @media (prefers-reduced-motion:no-preference){.res,.verdict{animation:in .35s ease-out}@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
  .halo{animation:pulse 1.6s ease-out infinite}@keyframes pulse{0%{r:6;opacity:.8}100%{r:16;opacity:0}}}
 </style>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-<script src="../firebase-config.js"></script>
+<script src="supabase-client.js"></script>
 </head><body>
 <div class="bgimg" id="bg" aria-hidden="true"></div>
 <div class="app" id="app"></div>
@@ -2615,40 +2613,18 @@ function resolve(sc,r,ch,roles,streak){
 }
 
 
-/* ---------- хранилище: Firebase или локальный тестовый режим ---------- */
-function mkLocal(code){
- const K='revdb_'+code,ls=new Map();let id=0;
- const get=()=>{try{return JSON.parse(localStorage.getItem(K))||{}}catch(e){return{}}};
- const at=(t,p)=>p.split('/').filter(Boolean).reduce((a,k)=>a==null?null:a[k],t);
- const fire=()=>{const t=get();ls.forEach(l=>{let v=at(t,l.path);if(v===undefined)v=null;const s=JSON.stringify(v);if(s!==l.last){l.last=s;l.cb(JSON.parse(s))}})};
- window.addEventListener('storage',e=>{if(e.key===K)fire()});
- const setp=(p,val)=>{const t=get(),ks=p.split('/').filter(Boolean);let o=t;ks.slice(0,-1).forEach(k=>{if(typeof o[k]!=='object'||o[k]===null)o[k]={};o=o[k]});const last=ks[ks.length-1];if(val===null||val===undefined)delete o[last];else o[last]=JSON.parse(JSON.stringify(val));try{localStorage.setItem(K,JSON.stringify(t))}catch(e){}fire()};
- return{local:true,
-  set:(p,v)=>{setp(p,v);return Promise.resolve()},remove:p=>{setp(p,null);return Promise.resolve()},
-  on(p,cb){const l={path:p,cb,last:undefined},k=++id;ls.set(k,l);setTimeout(()=>{let v=at(get(),p);if(v===undefined)v=null;l.last=JSON.stringify(v);cb(JSON.parse(l.last))},0);return()=>ls.delete(k)},
-  once(p){let v=at(get(),p);if(v===undefined)v=null;return Promise.resolve(JSON.parse(JSON.stringify(v)))},
-  claim(p,val){const v=at(get(),p);if(v&&v.pid!==val.pid)return Promise.resolve(false);setp(p,val);return Promise.resolve(true)}}}
-function mkFB(code){
- if(!firebase.apps.length)firebase.initializeApp(CFG);
- const db=firebase.database(),root=db.ref('revolyuciya/'+code);
- db.ref('.info/serverTimeOffset').on('value',s=>{OFF=s.val()||0});
- const clean=v=>v==null?null:JSON.parse(JSON.stringify(v));
- return{local:false,
-  set:(p,v)=>root.child(p).set(clean(v)),remove:p=>root.child(p).remove(),
-  on(p,cb){const r=root.child(p),f=s=>cb(s.val());r.on('value',f);return()=>r.off('value',f)},
-  once:p=>root.child(p).once('value').then(s=>s.val()),
-  claim:(p,val)=>root.child(p).transaction(cur=>(cur&&cur.pid!==val.pid)?undefined:val).then(r=>!!r.committed)}}
+/* Сетевой слой Supabase: см. supabase-client.js */
 function qrSVG(text,px){const q=qrcode(0,'M');q.addData(text);q.make();const n=q.getModuleCount(),m=2;let d='';for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+=`M${c+m} ${r+m}h1v1h-1z`;return `<svg viewBox="0 0 ${n+2*m} ${n+2*m}" width="${px}" height="${px}" role="img" aria-label="QR-код для входа в игру" shape-rendering="crispEdges"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#14161B"/></svg>`}
 const genCode=()=>{const a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<4;i++)s+=a[Math.floor(Math.random()*a.length)];return s};
 
 /* ---------- новые виды: вход, лобби, телефон команды ---------- */
 const joinURL=()=>BASE+'?g='+CODE,screenURL=()=>BASE+'?g='+CODE+'&v=screen';
 const connected=id=>!!SL[id];
-const testBanner=()=>FBOK?'':`<div class="panel" style="background:var(--gold-soft);border-color:var(--gold)">Тестовый режим: Firebase не подключён, игра работает только между вкладками одного браузера. Подключение базы описано в README.</div>`;
-function landingView(){const hc=lsGet('rev_host');
+const testBanner=()=>'';
+function landingView(){const hc=lsGet('rev_host')&&lsGet(hostKey(lsGet('rev_host')))?lsGet('rev_host'):null;
  return `<div class="setup"><div><div class="eyebrow">Политическая конфликтология · Тема 6</div><h1>Революционная ситуация</h1></div>
  <p class="lead">Ролевая игра на смартфонах. Ведущий создаёт игру, команды входят по коду или QR и тайно выбирают решения у себя в телефоне, а проектор показывает общее табло.</p>${testBanner()}
- <div class="panel"><div class="lbl">Я ведущий</div><div class="actions"><button class="btn main" data-act="create">Создать игру</button>${hc?`<button class="btn" data-act="resume">Продолжить игру ${esc(hc)}</button>`:''}</div></div>
+ <div class="panel"><div class="lbl">Я ведущий</div><div class="actions"><button class="btn main" data-act="create" ${CREATING?'disabled':''}>${CREATING?'Создание комнаты…':'Создать игру'}</button>${hc?`<button class="btn" data-act="resume">Продолжить игру ${esc(hc)}</button>`:''}</div></div>
  <div class="panel"><div class="lbl">Войти в игру по коду</div><div class="actions"><input class="codein" id="codein" maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="КОД" aria-label="Код игры"><button class="btn main" data-act="enter">Войти</button></div><label class="note" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="asscreen"> Это экран проектора</label>${JOINERR?`<div class="note" style="color:var(--red)">${esc(JOINERR)}</div>`:''}</div></div>`}
 function joinView(){
  if(!LOADED)return `<div class="setup"><p class="lead">Подключение к игре ${esc(CODE)}…</p></div>`;
@@ -2781,15 +2757,15 @@ const DSP={2:120,3:90,4:60,5:45,6:30};
 function norm(v){if(!v.cur)v.cur=fresh();const c=v.cur,f=fresh();if(c.rev&&!c.res)c.rev=false;if(!c.ph)c.ph=c.rev?'choose':'speech';if(!Array.isArray(c.done))c.done=[];if(!c.ch)c.ch={};if(c.sp==null)c.sp=-1;if(c.spEnd===undefined)c.spEnd=null;if(c.best===undefined)c.best=null;if(!v.sp)v.sp=60;if(!v.kul)v.kul=90;if(!Array.isArray(v.hist))v.hist=[];if(v.intro==null)v.intro=0;return v}
 const lsGet=k=>{try{return localStorage.getItem(k)}catch(e){return null}},lsSet=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},lsDel=k=>{try{localStorage.removeItem(k)}catch(e){}};
 const QS=new URLSearchParams(location.search),BASE=location.href.split('?')[0].split('#')[0];
-const CFG=window.FIREBASE_CONFIG||null,FBOK=!!(CFG&&CFG.apiKey&&window.firebase);
+// Supabase Edge Function is the sole server-side game transport.
 let OFF=0;const nowS=()=>Date.now()+OFF;
 let CODE=(QS.get('g')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,4),VIEW=QS.get('v')||'';
 let PID=lsGet('rev_pid');if(!PID){PID=Math.random().toString(36).slice(2,10);lsSet('rev_pid',PID)}
-let ME=null;try{ME=JSON.parse(lsGet('rev_pl'))}catch(e){}if(ME&&(ME.code!==CODE||VIEW==='join'))ME=null;
+let ME=null;try{ME=JSON.parse(lsGet('rev_pl'))}catch(e){}if(ME&&(ME.code!==CODE||VIEW==='join'||!lsGet(playerKey(CODE))))ME=null;
 let S=norm({phase:'setup',n:4,r:0,hist:[],cur:fresh(),sp:60,kul:90});
 let READY=false,META=undefined,LOADED=false,SL={},CH={},VT={},BGDATA=null,DB=null,SUBR=-1,UNS=[],LASTJ='',MAN={},OPEN=false,SHOWQR=false,JOINERR='';
 let PEEK=ss.get('rev_peek')==='1',confirmNew=false;
-function decide(){return !CODE?'landing':VIEW==='screen'?'screen':ME?'player':(VIEW!=='join'&&lsGet('rev_host')===CODE)?'host':'join'}
+function decide(){return !CODE?'landing':VIEW==='screen'?'screen':ME?'player':(VIEW!=='join'&&lsGet('rev_host')===CODE&&!!lsGet(hostKey(CODE)))?'host':'join'}
 let ROLE=decide();
 const scr=()=>ROLE==='screen';
 const roles=()=>ROLEIDS.slice(0,S.n);
@@ -2939,7 +2915,7 @@ function finalView(){const out=finalStatus(),[t,d]=OUT[out],fs=finalScores(),ids
   <div class="panel"><div class="lbl">Кто как выбирал</div>${hist}</div>
   <div class="panel"><div class="lbl">Вопросы для обсуждения</div><ol class="q"><li>Какой из трёх факторов оказался решающим: недовольство низов, раскол элит или позиция армии?</li><li>Был ли момент, когда власть ещё могла выйти из кризиса и что она могла сделать иначе?</li><li>Где в игре проявился парадокс Токвиля и J-кривая Дэвиса?</li><li>Помогли или помешали умеренные решения (диалог, реформы)? Как это соотносится со стадиями по Бринтону?</li><li>Какие реальные революции напоминает ваш сценарий и чем они отличаются?</li></ol></div></div>
   <div class="col"><div class="panel"><div class="lbl">Траектория страны</div>${planeView()}</div><div class="panel"><div class="lbl">Состояние страны в конце</div>${gauges()}</div></div></div>`}
-const VER='версия 01.11 · баланс ролей и исходов';
+const VER='версия 01.11 · Supabase';
 function render(){
  if(DB&&S.r!==SUBR)resub();
  let h;
@@ -2950,19 +2926,19 @@ function render(){
  else if(scr()&&S.phase==='setup')h=lobbyView();
  else h=S.phase==='setup'?setupView():S.phase==='intro'?introView():S.phase==='final'?finalView():gameView();
  const keep=document.getElementById('codein')?document.getElementById('codein').value:null;
- document.getElementById('app').innerHTML=h+`<div class="ver">${VER}</div>`;
+ document.getElementById('app').innerHTML=h+`<div class="ver">${VER}</div>`+(NETERR?`<div id="neterror" role="alert" style="position:fixed;left:12px;bottom:12px;right:12px;max-width:650px;background:#4a231f;color:#fff;padding:10px 14px;border:1px solid #e0533d;border-radius:7px;z-index:15">Ошибка синхронизации: ${esc(NETERR)}</div>`:'');
  if(keep!=null&&document.getElementById('codein'))document.getElementById('codein').value=keep;
  save();notifyTurn()}
 let LASTTURN='';
 function notifyTurn(){if(ROLE!=='player'||!READY||S.phase!=='play'||S.cur.ph!=='speech'||S.cur.sp<0)return;const o=order(),k=S.r+':'+S.cur.sp;if(o[S.cur.sp]===ME.role&&LASTTURN!==k){LASTTURN=k;try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}}}
-function save(){if(ROLE!=='host'||!DB||!READY)return;const j=JSON.stringify(S);if(j===LASTJ)return;LASTJ=j;DB.set('state',JSON.parse(j))}
+function save(){if(ROLE!=='host'||!DB||!READY)return;const j=JSON.stringify(S);if(j===LASTJ)return;LASTJ=j;DB.set('state',JSON.parse(j)).then(ok=>{if(!ok)LASTJ='';})}
 function resub(){UNS.forEach(f=>f());UNS=[];SUBR=S.r;CH={};VT={};UNS.push(DB.on('choices/'+S.r,v=>{CH=v||{};render()}));UNS.push(DB.on('votes/'+S.r,v=>{VT=v||{};render()}))}
 function connect(){
  if(!CODE||DB)return;
- DB=FBOK?mkFB(CODE):mkLocal(CODE);
+ DB=mkSB(CODE);
  DB.on('meta',v=>{META=v;LOADED=true;render()});
  DB.on('slots',v=>{SL=v||{};render()});
- if(ROLE==='host')DB.once('state').then(v=>{if(v)S=norm(v);READY=true;LASTJ=JSON.stringify(S);render()});
+ if(ROLE==='host')DB.once('state').then(v=>{if(v)S=norm(v);READY=!!v;LASTJ=JSON.stringify(S);render()});
  else DB.on('state',v=>{if(ROLE==='host')return;if(v){S=norm(v);READY=true}else READY=false;render()});
  if(ROLE==='host'||ROLE==='screen')DB.on('bg',v=>{BGDATA=v;applyBg()});
 }
@@ -2973,11 +2949,11 @@ document.addEventListener('toggle',e=>{if(e.target.tagName==='DETAILS')OPEN=e.ta
 document.addEventListener('click',e=>{
  const b=e.target.closest('[data-act]');if(!b)return;const a=b.dataset.act,v=b.dataset.v,t=b.dataset.t;
  /* вход и роли */
- if(a==='create'){CODE=genCode();VIEW='';lsSet('rev_host',CODE);ROLE='host';setUrl();connect();DB.set('meta',{n:S.n,t:Date.now()});READY=true;render();return}
- if(a==='resume'){CODE=lsGet('rev_host');ROLE='host';setUrl();connect();render();return}
- if(a==='enter'){const c=(document.getElementById('codein').value||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,4),sc=document.getElementById('asscreen').checked;if(c.length<4){JOINERR='Введите код из четырёх символов';render();return}JOINERR='';CODE=c;VIEW=sc?'screen':'';ME=null;ROLE=decide();setUrl();connect();render();return}
- if(a==='home'){CODE='';ROLE='landing';try{history.replaceState(null,'',BASE)}catch(x){}render();return}
- if(a==='claim'){DB.claim('slots/'+t,{pid:PID,ts:Date.now()}).then(ok=>{if(ok){ME={code:CODE,role:t};lsSet('rev_pl',JSON.stringify(ME));ROLE='player';JOINERR='';applyBg()}else JOINERR='Эта роль уже занята';render()});return}
+ if(a==='create'){createSupabaseRoom();return}
+ if(a==='resume'){disconnectRoom();CODE=lsGet('rev_host');ROLE='host';VIEW='';setUrl();connect();render();return}
+ if(a==='enter'){const c=(document.getElementById('codein').value||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,4),sc=document.getElementById('asscreen').checked;if(c.length<4){JOINERR='Введите код из четырёх символов';render();return}JOINERR='';disconnectRoom();CODE=c;VIEW=sc?'screen':'';ME=null;ROLE=decide();setUrl();connect();render();return}
+ if(a==='home'){disconnectRoom();CODE='';ME=null;ROLE='landing';try{history.replaceState(null,'',BASE)}catch(x){}render();return}
+ if(a==='claim'){DB.claim('slots/'+t,{pid:PID,ts:Date.now()}).then(ok=>{if(ok){ME={code:CODE,role:t};lsSet('rev_pl',JSON.stringify(ME));ROLE='player';JOINERR='';DB.refreshAuth();applyBg()}else JOINERR='Эта роль уже занята';render()});return}
  if(a==='leave'){if(ME)DB.remove('slots/'+ME.role);lsDel('rev_pl');ME=null;ROLE=decide();render();return}
  if(ROLE==='player'){
   if(a==='pch')DB.set('choices/'+S.r+'/'+ME.role,+v);
