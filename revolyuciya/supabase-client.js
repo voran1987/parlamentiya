@@ -54,8 +54,11 @@ function mkSB(code) {
   if(!active)return;
   if(pending)return pending;
   pending=(async()=>{
+   const sentAt=Date.now();
    const answer=await sbRequest({op:'read',code,...access(),
     ...(!force&&version!==null?{since:version}:{})});
+   // Synchronize the speech/negotiation timers across the teacher's and students' devices.
+   if(Number.isFinite(answer.serverTime))OFF=answer.serverTime-(sentAt+Date.now())/2;
    if(answer.unchanged)return;
    version=answer.version;snap=answer.snapshot;
    NETERR='';publish();
