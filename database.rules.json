@@ -25,6 +25,14 @@
         ".read": true,
         ".write": true
       }
+    },
+    "china_world_politics": {
+      ".read": false,
+      "$code": {
+        ".validate": "$code.matches(/^[A-Z0-9]{4}$/)",
+        ".read": true,
+        ".write": true
+      }
     }
   }
 }
