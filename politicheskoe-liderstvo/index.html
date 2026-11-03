@@ -85,13 +85,13 @@ function getRoom(code){const t=localStorage.getItem('pl_room_'+code);if(!t)throw
 function localCreate(){const code=Math.random().toString(36).slice(2,8).toUpperCase();const token=uid();storeRoom(code,{code,hostToken:token,state:structuredClone(INITIAL),players:[]});return {code,token,kind:'host'}}
 function localJoin(code,name,r){const room=getRoom(code);if(room.state.phase!=='lobby')throw Error('Игра уже началась');if(room.players.filter(p=>p.role===r).length>=6)throw Error('Делегация заполнена');const player={id:uid(),name,role:r,token:uid()};room.players.push(player);storeRoom(code,room);return{code,token:player.token,kind:'player',playerId:player.id,role:r}}
 function localSnap(code,token){const room=getRoom(code),player=room.players.find(p=>p.token===token),host=room.hostToken===token;if(!host&&!player)throw Error('Сессия недоступна');return {state:room.state,players:room.players.map(({token,...p})=>p),kind:host?'host':'player',playerId:player?.id,role:player?.role};}
-function localAction(code,token,action,p){const room=getRoom(code),s=room.state,player=room.players.find(x=>x.token===token),host=room.hostToken===token;if(!host&&!player)throw Error('Нет доступа');const r=player?.role;if(action==='phase'){if(!host)throw Error('Только ведущий');s.phase=p.phase}
+function localAction(code,token,action,p){const room=getRoom(code),s=room.state,player=room.players.find(x=>x.token===token),host=room.hostToken===token;if(!host&&!player)throw Error('Нет доступа');const r=player?.role;if(action==='phase'){if(!host)throw Error('Только ведущий');s.phase=p.phase;s.phaseEnd=Date.now()+({briefing:60000,caucus:90000,negotiation:180000,ballot:90000}[p.phase]||60000)}
 else if(action==='ballot'){if(!player||!['caucus','negotiation','ballot'].includes(s.phase))throw Error('Сейчас нельзя голосовать');s.ballots[player.id]={role:r,option:p.option}}
 else if(action==='offer'){if(!player||s.phase!=='negotiation')throw Error('Переговоры завершены');s.offers.push({id:uid(),round:s.round,from:r,to:p.target,option:p.option,status:'pending'})}
 else if(action==='respond'){if(!player||s.phase!=='negotiation')throw Error('Сейчас нельзя ответить');let o=s.offers.find(o=>o.id===p.id&&o.to===r);if(!o)throw Error('Предложение недоступно');o.status=p.response}
 else if(action==='power'){if(!player||s.powers[r])throw Error('Способность недоступна');if(r==='business'||r==='media'){if(p.target===r)throw Error('Выберите другую группу');s.scores[p.target]-=r==='business'?3:2}else if(r==='security'){if(s.metrics.stability>=35)throw Error('Необходим кризис стабильности ниже 35');s.leader='security';s.metrics.stability=Math.max(0,s.metrics.stability-10)}else if(r==='opposition')s.actions.referendum=true;else s.actions.emergency=true;s.powers[r]=true}
 else if(action==='resolve'){if(!host)throw Error('Только ведущий');const sc=SCENARIOS[s.round];if(s.round===5&&p.option==='a'&&s.offers.filter(o=>o.status==='accepted'&&o.option==='a').length<2)throw Error('Нужны минимум две подтверждённые договорённости');room.state=simulateRound(s,p.option)}
-else if(action==='next'){if(!host||s.phase!=='resolution')throw Error('Недоступно');if(s.round>=7)s.phase='finished';else{s.round++;s.phase='briefing';s.ballots={};s.offers=[];s.actions={};s.decision=null}}
+else if(action==='next'){if(!host||s.phase!=='resolution')throw Error('Недоступно');if(s.round>=7)s.phase='finished';else{s.round++;s.phase='briefing';s.phaseEnd=Date.now()+60000;s.ballots={};s.offers=[];s.actions={};s.decision=null}}
 else if(action==='reset'){if(!host)throw Error('Только ведущий');room.state=structuredClone(INITIAL)}
 else throw Error('Неизвестное действие');room.state.version=(room.state.version||0)+1;storeRoom(code,room);return{ok:true}}
 async function rpc(name,params){const res=await fetch(SUPABASE_URL+'/rest/v1/rpc/'+name,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY},body:JSON.stringify(params)});let data;try{data=await res.json()}catch{throw Error('Нет ответа от базы данных')}if(!res.ok)throw Error(data.message||'Ошибка сервера');return data}
@@ -104,7 +104,7 @@ function metric(label,val){return `<div class="metric"><label>${label}</label><s
 function metrics(m){return `<div class="grid">${metric('ДОВЕРИЕ ГРАЖДАН',m.trust)}${metric('ЭКОНОМИКА',m.economy)}${metric('СТАБИЛЬНОСТЬ',m.stability)}</div>`}
 function rank(s){return `<div class="ranking">${[...ROLES].sort((a,b)=>s.scores[b.id]-s.scores[a.id]).map((r,i)=>`<div class="item"><span>${i+1}. ${r.icon} ${r.short}</span><strong>${s.scores[r.id]} очк.</strong></div>`).join('')}</div>`}
 function steps(s){return `<div class="steps">${Object.entries(PHASES).filter(([k])=>!['lobby','finished'].includes(k)).map(([k,n])=>`<span class="${s.phase===k?'active':''}">${esc(n)}</span>`).join('')}</div>`}
-function scenario(s){const sc=SCENARIOS[Math.min(s.round,7)];return `<div><div class="eyebrow">РАУНД ${s.round+1} ИЗ 8 · ${esc(PHASES[s.phase])}</div><h2 class="title">${esc(sc.title)}</h2><p class="subtitle">${esc(sc.story)}</p></div>`}
+function scenario(s){const sc=SCENARIOS[Math.min(s.round,7)];return `<div><div class="eyebrow">РАУНД ${s.round+1} ИЗ 8 · ${esc(PHASES[s.phase])}</div><span class="tag gold" id="gameTimer"></span><h2 class="title">${esc(sc.title)}</h2><p class="subtitle">${esc(sc.story)}</p></div>`}
 function options(s,sel=selectedOption){return SCENARIOS[Math.min(s.round,7)].options.map((o,i)=>`<button class="option ${sel===o.id?'selected':''}" data-option="${o.id}"><span class="number">ВАРИАНТ ${String.fromCharCode(1040+i)}</span><br>${esc(o.title)}</button>`).join('')}
 function counts(s){const c={};for(const b of Object.values(s.ballots||{})){c[b.role]??={a:0,b:0,c:0};c[b.role][b.option]++}return c}
 function possibleChoice(s){const group=counts(s)[s.leader]||{a:0,b:0,c:0};return ['a','b','c'].sort((a,b)=>group[b]-group[a])[0]}
@@ -121,5 +121,8 @@ $('leave').addEventListener('click',()=>{if(confirm('Выйти из комна�
 window.addEventListener('storage',ev=>{if(mode==='local'&&session&&ev.key==='pl_touch_'+session.code)refresh(true)});
 localChan=new BroadcastChannel('pl_local');localChan.onmessage=e=>{if(mode==='local'&&e.data.code===session?.code)refresh(true)};
 render();if(session)refresh(true);setInterval(()=>{if(session&&document.visibilityState==='visible')refresh()},2300);
+
+function updateTimer(){const el=$('gameTimer');if(!el||!snapshot)return;const end=snapshot.state.phaseEnd||0;if(!end){el.textContent='';return}const t=Math.max(0,Math.ceil((end-Date.now())/1000));el.textContent=t>0?`⏱ ${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`:'⏱ Время истекло';}
+setInterval(updateTimer,500);
 
 </script></body></html>
