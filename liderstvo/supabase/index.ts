@@ -1,0 +1,74 @@
+
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.0';
+const db=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+const C={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization,apikey,content-type','Access-Control-Allow-Methods':'POST,OPTIONS'};
+const J=(o:any,s=200)=>new Response(JSON.stringify(o),{status:s,headers:{...C,'Content-Type':'application/json; charset=utf-8'}});
+const hash=async(s:string)=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))).map(b=>b.toString(16).padStart(2,'0')).join('');
+const token=()=>crypto.randomUUID()+crypto.randomUUID();
+const teams=['Правящая элита','Оппозиция','Бизнес-элита','Медиа и гражданское общество','Силовые структуры'];
+const rounds=[
+{title:'Коррупционный скандал',story:'Журналисты опубликовали расследование о коррупции министра из окружения президента. Общественное доверие под угрозой.',options:[['Отправить министра в отставку',[6,-1,2]],['Защитить министра',[-7,2,-4]],['Независимое расследование',[8,-2,4]]],shock:[-5,0,0]},
+{title:'Экономический кризис',story:'Рейтинговые агентства понизили рейтинг страны. Инвесторы уходят, валюта слабеет. Необходимо определить экономический курс.',options:[['Жёсткая экономия',[-5,4,-3]],['Стимулирование экономики',[5,-5,2]],['Переговоры с кредиторами',[2,5,3]]],shock:[0,-7,-2]},
+{title:'Массовые протесты',story:'200 000 студентов и рабочих протестуют против пенсионной реформы. Силовики запрашивают разрешение на разгон.',options:[['Диалог с протестующими',[8,-2,4]],['Силовой разгон',[-10,2,-5]],['Частичный пересмотр реформы',[5,-4,6]]],shock:[-3,-2,-3]},
+{title:'Внешнеполитический кризис',story:'Соседняя страна ввела санкции из-за обвинений в поддержке сепаратистов. Армия предлагает ответные меры.',options:[['Дипломатические переговоры',[4,5,4]],['Силовой ответ',[1,-6,-6]],['Ограниченные контрсанкции',[-2,-3,1]]],shock:[0,-5,-3]},
+{title:'Парламентские выборы',story:'Через три месяца выборы, доверие к правительству снижается. Появились сведения о возможных фальсификациях.',options:[['Гарантировать честные выборы',[5,-1,6]],['Применить административный ресурс',[-9,2,-6]],['Создать межпартийную комиссию',[6,-2,5]]],shock:[-2,0,0]},
+{title:'Конституционная реформа',story:'Правящая элита намерена расширить полномочия президента. Для реформы нужна поддержка как минимум трёх делегаций.',options:[['Усилить президентскую власть',[-8,2,-5]],['Конституционный компромисс',[6,1,7]],['Отложить реформу',[-1,0,-2]]],shock:[0,0,-2]},
+{title:'Экологическая катастрофа',story:'Разлив нефти затронул три региона. Крупный бизнес причастен к аварии. Общество требует возмещения ущерба.',options:[['Обязать бизнес выплатить компенсации',[7,-4,3]],['Скрыть сведения об ущербе',[-8,2,-6]],['Совместный фонд восстановления',[5,-3,5]]],shock:[-4,-6,-3]},
+{title:'Политический кризис',story:'Часть правящей элиты перешла на сторону оппозиции. Вотум недоверия может вызвать смену правительства.',options:[['Сформировать коалиционное правительство',[8,2,8]],['Объявить чрезвычайное положение',[-10,-4,-9]],['Досрочные выборы',[5,-3,4]]],shock:[-3,-2,-5]}
+];
+const missions=['Сохранить власть до финала','Добиться принятия альтернативной программы','Обеспечить экономический рост','Сохранить доверие граждан выше 65','Сохранить стабильность государства выше 50'];
+const clamp=(n:number)=>Math.max(0,Math.min(100,n));
+function fresh(){return {round:0,phase:'lobby',metrics:[60,60,60],scores:[20,20,20,20,20],players:[],votes:{},alliances:[],actions:[],history:[],used:[],government:0,completed:false,openReveals:false,pending:[],created:Date.now()};}
+function view(s:any,who:any,isHost:boolean){ const mine=s.players.find((p:any)=>p.id===who?.id); const tid=mine?.team;const count=teams.map((_:any,i:number)=>s.players.filter((p:any)=>p.team===i).length);let v={round:s.round,phase:s.phase,metrics:s.metrics,scores:s.scores,teams,rounds:rounds.map((r:any)=>({title:r.title})),scenario:rounds[s.round],players:s.players.map((p:any)=>({id:p.id,name:p.name,team:p.team})),counts:count,alliances:s.alliances,history:s.history,completed:s.completed,missionResults:s.completed?s.missionResults:null,government:s.government,used:s.used,mission:tid==null?null:missions[tid],myTeam:tid,teamLeader:tid==null?false:s.players.find((p:any)=>p.team===tid)?.id===mine?.id,myId:mine?.id??null,voted:!!(mine&&s.votes[s.round+':'+mine.id]),myVote:mine?s.votes[s.round+':'+mine.id]??null:null,actions:s.actions.filter((a:any)=>isHost||a.team===tid||a.target===tid||a.public),votesCount:s.players.filter((p:any)=>s.votes[s.round+':'+p.id]!=null).length};if(isHost){v={...v,allVotes:s.votes,allActions:s.actions};}return v;}
+function tally(s:any){let t:number[]=[];for(let i=0;i<5;i++){let c=[0,0,0];for(const p of s.players.filter((p:any)=>p.team===i)){let v=s.votes[s.round+':'+p.id];if(Number.isInteger(v)&&v>=0&&v<3)c[v]++;}t[i]=c.indexOf(Math.max(...c));if(!c.some(x=>x>0))t[i]=-1;}return t;}
+function finish(s:any){const r=rounds[s.round],choices=tally(s), gov=s.government;
+let winning=choices[gov]>=0?choices[gov]:0;const voters=choices.filter(x=>x===winning).length;
+const coalition=choices.filter(x=>x>=0).reduce((m:any,x:number)=>(m[x]=(m[x]||0)+1,m),{});
+const majority=Object.entries(coalition).sort((a:any,b:any)=>b[1]-a[1])[0];
+const ref=s.actions.some((a:any)=>a.round===s.round&&a.type==='referendum');
+const block=s.actions.filter((a:any)=>a.round===s.round&&a.type==='block').length>=2;
+const emergency=s.actions.some((a:any)=>a.round===s.round&&a.type==='emergency');
+const veto=s.actions.some((a:any)=>a.round===s.round&&a.type==='veto');
+if(ref || ((block||veto)&&!emergency)){if(majority&&Number(majority[1])>=3)winning=Number(majority[0]);}
+if(s.round===5&&choices.filter(x=>x===0).length<3&&winning===0)winning=1;
+const delta=r.options[winning][1];const due=(s.pending||[]).filter((p:any)=>p.when===s.round);s.pending=(s.pending||[]).filter((p:any)=>p.when!==s.round);s.metrics=s.metrics.map((x:number,i:number)=>clamp(x+Number(r.shock[i])+Number(delta[i])+due.reduce((sum:number,p:any)=>sum+Number(p.delta[i]||0),0)));if(s.round<7){const delayed=winning===1?[-2,1,-2]:winning===2?[2,-1,2]:[1,0,1];s.pending.push({when:s.round+1,delta:delayed,origin:s.round});}
+const changes=[0,0,0,0,0];for(let i=0;i<5;i++){if(choices[i]===winning)changes[i]+=3;else if(choices[i]>=0)changes[i]-=2;}
+for(const a of s.alliances.filter((a:any)=>a.round===s.round&&a.status==='accepted')){if(choices[a.from]===winning&&choices[a.to]===winning){changes[a.from]++;changes[a.to]++;}}
+for(const a of s.actions.filter((a:any)=>a.round===s.round)){if(a.type==='investment'&&a.target!==null)changes[a.target]++;if(a.type==='blockade'&&a.target!==null)changes[a.target]-=3;if(a.type==='investigation'&&a.target!==null)changes[a.target]-=2;if(a.type==='endorse'&&a.target!==null)changes[a.target]+=a.value===1?2:-2;}
+if(s.metrics[0]<20)changes[gov]-=3;
+if(s.metrics[0]>65)changes[3]+=2;
+if(s.metrics[1]<20)changes[2]-=2;
+if(s.metrics[2]<20)changes[4]-=2;
+s.scores=s.scores.map((x:number,i:number)=>Math.max(0,x+changes[i]));
+const coup=s.actions.some((a:any)=>a.round===s.round&&a.type==='coup');const noConfidence=s.actions.some((a:any)=>a.round===s.round&&a.type==='no_confidence');const opposition=choices[1];
+let regime='Сохранение правящей коалиции';
+if((coup&&s.metrics[2]<45)||(noConfidence&&choices.filter(x=>x===opposition&&x>=0).length>=3&&opposition!==choices[gov])){s.government=1;regime='Смена правящей элиты';}
+if(s.metrics[0]<20&&s.metrics[2]<20)regime='Политический кризис';
+if(s.metrics.every((m:number)=>m>=60))regime='Политический компромисс';
+s.history.push({round:s.round,title:r.title,winning,choice:r.options[winning][0],teamChoices:choices,changes,metrics:[...s.metrics],scores:[...s.scores],regime,actions:s.actions.filter((a:any)=>a.round===s.round).map((a:any)=>({team:a.team,type:a.type,target:a.target}))});
+s.phase='results';if(s.round===rounds.length-1){s.completed=true;const goals=[s.government===0,s.history.some((h:any)=>h.teamChoices[1]===h.winning&&h.teamChoices[0]!==h.winning),s.metrics[1]>=60,s.metrics[0]>65,s.metrics[2]>50];s.missionResults=goals;s.scores=s.scores.map((v:number,i:number)=>v+(goals[i]?5:0));}
+}
+Deno.serve(async(req:Request)=>{if(req.method==='OPTIONS')return new Response(null,{headers:C});if(req.method!=='POST')return J({error:'POST only'},405);
+try{const b=await req.json();const op=String(b.op||'');if(op==='create'){const secret=token(),code=Array.from(crypto.getRandomValues(new Uint8Array(3))).map(x=>x.toString(36).toUpperCase().padStart(2,'0')).join('').slice(0,6);const {error}=await db.from('pl_rooms').insert({code,host_hash:await hash(secret),state:fresh()});if(error)throw error;return J({code,token:secret,host:true});}
+const code=String(b.code||'').toUpperCase().slice(0,6),secret=String(b.token||'');if(!/^[A-Z0-9]{6}$/.test(code))return J({error:'Неверный код комнаты'},400);
+for(let attempt=0;attempt<5;attempt++){
+const {data:room,error:readError}=await db.from('pl_rooms').select('state,host_hash,version').eq('code',code).gt('expires_at',new Date().toISOString()).maybeSingle();
+if(readError)throw readError;if(!room)return J({error:'Комната не найдена'},404);
+const h=await hash(secret),isHost=!!secret&&h===room.host_hash;const s=room.state;const me=s.players.find((p:any)=>p.hash===h&&!!secret);
+if(op==='join'){if(s.players.length>=30)return J({error:'Комната заполнена'},400);if(!/^[\p{L}\p{N} ._-]{2,32}$/u.test(String(b.name||'')))return J({error:'Укажите имя (2–32 символа)'},400);const team=Number(b.team);if(!Number.isInteger(team)||team<0||team>=5)return J({error:'Выберите делегацию'},400);if(s.players.filter((p:any)=>p.team===team).length>=6)return J({error:'В делегации уже 6 человек'},400);if(s.phase!=='lobby')return J({error:'Игра уже началась'},409);const t=token();s.players.push({id:crypto.randomUUID(),hash:await hash(t),name:String(b.name).trim(),team});const {data:updated}=await db.from('pl_rooms').update({state:s,version:room.version+1}).eq('code',code).eq('version',room.version).select('code').maybeSingle();if(updated)return J({code,token:t,host:false});continue;}
+if(!isHost&&!me)return J({error:'Требуется повторное подключение'},401);
+if(op==='state')return J(view(s,me,isHost));
+if(op==='reset'){if(!isHost)return J({error:'Только ведущий'},403);const z=fresh();z.players=s.players;s.round=z.round;s.phase=z.phase;s.metrics=z.metrics;s.scores=z.scores;s.votes={};s.alliances=[];s.actions=[];s.history=[];s.used=[];s.government=0;s.completed=false;s.pending=[];s.missionResults=null;}
+else if(op==='phase'){if(!isHost)return J({error:'Только ведущий'},403);if(s.phase==='lobby'){if(s.players.length<2)return J({error:'Для старта нужно минимум два участника'},400);s.phase='scenario';}else if(s.phase==='scenario')s.phase='negotiations';else if(s.phase==='negotiations')s.phase='voting';else if(s.phase==='voting')finish(s);else if(s.phase==='results'){if(s.completed)return J({error:'Игра завершена'},400);s.round++;s.phase='scenario';s.alliances=[];}}
+else if(op==='vote'){if(isHost)return J({error:'Ведущий не голосует'},403);if(s.phase!=='voting')return J({error:'Голосование закрыто'},409);const v=Number(b.value);if(!Number.isInteger(v)||v<0||v>2)return J({error:'Неверное решение'},400);s.votes[s.round+':'+me.id]=v;}
+else if(op==='alliance'){if(s.players.find((p:any)=>p.team===me?.team)?.id!==me?.id)return J({error:'Союзы подтверждает руководитель делегации'},403);if(isHost||s.phase!=='negotiations')return J({error:'Переговоры закрыты'},409);const target=Number(b.target);if(!Number.isInteger(target)||target===me.team||target<0||target>4)return J({error:'Неверная делегация'},400);if(s.alliances.some((a:any)=>a.round===s.round&&a.from===me.team&&a.to===target))return J({error:'Предложение уже отправлено'},409);s.alliances.push({id:crypto.randomUUID(),round:s.round,from:me.team,to:target,status:'pending'});}
+else if(op==='accept'){if(s.players.find((p:any)=>p.team===me?.team)?.id!==me?.id)return J({error:'Союзы подтверждает руководитель делегации'},403);if(isHost||s.phase!=='negotiations')return J({error:'Переговоры закрыты'},409);const a=s.alliances.find((a:any)=>a.id===b.id&&a.to===me.team&&a.status==='pending');if(!a)return J({error:'Предложение не найдено'},404);a.status=b.accept?'accepted':'rejected';if(b.accept&&s.alliances.filter((x:any)=>x.round===s.round&&x.status==='accepted'&&(x.from===me.team||x.to===me.team)).length>2)a.status='rejected';}
+else if(op==='action'){if(!isHost&&s.players.find((p:any)=>p.team===me?.team)?.id!==me?.id)return J({error:'Специальные полномочия применяет руководитель делегации — первый подключившийся игрок'},403);if(isHost||!['negotiations','voting'].includes(s.phase))return J({error:'Действия сейчас недоступны'},409);const type=String(b.type||'');const permitted:any={0:['emergency','endorse'],1:['referendum','no_confidence'],2:['investment','blockade','veto'],3:['investigation','endorse'],4:['coup','veto','block']};if(!permitted[me.team].includes(type))return J({error:'Нет полномочий'},403);const once=['emergency','referendum','no_confidence','blockade','investigation','coup'];if(once.includes(type)&&s.used.includes(type))return J({error:'Способность уже использована'},409);if(s.actions.some((a:any)=>a.round===s.round&&a.team===me.team&&a.type===type))return J({error:'Действие уже подано'},409);
+if(type==='veto'&&!((me.team===2&&s.metrics[1]<20)||(me.team===4&&s.metrics[2]<20)))return J({error:'Нет основания для вето'},409);
+let target=b.target===undefined?null:Number(b.target);if(['investment','blockade','investigation','endorse'].includes(type)&&(!Number.isInteger(target)||target<0||target>4))return J({error:'Выберите делегацию'},400);
+if(once.includes(type))s.used.push(type);s.actions.push({round:s.round,team:me.team,type,target,value:b.value===-1?-1:1,public:!['investigation','blockade','coup'].includes(type)});}
+else return J({error:'Неизвестная операция'},400);
+const {data:updated,error:writeError}=await db.from('pl_rooms').update({state:s,version:room.version+1,updated_at:new Date().toISOString()}).eq('code',code).eq('version',room.version).select('code').maybeSingle();if(writeError)throw writeError;if(updated)return J(view(s,me,isHost));
+}return J({error:'Конфликт одновременных действий — повторите'},409);
+}catch(e){console.error(e);return J({error:'Ошибка сервера: '+String(e?.message||e)},500);}
+});
