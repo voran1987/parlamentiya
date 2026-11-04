@@ -29,3 +29,12 @@ GitHub Pages: `cultural-code/index.html`. Supabase Edge Function: `cultural-code
 
 ## Важно
 QR-код генерируется внешним сервисом qrserver.com (в QR передаётся только публичная ссылка на присоединение). Доступ ведущего держите в секрете. Псевдонимы предпочтительнее персональных данных.
+
+## Иллюстрации и права
+В интерфейсе игры нет подписей об источниках под изображениями. Информация об авторах и лицензиях сохранена отдельно в документации проекта:
+- [Flag of Russia.svg](https://commons.wikimedia.org/wiki/File:Flag_of_Russia.svg) — изображение государственного флага, общественное достояние с оговоркой о правилах использования официальной символики.
+- [MSU Main Building.jpg](https://commons.wikimedia.org/wiki/File:MSU_Main_Building.jpg) — Sukhinov Anton, Wikimedia Commons, условия лицензирования на странице файла.
+- [Saint-Basil-Cathedral Moscow.jpg](https://commons.wikimedia.org/wiki/File:Saint-Basil-Cathedral_Moscow.jpg) — Acediscovery, Wikimedia Commons, условия лицензирования на странице файла.
+- [Monument to Minin and Pozharsky.jpg](https://commons.wikimedia.org/wiki/File:Monument_to_Minin_and_Pozharsky.jpg) — Ctac, Wikimedia Commons, условия лицензирования на странице файла.
+- [Moscow - Monument to Minin and Pozharsky1.jpg](https://commons.wikimedia.org/wiki/File:Moscow_-_Monument_to_Minin_and_Pozharsky1.jpg) — Юрий Д.К., CC BY 4.0, https://creativecommons.org/licenses/by/4.0/.
+Иллюстрации используются без изменения исходных файлов; кадрирование может производиться только отображением через CSS.
