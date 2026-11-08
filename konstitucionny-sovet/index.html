@@ -62,7 +62,7 @@ function caseText(t){return CASES.find(x=>x[0]===t)}function renderCase(){
  if(host){
  const keys='<div class="hint answerbox"><strong>Методический ориентир для преподавателя:</strong> '+esc(c[4])+'</div>';
  const extra=defending?'<div class="hint '+(twistVisible?'answerbox':'')+'"><strong>Неожиданный поворот</strong><p>'+(twistVisible?esc(TWISTS[caseIndex]):'Будет доступен командам после нажатия «Открыть неожиданный поворот».')+'</p></div>':'<div class="hint">Каждая команда видит собственное задание. Заключение от капитана принимается один раз; для одновременной работы всех шести команд используйте задание №1.</div>';
- const answer=(defending&&state.answers)?'<div class="hint"><strong>Ранее отправленное заключение:</strong><p>'+esc(state.answers['1:0:'+team]??'Ещё не отправлено')+'</p></div>':'';
+ const answer=(defending&&state.answers)?'<div class="hint"><strong>Ранее отправленное заключение:</strong><p>'+esc(state.caseSubmissions?.['1:0:'+team]??'Ещё не отправлено')+'</p></div>':'';
  return '<div class="card">'+roleLine+'<div class="pill">'+esc(team)+'</div>'+caseBody+keys+extra+answer+'</div>';
  }
  if(defending){
@@ -90,7 +90,7 @@ function scoring(){
  if(auth.role!=='host'||section()===4)return '';
  const r=section(),kind=r===0?'quiz':r===1?'case':'defense',max=r===0?1:r===1?15:12;
  const shown=r===0?TEAMS:r===1?TEAMS:[TEAMS[state.idx]];
- return '<div class="card"><h2>Оценивание команд</h2><p class="muted tiny">'+(r===3?'Оцените защиту выступающей команды: аргументы, ответ на неожиданный поворот и возражения (до 12 баллов).':'Оценки сохраняются на сервере. Повторное сохранение заменяет предыдущую оценку.')+'</p>'+shown.map(t=>{const i=TEAMS.indexOf(t),key=kind+':'+(r===1?0:state.idx)+':'+t,old=state.reviews?.[key]??0;const ans=state.answers?.[(r===1?'1:0:':r+':'+state.idx+':')+t];return '<div class="rank" style="align-items:flex-start"><div class="rankname"><b>'+esc(t)+'</b>'+(r===1&&ans!==undefined?'<div class="tiny muted" style="margin:6px 0">'+esc(ans).slice(0,550)+'</div>':'')+'</div><input type="number" min="0" max="'+max+'" id="point'+i+'" class="scorefield" value="'+old+'"><button class="btn small secondary" onclick="score(\''+t+'\','+i+',\''+kind+':'+(r===1?0:state.idx)+'\')">✓</button></div>'}).join('')+'</div>';
+ return '<div class="card"><h2>Оценивание команд</h2><p class="muted tiny">'+(r===3?'Оцените защиту выступающей команды: аргументы, ответ на неожиданный поворот и возражения (до 12 баллов).':'Оценки сохраняются на сервере. Повторное сохранение заменяет предыдущую оценку.')+'</p>'+shown.map(t=>{const i=TEAMS.indexOf(t),key=kind+':'+(r===1?0:state.idx)+':'+t,old=state.reviews?.[key]??0;const ans=r===1?state.caseSubmissions?.['1:0:'+t]:state.answers?.[r+':'+state.idx+':'+t];return '<div class="rank" style="align-items:flex-start"><div class="rankname"><b>'+esc(t)+'</b>'+(r===1&&ans!==undefined?'<div class="tiny muted" style="margin:6px 0">'+esc(ans).slice(0,550)+'</div>':'')+'</div><input type="number" min="0" max="'+max+'" id="point'+i+'" class="scorefield" value="'+old+'"><button class="btn small secondary" onclick="score(\''+t+'\','+i+',\''+kind+':'+(r===1?0:state.idx)+'\')">✓</button></div>'}).join('')+'</div>';
 }
 
 async function score(team,i,key){let points=Number(document.getElementById('point'+i).value);if(!Number.isInteger(points)||points<0||points>(section()===0?1:section()===1?15:12))return toast('Недопустимое количество баллов');try{let r=await api('score',{team,points,scorekey:key});state=r.state;render();toast('Оценка сохранена')}catch(e){toast(e.message)}}
