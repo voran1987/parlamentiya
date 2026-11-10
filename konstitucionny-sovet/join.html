@@ -66,10 +66,10 @@ async function call(action,params={}){
  return json;
 }
 function render(){
- const top='<div class="panel"><div class="label">Учебная сессия</div><div class="code">'+escapeHTML(code||'—')+'</div><p class="muted">Студенты выбирают команду. Один капитан отправляет ответ от всей группы.</p></div>';
+ const top='<div class="panel"><div class="label">Конституционный совет · НИУ «МЭИ»</div><p class="muted">Выберите свою команду. Код доступа не требуется: вход осуществляется по приглашению преподавателя.</p></div>';
  if(!account){
-  app.innerHTML='<h1>Подключение команды</h1>'+top+'<div class="panel"><h2>Войти в игру</h2><div class="label">Код игры</div><input id="codeInput" maxlength="6" value="'+escapeHTML(code)+'" placeholder="Введите код" style="text-transform:uppercase"><div class="label">Выберите свою команду</div><select id="teamInput">'+TEAMS.map(x=>'<option>'+escapeHTML(x)+'</option>').join('')+'</select><button class="full" id="joinButton">Присоединиться к игре</button>'+(error?'<div class="error">'+escapeHTML(error)+'</div>':'')+'</div>';
-  document.getElementById('joinButton').onclick=join;return;
+  app.innerHTML='<h1>Подключение команды</h1>'+top+( !/^[A-Z0-9]{6}$/.test(code) ? '<div class="panel"><h2>Нужна ссылка-приглашение</h2><p>Откройте ссылку или QR-код, предоставленные преподавателем. Вводить код не нужно.</p></div>' : '<div class="panel"><h2>Войти в игру</h2><div class="label">Выберите свою команду</div><select id="teamInput">'+TEAMS.map(x=>'<option>'+escapeHTML(x)+'</option>').join('')+'</select><button class="full" id="joinButton">Присоединиться к игре</button>'+(error?'<div class="error">'+escapeHTML(error)+'</div>':'')+'</div>');
+  const joinBtn=document.getElementById('joinButton');if(joinBtn)joinBtn.onclick=join;return;
  }
  if(!state){app.innerHTML=top+'<div class="panel"><h2>Подключаем команду…</h2>'+(error?'<div class="error">'+escapeHTML(error)+'</div>':'')+'<button id="retry" class="secondary">Повторить запрос</button></div>';document.getElementById('retry').onclick=refresh;return}
  const r=state.round,idx=state.idx,live=state.phase==='open'&&!state.reveal,deadline=state.deadline?Date.parse(state.deadline):0;
@@ -107,11 +107,10 @@ function render(){
 }
 async function join(){
  if(busy)return;
- code=document.getElementById('codeInput').value.trim().toUpperCase();
  const team=document.getElementById('teamInput').value;
- if(!/^[A-Z0-9]{6}$/.test(code))return notice('Введите шестизначный код с экрана ведущего.');
+ if(!/^[A-Z0-9]{6}$/.test(code))return notice('Откройте ссылку-приглашение, полученную от преподавателя.');
  busy=true;error='';document.getElementById('joinButton').disabled=true;
- try{const data=await call('join',{code,team});account={role:'team',code,team,token:data.token};state=data.state;localStorage.setItem(storeKey(),JSON.stringify(account));history.replaceState(null,'','?code='+encodeURIComponent(code));render()}
+ try{const data=await call('join',{code,team});account={role:'team',code,team,token:data.token};state=data.state;localStorage.setItem(storeKey(),JSON.stringify(account));render()}
  catch(e){notice('Не удалось подключиться: '+e.message)}
  finally{busy=false}
 }
