@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Подключение команды · Конституционный совет МЭИ</title>
+<meta name="theme-color" content="#102a43"><style>
+:root{--ink:#102a43;--gold:#c49a50;--blue:#e9f0f5;--line:#d9e3ed;--gray:#607588}
+*{box-sizing:border-box}body{margin:0;background:#f3f6f9;font-family:Segoe UI,Arial,sans-serif;color:var(--ink)}
+header{background:var(--ink);color:white;padding:20px max(18px,5vw);font-weight:700;letter-spacing:.6px}
+header small{display:block;font-size:12px;color:#bacede;font-weight:400;margin-top:5px}
+main{max-width:650px;margin:30px auto;padding:0 16px 50px}
+.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:25px;margin:16px 0;box-shadow:0 6px 26px #102a4309}
+h1{font-size:clamp(26px,5vw,40px);margin:0 0 14px}h2{margin:0 0 12px;font-size:22px}p{line-height:1.55}
+.muted{color:var(--gray)}.label{font-size:12px;letter-spacing:1px;text-transform:uppercase;font-weight:700;color:var(--gray);margin:17px 0 7px}
+input,select,textarea{font:inherit;padding:14px;width:100%;border:1px solid #b9cbd8;border-radius:10px;background:white;color:var(--ink)}
+textarea{min-height:180px;resize:vertical;line-height:1.5}
+button{cursor:pointer;font:inherit;border:0;border-radius:10px;background:var(--ink);color:white;padding:14px 18px;font-weight:700}
+button:disabled{opacity:.5;cursor:not-allowed}
+.full{width:100%;margin-top:16px}.secondary{background:#e8eff5;color:var(--ink)}
+.info{background:var(--blue);border-left:4px solid var(--gold);border-radius:8px;padding:15px;line-height:1.55;margin:15px 0}
+.error{background:#fff0ed;border:1px solid #edafa4;color:#8b3026;border-radius:10px;padding:14px;margin:12px 0}
+.good{background:#e9f7ef;color:#146849;border-radius:10px;padding:15px;margin:15px 0}
+.option{display:flex;align-items:flex-start;gap:12px;padding:13px;border:1px solid var(--line);border-radius:10px;margin:10px 0;cursor:pointer}
+.option input{width:auto;margin-top:4px}.pill{display:inline-block;border-radius:25px;background:#eaf0f4;padding:7px 12px;color:#38536b;font-size:13px}
+.code{letter-spacing:3px;font-weight:800;font-size:30px;color:#102a43}
+.stacked{display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between;align-items:center}
+a{color:#234f75;text-decoration:underline}
+</style></head><body>
+<header>⚖ КОНСТИТУЦИОННЫЙ СОВЕТ<small>НИУ «МЭИ» · Подключение и кабинет команды</small></header>
+<main id="app"><div class="panel">Загрузка подключения…</div></main>
+<script>
+const API='https://logzbhhftwvqsrqvmnik.supabase.co/functions/v1/constitutional-council';
+const PUBLIC_KEY='sb_publishable_gUO0b5EHdgs_vS39Iqi4pQ_tU-7tPuw';
+const TEAMS=['Конституционный контроль','Федерация','Права человека','Парламент','Исполнительная власть','Правосудие'];
+const QUIZ=[
+['Какой юридической силой обладает Конституция РФ?',['Равной федеральным законам','Высшей юридической силой','Ниже федеральных конституционных законов','Равной указам Президента'],1],
+['Кто является носителем суверенитета и единственным источником власти в РФ?',['Президент','Федеральное Собрание','Многонациональный народ','Правительство'],2],
+['К чьему ведению относятся федеральные энергетические системы?',['Российской Федерации','Исключительно субъектов РФ','Муниципалитетов','Энергетических компаний'],0],
+['Какой орган осуществляет конституционный судебный контроль?',['Государственная Дума','Правительство РФ','Верховный Суд РФ','Конституционный Суд РФ'],3],
+['Какой орган принимает федеральные законы?',['Совет Федерации','Государственная Дума','Правительство РФ','Конституционный Суд РФ'],1],
+['При каком условии могут ограничиваться конституционные права по статье 55?',['По усмотрению регионального чиновника','Решением администрации университета','Федеральным законом в необходимой мере и для установленных целей','Любым подзаконным актом'],2]];
+const CASES=[
+['Закон о цифровом наблюдении','Депутаты рассматривают законопроект о доступе к личной переписке граждан без судебного решения ради предотвращения угроз безопасности. Определите конституционные препятствия и предложите законный механизм.','Статьи 15, 23, 55, 125'],
+['Энергетическая независимость региона','Губернатор хочет самостоятельно регулировать все объекты федеральной энергосистемы на территории субъекта, включая объекты соседних регионов. Разграничьте компетенцию и предложите выход.','Статьи 71–73, 76'],
+['Биометрический пропуск','Университет вводит обязательное распознавание лиц. Студентам, не согласным на биометрию, отказано в проходе. Оцените права и предложите альтернативу.','Статьи 23, 24, 43, 55'],
+['Чрезвычайный энергетический закон','Дума приняла закон, Совет Федерации его отклонил. Депутаты предлагают ввести закон в силу немедленно. Восстановите процедуру.','Статьи 105–107'],
+['Кто отвечает за кризис?','После аварии на федеральном энергетическом объекте спорят, какие полномочия принадлежат Президенту, а какие Правительству. Составьте схему компетенций.','Статьи 80, 83, 110–115'],
+['Защита жителей','Региональный акт допускает строительство энергетических объектов без предусмотренных федеральным законом экологических процедур. Объясните порядок защиты жителей и пределы компетенции судов.','Статьи 42, 46, 58, 125']];
+const TWISTS=[
+'Теперь проект распространяет наблюдение и на сообщения студентов во время энергетического кризиса. Как обеспечить конституционные гарантии?',
+'Региональный акт уже применяется на межрегиональной линии электропередачи. Как оспорить его законно?',
+'Отказавшийся от биометрии студент не может попасть на обязательные лабораторные работы. Как устранить нарушение?',
+'Согласительная комиссия парламента не достигла согласия. Какие следующие действия возможны?',
+'Нужно срочно скоординировать федеральные ведомства и региональные власти. Кто что вправе делать?',
+'Жителям отказали в предоставлении экологической информации. Какие способы защиты доступны?'];
+let code=(new URLSearchParams(location.search).get('code')||'').trim().toUpperCase();
+let account=null, state=null,selected=null, busy=false,error='';
+const app=document.getElementById('app');
+const escapeHTML=(s)=>String(s??'').replace(/[&<>"']/g,k=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[k]));
+function storeKey(){return 'constitutional_student_'+code}
+function notice(msg){error=msg;render()}
+async function call(action,params={}){
+ const body={action,...params};
+ if(action==='state'||action==='submit'){body.code=code;body.token=account?.token}
+ const res=await fetch(API,{method:'POST',headers:{'content-type':'application/json','apikey':PUBLIC_KEY,'authorization':'Bearer '+PUBLIC_KEY},body:JSON.stringify(body)});
+ const json=await res.json().catch(()=>({error:'Сервер вернул некорректный ответ'}));
+ if(!res.ok)throw new Error(json.error||'Ошибка подключения: '+res.status);
+ return json;
+}
+function render(){
+ const top='<div class="panel"><div class="label">Учебная сессия</div><div class="code">'+escapeHTML(code||'—')+'</div><p class="muted">Студенты выбирают команду. Один капитан отправляет ответ от всей группы.</p></div>';
+ if(!account){
+  app.innerHTML='<h1>Подключение команды</h1>'+top+'<div class="panel"><h2>Войти в игру</h2><div class="label">Код игры</div><input id="codeInput" maxlength="6" value="'+escapeHTML(code)+'" placeholder="Введите код" style="text-transform:uppercase"><div class="label">Выберите свою команду</div><select id="teamInput">'+TEAMS.map(x=>'<option>'+escapeHTML(x)+'</option>').join('')+'</select><button class="full" id="joinButton">Присоединиться к игре</button>'+(error?'<div class="error">'+escapeHTML(error)+'</div>':'')+'</div>';
+  document.getElementById('joinButton').onclick=join;return;
+ }
+ if(!state){app.innerHTML=top+'<div class="panel"><h2>Подключаем команду…</h2>'+(error?'<div class="error">'+escapeHTML(error)+'</div>':'')+'<button id="retry" class="secondary">Повторить запрос</button></div>';document.getElementById('retry').onclick=refresh;return}
+ const r=state.round,idx=state.idx,live=state.phase==='open'&&!state.reveal,deadline=state.deadline?Date.parse(state.deadline):0;
+ const timeOK=!deadline||Date.now()<=deadline;
+ const locked=state.myAnswer!==null&&state.myAnswer!==undefined;
+ const phaseName=r===0?'Конституционный блиц':r===1?'Экспертное заключение':r===3?'Заседание совета':r===4?'Итоги':'Ожидание';
+ let content='<div class="panel"><div class="stacked"><span class="pill">'+escapeHTML(account.team)+'</span><span class="pill">'+escapeHTML(phaseName)+'</span></div><p class="muted">Подключено '+state.joined+' из 6 команд</p><h2 style="margin-top:18px">'+(r===0?'Вопрос '+(idx+1)+' из 6':r===1?'Ваше экспертное заключение':r===3?'Заседание Конституционного совета':r===4?'Игра завершена':'Ожидайте ведущего')+'</h2>';
+ if(r===0){let q=QUIZ[idx];if(q){
+   content+='<p><strong>'+escapeHTML(q[0])+'</strong></p>'+q[1].map((opt,i)=>'<label class="option"><input type="radio" name="answer" value="'+i+'" '+(selected===i?'checked ':'')+(!live||locked||!timeOK?'disabled':'')+'><span><strong>'+['А','Б','В','Г'][i]+'.</strong> '+escapeHTML(opt)+'</span></label>').join('');
+   if(state.reveal)content+='<div class="good">Правильный ответ: '+['А','Б','В','Г'][q[2]]+'</div>';
+ }}
+ else if(r===1){
+   const c=CASES[TEAMS.indexOf(account.team)];
+   content+='<h2>'+escapeHTML(c[0])+'</h2><p>'+escapeHTML(c[1])+'</p><div class="info">Нормативная база: '+escapeHTML(c[2])+'</div>';
+   if(locked)content+='<div class="good">Экспертное заключение принято. Повторная отправка невозможна.</div><div class="info">'+escapeHTML(state.myAnswer)+'</div>';
+   else content+='<textarea id="report" placeholder="Сформулируйте позицию, применимые статьи Конституции и итоговое решение…" '+(!live||!timeOK?'disabled':'')+'></textarea>';
+ }
+ else if(r===3){
+   const t=TEAMS[idx],ci=TEAMS.indexOf(t),c=CASES[ci];
+   content+='<p><strong>Выступает команда «'+escapeHTML(t)+'»</strong></p><p>'+escapeHTML(c[0])+'</p>';
+   if(state.reveal)content+='<div class="info"><strong>Неожиданный поворот:</strong><p>'+escapeHTML(TWISTS[ci])+'</p></div>';
+   else content+='<div class="info">Ожидайте открытия дополнительного обстоятельства преподавателем.</div>';
+ }
+ else if(r===4)content+='<div class="good">Игра завершена. Спасибо за участие!</div>';
+ if((r===0||r===1)&&!locked&&live&&timeOK)content+='<button class="full" id="submitButton">Отправить окончательный ответ</button>';
+ if(locked&&r===0)content+='<div class="good">✓ Ответ команды принят. Изменить его нельзя.</div>';
+ if(!live && (r===0||r===1)&&!locked)content+='<div class="info">Приём ответов сейчас закрыт. Ожидайте команды ведущего.</div>';
+ if(error)content+='<div class="error">'+escapeHTML(error)+'</div>';
+ content+='</div>';
+ const scores=Object.entries(state.scores||{}).sort((a,b)=>b[1]-a[1]);
+ content+='<div class="panel"><h2>Рейтинг</h2>'+scores.map(([t,p],i)=>'<p>'+String(i+1)+'. '+escapeHTML(t)+' — <b>'+Number(p)+' баллов</b></p>').join('')+'</div>';
+ app.innerHTML=top+content;
+ document.querySelectorAll('input[name="answer"]').forEach(x=>x.onchange=()=>{selected=Number(x.value);render()});
+ const submit=document.getElementById('submitButton');if(submit)submit.onclick=send;
+}
+async function join(){
+ if(busy)return;
+ code=document.getElementById('codeInput').value.trim().toUpperCase();
+ const team=document.getElementById('teamInput').value;
+ if(!/^[A-Z0-9]{6}$/.test(code))return notice('Введите шестизначный код с экрана ведущего.');
+ busy=true;error='';document.getElementById('joinButton').disabled=true;
+ try{const data=await call('join',{code,team});account={role:'team',code,team,token:data.token};state=data.state;localStorage.setItem(storeKey(),JSON.stringify(account));history.replaceState(null,'','?code='+encodeURIComponent(code));render()}
+ catch(e){notice('Не удалось подключиться: '+e.message)}
+ finally{busy=false}
+}
+async function send(){
+ if(busy||!account||!state)return;
+ let answer=state.round===1?document.getElementById('report')?.value.trim():selected;
+ if(state.round===1 && (!answer||answer.length<20))return notice('Напишите заключение объёмом не менее 20 символов.');
+ if(state.round===0&&!Number.isInteger(answer))return notice('Сначала выберите вариант ответа.');
+ if(!confirm('Отправить один окончательный ответ от команды? Исправить его будет нельзя.'))return;
+ busy=true;error='';
+ try{const d=await call('submit',{answer});state=d.state;selected=null;render()}
+ catch(e){notice('Ответ не принят: '+e.message)}
+ finally{busy=false}
+}
+async function refresh(){
+ if(!account||busy)return;
+ try{const d=await call('state');const next=JSON.stringify(d.state);if(JSON.stringify(state)!==next){state=d.state;error='';render()}}
+ catch(e){error='Не удалось обновить игру: '+e.message;render()}
+}
+try{const previous=JSON.parse(localStorage.getItem(storeKey())||'null');if(previous?.code===code&&previous?.role==='team')account=previous}catch{}
+render();
+if(account)refresh();
+setInterval(refresh,3000);
+</script></body></html>
