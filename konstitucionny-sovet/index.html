@@ -98,30 +98,39 @@ function details(){if(state.phase==='lobby'&&section()===0)return `<div class="c
 function render(){let app=document.getElementById('app'),tag=document.getElementById('sessionTag'),toggle=document.getElementById('qrToggle');toggle.classList.toggle('hidden',!auth||auth.role!=='host');tag.textContent=auth?'Игра '+auth.code+(auth.role==='team'?' · '+auth.team:' · ведущий'):'';if(!auth){let hash=new URLSearchParams(location.search);app.innerHTML=`<section class="intro"><div class="eyebrow">НИУ «МЭИ» · ИНТЕРАКТИВНЫЙ СЕМИНАР</div><h1>Конституционный<br>совет</h1><p>Командная юридическая симуляция. Шесть экспертных групп, решения конституционных кризисов, голоса команд и публичный рейтинг.</p><div class="cards"><div class="card"><h2>Кабинет ведущего</h2><p>Создайте игру и выведите QR-код для капитанов. Управляйте раундами, временем и оценками.</p><button class="btn full" onclick="create()">Создать новую игру</button></div><div class="card"><h2>Подключение команды</h2><p>Введите код с экрана преподавателя и выберите команду. Один капитан отправляет ответы за всю команду.</p><label class="label">Код игры</label><input id="joinCode" class="field" maxlength="6" value="${esc(hash.get('code')||'')}" placeholder="ABC123" style="text-transform:uppercase"><label class="label">Команда</label><select id="joinTeam" class="field">${TEAMS.map(t=>`<option>${esc(t)}</option>`).join('')}</select><button class="btn full" onclick="join()">Присоединиться</button></div></div></section>`;return}
 let host=auth.role==='host';app.innerHTML=hero()+`<div class="stats"><div class="stat"><strong>${state.joined||0} / 6</strong><span>Команд подключено</span></div><div class="stat"><strong>${state.answered?.length||0} / 6</strong><span>Ответили в текущем раунде</span></div><div class="stat"><strong data-timer>${timer()}</strong><span>Таймер</span></div></div><div class="status">${host?'Режим ведущего':'Капитан команды «'+esc(auth.team)+'»'} · ${state.phase==='open'?'Приём ответов открыт':state.phase==='reveal'?'Результаты раскрыты':state.phase==='finished'?'Игра завершена':'Ожидание ведущего'} · Онлайн-синхронизация</div>${host?hostControls():''}<div class="columns"><div>${details()}${host?scoring():''}</div><div>${host?answerRows():''}${ranking()}</div></div><div class="foot">Учебный материал по конституционному праву РФ · Все ситуации вымышлены · МЭИ</div>`;updateTimer();if(qrOpen)drawQR()}
 function toggleQR(){if(!auth||auth.role!=='host')return;qrOpen=!qrOpen;if(qrOpen){document.getElementById('overlay').innerHTML=`<div class="shade" onclick="toggleQR()"></div><aside class="qrpanel"><div class="space"><h2>Подключение команд</h2><button class="btn secondary small" onclick="toggleQR()">✕ Скрыть</button></div><p class="muted">Отсканируйте код на смартфоне капитана команды.</p><div class="qrframe" id="qrSpot"></div><div class="label" style="text-align:center">Код сессии</div><div class="code">${esc(auth.code)}</div><p class="muted tiny" style="text-align:center">Код действителен для текущей игры</p><button class="btn full" onclick="copyLink()">Копировать ссылку</button><a class="btn secondary full" style="margin-top:10px;overflow-wrap:anywhere;text-decoration:none" href="${joinLink()}" target="_blank" rel="noopener">Открыть ссылку для команды ↗</a><p class="tiny muted">Подключено ${state.joined||0} из 6 команд. Панель можно скрыть — сессия продолжится.</p></aside>`;drawQR()}else document.getElementById('overlay').innerHTML=''}
-function joinLink(){let x=new URL(location.href);x.searchParams.set('code',auth.code);return x.toString()}
+function joinLink(){const u=new URL('https://voran1987.github.io/parlamentiya/konstitucionny-sovet/');u.searchParams.set('code',auth.code);return u.toString()}
 function drawQR(){
  const spot=document.getElementById('qrSpot');
- if(!spot)return;
+ if(!spot||!auth)return;
  const link=joinLink();
- const marker=spot.getAttribute('data-link');
- if(marker===link && spot.querySelector('img,canvas,svg'))return;
- spot.setAttribute('data-link',link);
+ if(spot.dataset.link===link && spot.querySelector('img,canvas,svg'))return;
+ spot.dataset.link=link;
  spot.innerHTML='';
- const im=document.createElement('img');
- im.alt='QR-код для входа в командную игру';
- im.width=230;im.height=230;
- im.style.cssText='width:230px;height:230px;max-width:100%;object-fit:contain;background:white;display:block;margin:auto';
- im.onload=()=>{spot.dataset.loaded='1'};
- im.onerror=()=>{
-   im.remove();
-   if(typeof QRCode!=='undefined'){
-     try{new QRCode(spot,{text:link,width:230,height:230,colorDark:'#102a43',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});return;}
-     catch(e){console.warn('QR renderer failed',e);}
-   }
-   spot.innerHTML='<div style="text-align:center;padding:12px;color:#65788a">QR-код не загрузился.<br>Откройте ссылку ниже или введите код игры вручную.</div>';
+ const warning=document.createElement('p');
+ warning.className='tiny muted';
+ warning.style.cssText='text-align:center;margin:8px;display:none';
+ warning.textContent='QR недоступен. Используйте ссылку для входа или код игры.';
+ const services=[
+  'https://api.qrserver.com/v1/create-qr-code/?size=320x320&margin=12&data='+encodeURIComponent(link),
+  'https://quickchart.io/qr?size=320&margin=2&text='+encodeURIComponent(link)
+ ];
+ let step=0;
+ const image=document.createElement('img');
+ image.alt='QR-код для подключения к игре';
+ image.width=260;image.height=260;
+ image.referrerPolicy='no-referrer';
+ image.style.cssText='display:block;width:260px;height:260px;max-width:100%;object-fit:contain;margin:auto;background:white';
+ image.onerror=()=>{
+  if(++step<services.length){image.src=services[step];return}
+  image.remove();
+  if(typeof QRCode!=='undefined'){
+   try{new QRCode(spot,{text:link,width:260,height:260,colorDark:'#102a43',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});return}catch(e){}
+  }
+  warning.style.display='block';
  };
- im.src='https://api.qrserver.com/v1/create-qr-code/?size=230x230&margin=10&format=png&data='+encodeURIComponent(link);
- spot.appendChild(im);
+ image.src=services[0];
+ spot.appendChild(image);
+ spot.appendChild(warning);
 }
 
 function copyLink(){navigator.clipboard?.writeText(joinLink()).then(()=>toast('Ссылка скопирована')).catch(()=>prompt('Ссылка для команд',joinLink()))}
