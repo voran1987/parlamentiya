@@ -55,6 +55,52 @@ h1,h2,h3{font-family:'Libre Baskerville',Georgia,serif;letter-spacing:-.035em}h1
 .storyBar{font-size:13px;font-weight:700;background:#e7ded1;color:#6e2926;border-left:4px solid #802f2c;padding:13px 15px;margin-bottom:18px}
 .grid.heroNote{display:grid}
 @media(max-width:800px){.shell{padding:12px 12px 65px}.brand{font-size:17px}.hero{min-height:375px;padding:25px}.illustrationRow{grid-template-columns:repeat(2,minmax(0,1fr))}.illustrationTile:last-child{grid-column:span 2}.crisisFeature{min-height:280px;padding:20px}.crisisFeature .sub{font-size:14px}.panel{padding:17px}}
+
+/* Focused classroom interface: one task and one clear action per screen. */
+:root{--paper:#f5f2eb;--ink:#262e32;--accent:#8d4039;--edge:#d8d4cb}
+body{background:var(--paper);color:var(--ink)}
+.shell{max-width:1120px;padding:14px 20px 64px}
+.top{margin-bottom:18px;padding:7px 0 14px}
+.brand{font-size:19px}
+.panel{background:#fff;border:1px solid var(--edge);box-shadow:none;padding:21px;border-radius:8px}
+.section{margin:15px 0}
+.player-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin:10px 0 18px}
+.identity{font-size:14px;font-weight:800;color:#38434a}
+.identity strong{color:var(--accent)}
+.stepper{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.stepper span{padding:8px 11px;font-size:11px;border:1px solid var(--edge);border-radius:20px;color:#777}
+.stepper span.on{background:#272f35;color:#fff;border-color:#272f35}
+.taskcallout{border-left:4px solid var(--accent);padding:14px 16px;background:#efe9e1;border-radius:0 6px 6px 0;margin:15px 0;font-weight:700;font-size:15px;line-height:1.55}
+.tasklayout{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;max-width:850px;margin:0 auto}
+.compact-crisis{min-height:210px;padding:25px 28px}
+.compact-crisis h2{font-size:clamp(1.55rem,4vw,2.4rem)}
+.compact-crisis .sub{margin:8px 0 10px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 18px}
+.tab{appearance:none;padding:11px 16px;cursor:pointer;border:1px solid #d9d4ca;background:transparent;border-radius:7px;color:#46494b;font-weight:800;font-size:13px}
+.tab.active{background:#803b35;color:white;border-color:#803b35}
+.tab:focus-visible,.choice:focus-visible,.btn:focus-visible{outline:3px solid #c49b78;outline-offset:2px}
+.focus-card{max-width:850px;margin:0 auto}
+.focus-card h3{font-size:19px;margin-bottom:12px}
+.focus-card .choice{margin:8px 0;padding:16px}
+.focus-card .choice strong{font-size:15px;line-height:1.5}
+.nextstep{display:flex;align-items:center;gap:10px;padding:14px 16px;background:#edf1ec;border:1px solid #cbd8cb;border-radius:7px;color:#2e5541;font-weight:700;margin:14px 0}
+.mobile-tools{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 8px}
+.mobile-tools .btn{flex:1;min-width:120px}
+.host-bar{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center}
+.host-bar .actions{margin:0}
+.host-hero{border:1px solid #ddd6cb;padding:22px;background:#fff;border-radius:8px;margin-bottom:15px}
+.host-hero h1{font-size:clamp(1.7rem,3.5vw,2.75rem);margin:6px 0}
+.host-hero .sub{margin:6px 0}
+.host-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.host-stats .panel{padding:16px}
+.host-stats .metric{font-size:23px}
+.host-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:16px}
+.host-grid>.panel{height:fit-content}
+.host-tool{max-height:72vh;overflow:auto}
+.tabcontent{animation:appear .17s ease}
+@keyframes appear{from{opacity:.6;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+#host-activity .history{margin:12px 0}
+@media(max-width:800px){.shell{padding:12px 12px 75px}.host-grid{grid-template-columns:1fr}.host-bar{display:block}.host-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.host-stats .panel{padding:10px}.host-stats .metric{font-size:17px}.host-stats .muted{font-size:10px}.tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.tab{font-size:11px;padding:10px 5px}.compact-crisis{min-height:180px;padding:18px}.taskcallout{font-size:14px}.panel{padding:16px}.player-head{margin:4px 0 12px}}
 </style></head><body><div id="app" class="shell"></div><div id="toasts"></div>
 <script>
 const ENDPOINT='https://logzbhhftwvqsrqvmnik.supabase.co/functions/v1/political-leadership';
@@ -100,7 +146,21 @@ state.players.map(p=>{const v=votes[state.round+':'+p.id];return '<div class="ra
 '<div class="section"></div><h3>Все дипломатические сообщения</h3>'+(state.messages||[]).slice(-30).reverse().map(m=>'<div class="history"><strong>'+esc(TEAMS[m.from])+' → '+(m.to===-1?'Все':esc(TEAMS[m.to]))+'</strong><p class="note">'+esc(m.text)+'</p></div>').join('')+
 '<div class="section"></div><h3>Союзы</h3>'+(state.alliances||[]).map(v=>'<div class="rank"><span>'+esc(TEAMS[v.from])+' ↔ '+esc(TEAMS[v.to])+'</span><strong>'+esc(v.status)+'</strong></div>').join('')+'</section>';
 }
-function hostView(){let phase=state.phase;const done=state.completed;return header()+'<div class="eyebrow">Кабинет ведущего · Комната '+auth.code+'</div><div class="actions">'+button('Обновить','refresh()','small alt')+button('Скачать протокол','exportCSV()','small alt')+button('Проверить баланс','runSimulation()','small alt')+button('Выйти','logout()','small alt')+button('Начать заново','reset()','small danger')+'</div><section class="section"><h1>'+ (done?'Игра завершена':'Политическая ситуация')+'</h1><p class="sub">'+(done?'Проведите обсуждение стратегий и решений участников.':'Управляйте фазами, пока участники принимают решения со смартфонов.')+'</p></section>'+common()+'<div class="section"></div><div class="cols"><div>'+ (phase!=='lobby'?scenario():qr())+'<div class="actions">'+(done?'':button(stage[phase]||'Продолжить',"action('phase')"))+'</div><p class="progress">Подключено '+state.players.length+' / 30 · Ответов в этом раунде: '+state.votesCount+' / '+state.players.length+'</p><div class="section"></div>'+players()+'<div class="section"></div>'+(phase==='lobby'?'':hostRoleOptionsUI())+'<div class="section"></div>'+(phase==='lobby'?'':qr())+'<div class="section"></div>'+adjustmentUI()+'</div><div>'+ranking()+'<div class="section"></div>'+hostActivityUI()+'<div class="section"></div>'+historyPanel()+'</div></div>'}
+let hostTab='overview';
+function switchHostTab(t){hostTab=t;render();window.scrollTo({top:0,behavior:'smooth'})}
+function hostTabs(){return '<div class="tabs" role="tablist" aria-label="Разделы ведущего">'+[['overview','Ход игры'],['teams','Команды'],['activity','Действия']].map(x=>'<button class="tab '+(hostTab===x[0]?'active':'')+'" role="tab" aria-selected="'+(hostTab===x[0])+'" onclick="switchHostTab(&#39;'+x[0]+'&#39;)">'+x[1]+'</button>').join('')+'</div>'}
+function hostView(){
+const phase=state.phase,done=state.completed,cta=stage[phase]||'Продолжить';
+const primary='<section class="host-hero"><div class="eyebrow">Кабинет преподавателя · Раунд '+(state.round+1)+' из 8</div><h1>'+(done?'Игра завершена':esc(state.scenario?.title||'Ожидание начала'))+'</h1><p class="sub">Этап: <strong>'+esc(ph[phase])+'</strong>. Участников: <strong>'+state.players.length+'</strong>. Подано голосов: <strong>'+state.votesCount+'</strong>.</p><div class="actions">'+(done?'':button(cta,"action('phase')"))+button('QR для новых участников','showTeacherQR()','alt')+button('Обновить','refresh()','alt small')+'</div></section>';
+const content=hostTab==='teams'
+? '<div class="host-grid"><div>'+players()+'</div><div>'+ranking()+'</div></div><div class="section"></div>'+hostRoleOptionsUI()
+:hostTab==='activity'
+? '<div id="host-activity">'+hostActivityUI()+'</div><div class="section"></div>'+historyPanel()
+: '<div class="host-grid"><div>'+(phase==='lobby'?qr():scenario())+'<div class="section"></div>'+hostRoleOptionsUI()+'</div><div>'+ranking()+'<div class="section"></div>'+historyPanel()+'</div></div>';
+return header()+primary+hostTabs()+'<div class="tabcontent">'+content+'</div><div class="section"></div><details class="panel"><summary style="font-weight:800;cursor:pointer">Дополнительные инструменты преподавателя</summary><div class="section"></div><div class="actions">'+button('Скачать протокол','exportCSV()','alt small')+button('Проверить баланс','runSimulation()','alt small')+button('Изменить очки','toggleTeacherAdjust()','alt small')+button('Начать заново','reset()','danger small')+button('Выйти','logout()','alt small')+'</div><div id="teacher-adjust" style="display:none">'+adjustmentUI()+'</div></details>';
+}
+function showTeacherQR(){hostTab='overview';render();const section=document.querySelector('.qr');if(section)section.scrollIntoView({behavior:'smooth',block:'center'});else{const node=document.querySelector('#teacher-qr-modal');if(node){node.hidden=false;node.scrollIntoView({behavior:'smooth'})}}}
+function toggleTeacherAdjust(){const el=document.querySelector('#teacher-adjust');if(el)el.style.display=el.style.display==='none'?'block':'none'}
 function chatUI(){const own=state.myTeam;const msgs=(state.messages||[]).filter(m=>m.round===state.round);return '<div class="panel"><h3>Дипломатические сообщения</h3><p class="muted">Публичные заявления и закрытая переписка. Закрытые сообщения видят только две делегации и ведущий.</p><div style="max-height:240px;overflow:auto;margin:12px 0">'+(msgs.length?msgs.map(m=>'<div class="team" style="margin-bottom:7px"><strong>'+esc(TEAMS[m.from])+' → '+(m.to===-1?'Все делегации':esc(TEAMS[m.to]))+'</strong>'+esc(m.text)+'</div>').join(''):'<p class="note">Сообщений пока нет.</p>')+'</div><select class="field" id="msgTarget"><option value="-1">Публичное обращение ко всем</option>'+TEAMS.map((t,i)=>i!==own?'<option value="'+i+'">'+esc(t)+'</option>':'').join('')+'</select><input class="field" id="msgText" maxlength="300" placeholder="Текст обращения (до 300 символов)">'+button('Отправить сообщение','sendMessage()','small')+'</div>'}
 function sendMessage(){const text=document.querySelector('#msgText')?.value?.trim();const target=Number(document.querySelector('#msgTarget')?.value);if(!text||text.length<2)return toast('Напишите сообщение');action('message',{text,target})}
 function adjustmentUI(){return '<div class="panel"><h3>Корректировка ведущего</h3><p class="muted">Изменение очков или показателей с сохранением в протоколе.</p><select class="field" id="adjustKind" onchange="adjustTargets()"><option value="metric">Показатель государства</option><option value="score">Очки делегации</option></select><select class="field" id="adjustTarget"><option value="0">Доверие</option><option value="1">Экономика</option><option value="2">Политическая стабильность</option></select><input class="field" type="number" id="adjustAmount" value="1" min="-20" max="20">'+button('Применить поправку','adjust()','small alt')+'</div>'}
@@ -124,8 +184,35 @@ const POWERS=[['emergency','endorse'],['referendum','no_confidence'],['investmen
 const TITLES={emergency:'Чрезвычайное положение',endorse:'Публичная поддержка / критика',referendum:'Референдум',no_confidence:'Вотум недоверия',investment:'Политические инвестиции',blockade:'Экономическая блокада',veto:'Вето',investigation:'Расследование',coup:'Попытка переворота',block:'Блокирование решения'};
 function powers(){let mine=state.myTeam;if(!state.teamLeader)return '<div class="panel"><h3>Политические инструменты</h3><p class="muted">Специальные полномочия применяет руководитель делегации — первый подключившийся студент. Ваш голос определяет позицию команды.</p></div>';return '<div class="panel"><h3>Политические инструменты</h3><p class="muted">Специальные действия влияют на итоги кризиса. Часть из них доступна только один раз за игру.</p>'+POWERS[mine].map(k=>'<button class="choice" onclick="power(\''+k+'\')"><span>✦</span><strong>'+TITLES[k]+(state.used.includes(k)?' · использовано':'')+'</strong></button>').join('')+'<p class="note">Действие от имени делегации может отправить любой её участник. Повторное применение в том же раунде заблокировано.</p></div>'}
 async function power(type){if(['investment','blockade','investigation','endorse'].includes(type)){const x=prompt('Номер целевой делегации (1–5):\n'+TEAMS.map((t,i)=>(i+1)+'. '+t).join('\n'));if(!x)return;const target=Number(x)-1;const value=type==='endorse'&&confirm('Выбрать негативную оценку?')?-1:1;return action('action',{type,target,value})}if(confirm('Подтвердить: '+TITLES[type]+'?'))return action('action',{type})}
-function playerView(){const mine=state.myTeam,done=state.completed;return header()+'<div class="eyebrow">Делегация '+EMO[mine]+' '+esc(TEAMS[mine])+'</div><div class="actions">'+button('Обновить','refresh()','small alt')+button('Выйти','logout()','small alt')+'</div><h1 style="margin-bottom:7px">'+(done?'Политический финал':'Ваша политическая роль')+'</h1><p class="sub">Личная миссия: '+esc(state.mission)+'. Влияние делегации: <strong>'+state.scores[mine]+' очков</strong>. '+(state.teamLeader?'Вы руководитель делегации.':'')+'</p>'+((state.phase==='scenario'||state.phase==='negotiations')?roleOptionsUI()+'<div class="section"></div>':'')+common()+'<div class="section"></div><div class="cols"><div>'+(state.phase==='lobby'?'<div class="panel"><h2>Ожидание старта</h2><p class="sub">Вы подключены к комнате '+auth.code+'. Дождитесь, когда преподаватель запустит игру.</p><span class="phase">Участников: '+state.players.length+'</span></div>':scenario())+'<div class="section"></div>'+(state.phase==='voting'?voteUI():state.phase==='negotiations'?allyUI()+'<div class="section"></div>'+chatUI():state.phase==='results'?'<div class="panel"><h3>Раунд завершён</h3><p class="sub">Смотрите результаты на проекторе. Ваши дальнейшие действия станут доступны в следующем раунде.</p></div>':'<div class="panel"><p class="muted">Следуйте указаниям ведущего. Действия откроются на соответствующем этапе.</p></div>'+(state.phase==='scenario'?'<div class="section"></div>'+chatUI():''))+'</div><div>'+ (['negotiations','voting'].includes(state.phase)?powers():ranking())+'<div class="section"></div>'+historyPanel()+'</div></div>'}
-function render(){if(!auth){welcome();return}if(!state){app.innerHTML=header()+'<p class="sub">Подключение к игровой комнате…</p>';return}app.innerHTML=auth.host?hostView():playerView();}
+let playerTab='task';
+function switchPlayerTab(t){playerTab=t;render();window.scrollTo({top:0,behavior:'smooth'})}
+function playerTabs(){
+const labels=state.phase==='negotiations'?[['task','Моё задание'],['talk','Переговоры'],['tools','Полномочия']]:
+state.phase==='voting'?[['task','Голосование'],['talk','Переговоры'],['tools','Полномочия']]:
+[['task','Моё задание'],['talk','Сообщения'],['tools','Результаты']];
+return '<div class="tabs" role="tablist" aria-label="Рабочие разделы">'+labels.map(x=>'<button class="tab '+(playerTab===x[0]?'active':'')+'" role="tab" aria-selected="'+(playerTab===x[0])+'" onclick="switchPlayerTab(&#39;'+x[0]+'&#39;)">'+x[1]+'</button>').join('')+'</div>';
+}
+function mainStudentTask(){
+const phase=state.phase;
+if(phase==='lobby')return '<div class="panel focus-card"><h2>Вы в игре!</h2><p class="sub">Выберите командную стратегию после начала первого кризиса. Пока ожидайте преподавателя.</p><div class="nextstep">✓ Подключение выполнено. Участников: '+state.players.length+'</div></div>';
+if(phase==='scenario'||phase==='negotiations')return roleOptionsUI()+'<div class="nextstep">1. Выберите предварительную позицию. 2. Договоритесь с другими делегациями во вкладке «Переговоры». 3. Дождитесь голосования.</div>';
+if(phase==='voting')return voteUI()+'<div class="nextstep">Проверьте ответ и дождитесь, когда преподаватель подведёт итоги раунда.</div>';
+return '<div class="panel focus-card"><h2>'+(state.completed?'Игра завершена':'Раунд завершён')+'</h2><p class="sub">Решения учтены. Посмотрите последствия и обсудите их с командой.</p>'+historyPanel()+'</div>';
+}
+function playerTalk(){
+if(state.phase==='negotiations')return '<div class="panel"><h2>Договоритесь с другими делегациями</h2><p class="sub">Сначала обсудите условия, затем предложите союз или отправьте сообщение. Другие команды не видят ваш предварительный выбор.</p></div><div class="section"></div>'+allyUI()+'<div class="section"></div>'+chatUI();
+if(state.phase==='scenario')return '<div class="panel"><h2>Обсудите предварительную позицию</h2><p class="sub">На этом этапе доступны сообщения. Предложения союзов откроются на переговорах.</p></div><div class="section"></div>'+chatUI();
+return '<div class="panel"><h2>Сейчас переговоры закрыты</h2><p class="sub">Вы можете просмотреть историю решений, а переговоры возобновятся в следующем раунде.</p></div>';
+}
+function playerTools(){return (['negotiations','voting'].includes(state.phase)?powers()+'<div class="section"></div>':'')+ranking()+'<div class="section"></div>'+historyPanel()}
+function playerView(){
+const mine=state.myTeam,phase=state.phase;
+if(phase==='negotiations'&&playerTab==='talk'){}else if(phase==='voting'&&playerTab==='talk')playerTab='task';
+const message=phase==='scenario'?'Прочитайте кризис и выберите возможную стратегию.':phase==='negotiations'?'Выберите действие и договоритесь о поддержке.':phase==='voting'?'Сейчас нужно проголосовать за одно действие.':phase==='results'?'Изучите итоги раунда.':'Дождитесь начала игры.';
+const steps=['Сценарий','Переговоры','Голосование','Итоги'];const current={lobby:-1,scenario:0,negotiations:1,voting:2,results:3}[phase];
+return header()+'<div class="player-head"><div class="identity">'+EMO[mine]+' <strong>'+esc(TEAMS[mine])+'</strong> · Раунд '+(state.round+1)+' из 8</div>'+button('Обновить','refresh()','small alt')+'</div><div class="stepper">'+steps.map((label,i)=>'<span class="'+(current===i?'on':'')+'">'+(i+1)+'. '+label+'</span>').join('')+'</div>'+(phase==='lobby'?'':'<div class="section"></div>'+scenario())+'<div class="taskcallout">'+message+'</div>'+playerTabs()+'<div class="tasklayout tabcontent">'+(playerTab==='task'?mainStudentTask():playerTab==='talk'?playerTalk():playerTools())+'</div><div class="mobile-tools">'+button('Моё задание',"switchPlayerTab('task')",'alt')+(phase==='negotiations'?button('Договориться',"switchPlayerTab('talk')",'alt'):'')+'</div><details style="margin-top:28px"><summary class="note" style="cursor:pointer">Показатели республики и выход из игры</summary><div class="section"></div>'+common()+'<div class="actions">'+button('Выйти','logout()','small alt')+'</div></details>';
+}
+function render(){if(!auth){welcome();return}if(!state){app.innerHTML=header()+'<p class="sub">Подключение к игровой комнате…</p>';return}app.innerHTML=auth.host?hostView():playerView();if(auth.host&&state){const footer=document.createElement('div');footer.id='teacher-qr-modal';footer.hidden=true;footer.innerHTML=qr();app.appendChild(footer);}}
 if(auth){refresh()}else if(/^[A-Z0-9]{6}$/.test(roomFromURL))joinForm(roomFromURL);else welcome();
 function updateTimer(){const el=document.querySelector('#timer');if(!el||!state||!DURATION[state.phase])return;const remaining=Math.max(0,DURATION[state.phase]-Math.floor((Date.now()-(state.phaseStarted||Date.now()))/1000));el.textContent='⏱ '+String(Math.floor(remaining/60)).padStart(2,'0')+':'+String(remaining%60).padStart(2,'0')+(remaining===0?' · Время вышло':'')}
 setInterval(updateTimer,1000);
