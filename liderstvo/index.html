@@ -123,6 +123,25 @@ body{background:var(--paper);color:var(--ink)}
 .choice.explain-choice strong{font-size:15px}
 .country-dashboard .dash-label strong{font-variant-numeric:tabular-nums}
 @media(max-width:760px){.country-dashboard{top:0;margin:0 -12px 12px;padding:8px 10px}.country-dashboard .dash-grid{gap:7px}.country-dashboard .dash-label{font-size:10px}.country-dashboard .dash-track{height:11px}.country-dashboard .dash-status{font-size:9px}.country-dashboard .dash-title{font-size:11px}.country-dashboard .danger-legend{font-size:9px}.effect-pill{font-size:10px}}
+
+/* Clear explanation of diplomatic and special actions */
+.situational{border-left:5px solid #893b35}
+.situational h3{font-family:DM Sans,Arial,sans-serif;font-size:15px;margin:9px 0}
+.situational p{font-size:13px;line-height:1.7;margin-bottom:9px}
+.brief-rule{border-top:1px solid #e7e1d9;margin:14px 0}
+.brief-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.brief-team{padding:10px 12px;border:1px solid #e0dad0;border-radius:6px;background:#faf8f3}
+.brief-team strong,.brief-team span,.brief-team small{display:block;font-size:12px;line-height:1.55}
+.brief-team span{color:#6b6158}.brief-team small{color:#55514a;margin-top:4px}
+.brief-foot{font-size:11px!important;color:#756f66;margin-top:13px!important}
+.risk-note{background:#fbe5e2;border-left:3px solid #b64138;padding:8px 12px;font-weight:700;color:#932d28}
+.power-entry{background:#faf8f4;border:1px solid #dfd8cc;border-radius:7px;padding:13px;margin:10px 0}
+.power-entry>strong{font-size:15px}
+.power-entry p{font-size:13px;line-height:1.65;color:#544d45;margin:8px 0}
+.power-buttons{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.power-used{font-size:12px;color:#7c7266}
+.brief-step{border-left:3px solid #8d4039;padding:9px 12px;font-size:12px;background:#f4eee6;line-height:1.7;margin:12px 0}
+@media(max-width:700px){.brief-list{grid-template-columns:1fr}}
 </style></head><body><div id="app" class="shell"></div><div id="toasts"></div>
 <script>
 const ENDPOINT='https://logzbhhftwvqsrqvmnik.supabase.co/functions/v1/political-leadership';
@@ -207,10 +226,25 @@ return '<div class="panel"><h3>Примите окончательное реш�
 (state.scenario?.options||[]).map((x,i)=>'<button class="choice '+(state.myVote===i?'selected':'')+'" onclick="action(&#39;vote&#39;,{value:'+i+'})"><span style="font-size:24px">'+(state.myVote===i?'◉':'○')+'</span><span><strong>'+esc(x[0])+'</strong>'+(state.myTeam===0?impactPills(state.nationalBaseImpacts?.[i]):impactPills(state.roleImpact?.[i]))+'<small>'+(state.myVote===i?'Голос принят; можно изменить до закрытия':'Нажмите, чтобы проголосовать')+'</small></span></button>').join('')+
 '<p class="note">'+(voted?'Ваш голос принят.':'Голос ещё не подан.')+' Всего проголосовало: '+state.votesCount+'.</p><p class="effect-context">Показанные изменения — ожидаемый вклад выбранного действия, а не окончательный прогноз. На итог влияют действия других команд и последствия предыдущих раундов.</p></div>';
 }
-function allyUI(){let mine=state.myTeam,other=state.alliances.filter(a=>a.to===mine||a.from===mine);return '<div class="panel"><h3>Коалиционная дипломатия</h3><p class="muted">Любой участник вашей делегации может предложить союз и принять или отклонить предложение другой команды. Решение одного участника действует для всей делегации. Союз действует один раунд.</p><select class="field" id="target">'+TEAMS.map((t,i)=>i!==mine?'<option value="'+i+'">'+esc(t)+'</option>':'').join('')+'</select>'+button('Предложить союз',"action('alliance',{target:Number(document.querySelector('#target').value)})",'small')+'<div class="section"></div>'+ (other.length?other.map(a=>'<div class="team"><strong>'+esc(TEAMS[a.from])+' → '+esc(TEAMS[a.to])+'</strong><p class="note">'+(a.status==='accepted'?'Союз заключён':a.status==='rejected'?'Отклонён':'Ожидает подтверждения')+'</p>'+(a.to===mine&&a.status==='pending'?button('Принять',"action('accept',{id:'"+a.id+"',accept:true})",'small')+' '+button('Отклонить',"action('accept',{id:'"+a.id+"',accept:false})",'small alt'):'')+'</div>').join(''):'<p class="note">Предложений пока нет.</p>')+'</div>'}
+function allyUI(){
+const me=state.myTeam,items=(state.alliances||[]).filter(a=>a.to===me||a.from===me);
+return '<div class="panel"><h3>Политические союзы</h3><p class="muted">Любой участник делегации может предложить союз другой команде. Союз действует только в текущем раунде. При подведении итогов обе стороны получают по +1 очку влияния, если их позиции совпали с итоговым государственным решением. Если союз не подтверждён — бонуса нет.</p>'+
+'<div class="brief-step">1. Договоритесь через сообщения или устно. 2. Выберите команду. 3. Дождитесь принятия предложения любым её участником.</div>'+
+'<label for="target">Кому предложить союз?</label><select class="field" id="target">'+TEAMS.map((name,i)=>i!==me?'<option value="'+i+'">'+esc(name)+'</option>':'').join('')+'</select>'+
+button('Предложить союз',"action('alliance',{target:Number(document.querySelector('#target').value)})",'small')+
+'<div class="section"></div><h3>Предложения и договорённости</h3>'+
+(items.length?items.map(a=>'<div class="power-entry"><strong>'+esc(TEAMS[a.from])+' → '+esc(TEAMS[a.to])+'</strong><p>Статус: '+(a.status==='accepted'?'Союз заключён':a.status==='rejected'?'Отклонён':'Ожидает подтверждения')+'</p>'+(a.to===me&&a.status==='pending'?button('Принять','action(&#39;accept&#39;,{id:&#39;'+esc(a.id)+'&#39;,accept:true})','small')+' '+button('Отклонить','action(&#39;accept&#39;,{id:&#39;'+esc(a.id)+'&#39;,accept:false})','small alt'):'')+'</div>').join(''):'<p class="muted">Пока нет предложений о союзе.</p>')+
+'</div>';
+}
 const POWERS=[['emergency','endorse'],['referendum','no_confidence'],['investment','blockade','veto'],['investigation','endorse'],['coup','veto','block']];
 const TITLES={emergency:'Чрезвычайное положение',endorse:'Публичная поддержка / критика',referendum:'Референдум',no_confidence:'Вотум недоверия',investment:'Политические инвестиции',blockade:'Экономическая блокада',veto:'Вето',investigation:'Расследование',coup:'Попытка переворота',block:'Блокирование решения'};
-function powers(){let mine=state.myTeam;if(!state.teamLeader)return '<div class="panel"><h3>Политические инструменты</h3><p class="muted">Специальные полномочия применяет руководитель делегации — первый подключившийся студент. Ваш голос определяет позицию команды.</p></div>';return '<div class="panel"><h3>Политические инструменты</h3><p class="muted">Специальные действия влияют на итоги кризиса. Часть из них доступна только один раз за игру.</p>'+POWERS[mine].map(k=>'<button class="choice" onclick="power(\''+k+'\')"><span>✦</span><strong>'+TITLES[k]+(state.used.includes(k)?' · использовано':'')+'</strong></button>').join('')+'<p class="note">Действие от имени делегации может отправить любой её участник. Повторное применение в том же раунде заблокировано.</p></div>'}
+function powers(){
+const mine=state.myTeam;let list=POWERS[mine]||[];
+return '<div class="panel"><h3>Специальные возможности делегации</h3><p class="muted">Доступны во время переговоров и голосования. Активировать действие может первый подключившийся участник делегации. Эффект рассчитывается по правилам игры при подведении итогов раунда.</p>'+
+list.map(key=>{const desc=POWER_HELP[key]||[TITLES[key],'Описание пока не задано.'];const used=state.used.includes(key),canUse=state.teamLeader&&!used;
+return '<div class="power-entry"><strong>'+esc(desc[0])+'</strong><p>'+esc(desc[1])+'</p><div class="power-buttons">'+(used?'<span class="power-used">Уже использовано</span>':canUse?button('Применить','power(&#39;'+key+'&#39;)','small'):state.teamLeader?'<span class="power-used">Недоступно</span>':'<span class="power-used">Применяет руководитель делегации</span>')+'</div></div>';
+}).join('')+'<p class="brief-foot">Возможности отличаются от союзов: союз может предложить и подтвердить любой участник, специальные полномочия — только руководитель делегации.</p></div>';
+}
 async function power(type){if(['investment','blockade','investigation','endorse'].includes(type)){const x=prompt('Номер целевой делегации (1–5):\n'+TEAMS.map((t,i)=>(i+1)+'. '+t).join('\n'));if(!x)return;const target=Number(x)-1;const value=type==='endorse'&&confirm('Выбрать негативную оценку?')?-1:1;return action('action',{type,target,value})}if(confirm('Подтвердить: '+TITLES[type]+'?'))return action('action',{type})}
 let playerTab='task';
 function switchPlayerTab(t){playerTab=t;render();window.scrollTo({top:0,behavior:'smooth'})}
@@ -220,16 +254,40 @@ state.phase==='voting'?[['task','Голосование'],['talk','Перего�
 [['task','Моё задание'],['talk','Сообщения'],['tools','Результаты']];
 return '<div class="tabs" role="tablist" aria-label="Рабочие разделы">'+labels.map(x=>'<button class="tab '+(playerTab===x[0]?'active':'')+'" role="tab" aria-selected="'+(playerTab===x[0])+'" onclick="switchPlayerTab(&#39;'+x[0]+'&#39;)">'+x[1]+'</button>').join('')+'</div>';
 }
+const SITUATIONS=[["Правительство должно урегулировать коррупционный скандал и сохранить доверие.","Оппозиция может потребовать расследования и ответственности власти.","Бизнес оценивает риски связей с фигурантами расследования.","Медиа проверяют факты и определяют публичную повестку.","Силовые структуры обеспечивают законность расследования."],["Правительство выбирает курс выхода из экономического кризиса.","Оппозиция предлагает альтернативную антикризисную программу.","Бизнес пытается защитить инвестиции и занятость.","Медиа информируют граждан о цене антикризисных мер.","Силовые структуры оценивают последствия бюджетных ограничений."],["Правительство реагирует на массовые протесты.","Оппозиция решает, поддерживать протесты или вести переговоры.","Бизнес заинтересован в восстановлении экономической деятельности.","Медиа освещают причины и ход массовых выступлений.","Силовые структуры должны выбрать допустимые меры обеспечения порядка."],["Правительство решает, как реагировать на международные санкции.","Оппозиция предлагает альтернативу внешнеполитическому курсу.","Бизнес защищает внешнеторговые связи.","Медиа оценивают последствия эскалации или переговоров.","Силовые структуры оценивают меры безопасности и риски эскалации."],["Правящая элита определяет правила предстоящих выборов.","Оппозиция готовит избирательную стратегию и механизмы наблюдения.","Бизнес решает, как участвовать в поддержке политических сил.","Медиа обеспечивают информационную прозрачность кампании.","Силовые структуры обеспечивают безопасность выборов."],["Правительство предлагает изменить распределение президентских полномочий.","Оппозиция рассматривает сопротивление реформе или компромисс.","Бизнес оценивает институциональную предсказуемость реформы.","Медиа объясняют обществу содержание конституционных изменений.","Силовые структуры оценивают законность и устойчивость новой модели."],["Правительство организует ликвидацию экологической катастрофы.","Оппозиция требует расследования и ответственности виновных.","Бизнес оценивает компенсации и восстановительные расходы.","Медиа расследуют причины и общественные последствия разлива.","Силовые структуры помогают обеспечивать безопасность регионов."],["Правительство пытается сохранить кабинет или договориться о переходе власти.","Оппозиция ищет коалиционную поддержку и возможную смену правительства.","Бизнес выбирает позицию в условиях политической неопределённости.","Медиа освещают борьбу за власть и возможные компромиссы.","Силовые структуры решают, как действовать в условиях кризиса власти."]];
+const POWER_HELP={"emergency":["Чрезвычайное положение","Один раз за игру. Во время подведения итогов защищает решение правительства от вето и блокирования; референдум не отменяет."],"endorse":["Публичная поддержка / критика","Раз в раунд. Выберите делегацию: поддержка даст ей +2 очка влияния, критика отнимет 2 очка."],"referendum":["Референдум","Один раз за игру. Если не менее трёх делегаций выбирают одинаковый номер варианта, их большинство может заменить решение правительства."],"no_confidence":["Вотум недоверия","Один раз за игру. Смена власти возможна, если минимум три делегации поддержат тот же номер варианта, что и оппозиция, и правительство выберет иной."],"investment":["Политические инвестиции","Раз в раунд. Выбранная делегация получает +1 очко политического влияния при подведении итогов."],"blockade":["Экономическая блокада","Один раз за игру. Выбранная делегация теряет 3 очка влияния при подведении итогов; общая экономика напрямую не снижается."],"veto":["Вето","Раз в раунд при выполнении условия: экономика ниже 20 для бизнеса, стабильность ниже 20 для силовых структур. При большинстве из трёх делегаций может изменить итоговое решение, если не действует чрезвычайное положение."],"investigation":["Расследование","Один раз за игру. Выбранная делегация теряет 2 очка влияния при подведении итогов."],"coup":["Попытка переворота","Один раз за игру. Если после раунда стабильность ниже 45, власть переходит оппозиции, а не силовым структурам."],"block":["Блокирование решения","Раз в раунд. Сейчас не оказывает эффекта: сервер требует два блокирования в одном раунде, но делегация может применить его только один раз."]};
+const OPEN_POWERS={emergency:'Чрезвычайное положение',endorse:'Публичная поддержка или критика',referendum:'Референдум',no_confidence:'Вотум недоверия',investment:'Инвестиционная поддержка',veto:'Вето',block:'Блокирование'};
+function situationPanel(){
+const r=Math.max(0,Math.min(7,state.round||0)),me=state.myTeam;
+const brief=SITUATIONS[r]?.[me]||'Оцените политическую ситуацию с позиции вашей делегации.';
+const visibleActions=(state.actions||[]).filter(a=>a.round===state.round&&a.public&&a.team!==me);
+const pub=(state.messages||[]).filter(m=>m.round===state.round&&m.to===-1);
+const allies=(state.alliances||[]).filter(a=>a.round===state.round&&a.status==='accepted');
+const risks=(state.metrics||[]).map((v,i)=>v<40?['Доверие','Экономика','Стабильность'][i]+' в зоне риска':null).filter(Boolean);
+return '<section class="panel situational"><div class="eyebrow">Политическая сводка · раунд '+(r+1)+'</div><h3>Ваша ситуация</h3><p>'+esc(brief)+'</p>'+
+(risks.length?'<p class="risk-note">'+esc(risks.join(' · '))+'</p>':'')+
+'<div class="brief-rule"></div><h3>Что происходит с другими элитами</h3><div class="brief-list">'+TEAMS.map((name,i)=>{
+if(i===me)return '';
+const related=allies.filter(a=>a.from===i||a.to===i);
+const acts=visibleActions.filter(a=>a.team===i).map(a=>OPEN_POWERS[a.type]).filter(Boolean);
+const msg=pub.filter(m=>m.from===i).at(-1);
+return '<div class="brief-team"><strong>'+EMO[i]+' '+esc(name)+'</strong><span>Участников: '+(state.counts?.[i]||0)+' · Влияние: '+(state.scores?.[i]??20)+'</span>'+
+(related.length?'<small>Подтверждённые союзы: '+related.length+'</small>':'')+
+(acts.length?'<small>Открытые действия: '+esc(acts.join(', '))+'</small>':'')+
+(msg?'<small>Публичное сообщение: «'+esc(msg.text)+'»</small>':'')+
+(!related.length&&!acts.length&&!msg?'<small>Открытых действий пока нет</small>':'')+'</div>';
+}).join('')+'</div><p class="brief-foot">Закрытые сообщения и чужие голоса не раскрываются до завершения голосования.</p></section>';
+}
 function mainStudentTask(){
 const phase=state.phase;
-if(phase==='lobby')return '<div class="panel focus-card"><h2>Вы в игре!</h2><p class="sub">Выберите командную стратегию после начала первого кризиса. Пока ожидайте преподавателя.</p><div class="nextstep">✓ Подключение выполнено. Участников: '+state.players.length+'</div></div>';
-if(phase==='scenario'||phase==='negotiations')return roleOptionsUI()+'<div class="nextstep">1. Изучите последствия каждого действия. 2. Обсудите условия с другими делегациями. 3. На голосовании выберите окончательный вариант.</div>';
-if(phase==='voting')return voteUI()+'<div class="nextstep">Проверьте ответ и дождитесь, когда преподаватель подведёт итоги раунда.</div>';
+if(phase==='lobby')return situationPanel()+'<div class="section"></div><div class="panel focus-card"><h2>Вы в игре!</h2><p class="sub">Выберите командную стратегию после начала первого кризиса. Пока ожидайте преподавателя.</p><div class="nextstep">✓ Подключение выполнено. Участников: '+state.players.length+'</div></div>';
+if(phase==='scenario'||phase==='negotiations')return situationPanel()+'<div class="section"></div>'+roleOptionsUI()+'<div class="nextstep">1. Изучите последствия каждого действия. 2. Обсудите условия с другими делегациями. 3. На голосовании выберите окончательный вариант.</div>';
+if(phase==='voting')return situationPanel()+'<div class="section"></div>'+voteUI()+'<div class="nextstep">Проверьте ответ и дождитесь, когда преподаватель подведёт итоги раунда.</div>';
 return '<div class="panel focus-card"><h2>'+(state.completed?'Игра завершена':'Раунд завершён')+'</h2><p class="sub">Решения учтены. Посмотрите последствия и обсудите их с командой.</p>'+historyPanel()+'</div>';
 }
 function playerTalk(){
-if(state.phase==='negotiations')return '<div class="panel"><h2>Договоритесь с другими делегациями</h2><p class="sub">Сначала обсудите условия, затем предложите союз или отправьте сообщение. Другие команды не видят ваш предварительный выбор.</p></div><div class="section"></div>'+allyUI()+'<div class="section"></div>'+chatUI();
-if(state.phase==='scenario')return '<div class="panel"><h2>Обсудите предварительную позицию</h2><p class="sub">На этом этапе доступны сообщения. Предложения союзов откроются на переговорах.</p></div><div class="section"></div>'+chatUI();
+if(state.phase==='negotiations')return '<div class="panel"><h2>Договоритесь с другими делегациями</h2><p class="sub">Сначала обсудите условия, затем предложите союз или отправьте сообщение. Итоговые голоса других делегаций останутся закрытыми до подведения итогов.</p></div><div class="section"></div>'+allyUI()+'<div class="section"></div>'+chatUI();
+if(state.phase==='scenario')return '<div class="panel"><h2>Обсудите возможные действия</h2><p class="sub">На этом этапе доступны сообщения. Предложения союзов откроются на переговорах.</p></div><div class="section"></div>'+chatUI();
 return '<div class="panel"><h2>Сейчас переговоры закрыты</h2><p class="sub">Вы можете просмотреть историю решений, а переговоры возобновятся в следующем раунде.</p></div>';
 }
 function playerTools(){return (['negotiations','voting'].includes(state.phase)?powers()+'<div class="section"></div>':'')+ranking()+'<div class="section"></div>'+historyPanel()}
