@@ -56,7 +56,7 @@ var s=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>'
 var clip=async t=>{try{await navigator.clipboard.writeText(t);toast('Ссылка скопирована')}catch(e){prompt('Скопируйте ссылку',t)}};
 var toast=m=>{var o=document.getElementById('toast');if(!o){o=document.createElement('div');o.id='toast';o.style='position:fixed;left:14px;bottom:14px;z-index:10;background:#183b49;color:white;padding:13px;border-radius:10px;max-width:75vw';document.body.appendChild(o)}o.textContent=m;setTimeout(()=>{o.remove()},3300)};
 async function api(action,data){var r=await fetch(BASE+'/api/'+action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({room:room,token:token},data||{}))});var j=await r.json().catch(()=>({error:'Неверный ответ сервера'}));if(!r.ok||j.error)throw Error(j.error||'Ошибка соединения');return j}
-async function reload(force){if(refreshBusy)return;refreshBusy=true;try{state=await api('state');applyBackground();if(force||!['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName))render();}catch(e){if(!state)document.getElementById('app').innerHTML='<div class="panel"><h2>Не удалось загрузить игру</h2><p>'+s(e.message)+'</p><button class="btn" data-act="reload">Повторить</button></div>';lastError=e.message}finally{refreshBusy=false}}
+async function reload(force){if(refreshBusy)return;refreshBusy=true;try{state=await api('state');if(state.role?.type==='visitor'&&token&&!hash){localStorage.removeItem('eco_token_'+room);sessionStorage.removeItem('eco_token_'+room);token='';}applyBackground();if(force||!['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName))render();}catch(e){if(!state)document.getElementById('app').innerHTML='<div class="panel"><h2>Не удалось загрузить игру</h2><p>'+s(e.message)+'</p><button class="btn" data-act="reload">Повторить</button></div>';lastError=e.message}finally{refreshBusy=false}}
 function bar(m,i){var v=Number(m||0),bad=(i===0?v>=105:i===1?v>=75:i===2?v<=36:i===3?v<=30:v<=18),lim=[105,75,36,30,18][i];return '<div class="metric"><div class="lbl">'+N[i]+'</div><div class="n">'+v+' '+(bad?'⚠':'')+'</div><div class="bar"><div class="fill '+(bad?'red':'')+'" style="width:'+Math.min(100,v/120*100)+'%"></div></div><div class="tip">'+(i<=1?'Красная зона от ':'Красная зона до ')+lim+'</div></div>'}
 function delta(e){return '<div class="deltas">'+e.map((x,i)=>x?'<span class="delta '+((i<=1?x>0:x<0)?'negative':'positive')+'">'+N[i]+' '+(x>0?'+':'')+x+'</span>':'').join('')+'</div>'}
 function userTeam(){return state?.role?.team}
@@ -117,6 +117,18 @@ function applyBackground(){
  document.documentElement.style.setProperty('--game-photo','url("'+url.replace(/"/g,'')+'")');document.body.style.backgroundImage='linear-gradient(rgba(10,31,40,.32),rgba(10,31,40,.48)),url("'+url.replace(/"/g,'')+'")';
  }else{document.body.classList.remove('with-game-bg');document.body.style.backgroundImage='';document.documentElement.style.removeProperty('--game-photo');}
 }
+function hostRoster(){
+ var people=state.members||[];
+ return '<section class="panel" id="participants"><div class="actions" style="justify-content:space-between"><h2 style="margin:0">Участники · '+people.length+'</h2><button class="btn danger" data-act="clearMembers" '+(people.length?'':'disabled')+'>Очистить всех участников</button></div>'+
+ '<p class="sub" style="margin-top:10px">Удаление отключает выбранного студента и аннулирует его вход. Решения, баллы и фон при этом сохраняются. Чтобы начать новую игру с нуля, отдельно используйте «Сбросить сессию».</p>'+
+ state.teams.map(function(t,i){
+ var members=people.filter(m=>m.team===i);
+ return '<div class="entry"><b>'+t.icon+' '+s(t.name)+'</b> <span class="pill">'+members.length+' чел.</span>'+
+ (members.length?members.map(function(m){
+ return '<div class="actions" style="margin:6px 0 2px 13px;justify-content:space-between;gap:10px"><span>'+s(m.nickname)+'</span><button class="btn ghost" style="padding:5px 10px;font-size:12px" data-act="kickMember" data-member="'+s(m.id)+'" data-nick="'+s(m.nickname)+'">Удалить</button></div>'
+ }).join(''):'<div class="muted">Пока никого нет</div>')+'</div>'
+ }).join('')+'</section>';
+}
 function hostTools(){return '<section class="panel"><h2>Кабинет ведущего</h2><div class="actions"><span class="pill">Раунд '+state.room.stage+' / 6</span><span id="timer">'+timeFormat()+'</span><button class="btn" data-act="next" '+(state.room.stage===6?'disabled':'')+'>'+(state.room.stage===0?'Начать игру':'Следующий этап')+'</button><button class="btn secondary" data-act="pause" '+(state.room.stage===0||state.room.stage===6?'disabled':'')+'>'+(state.room.paused?'Продолжить':'Пауза')+'</button><button class="btn ghost" data-act="copyJoin">Ссылка студентов</button><button class="btn ghost" data-act="copyHost">Ссылка ведущего</button><button class="btn danger" data-act="reset">Сбросить сессию</button></div><hr><div class="actions"><label>Длительность текущего этапа: <input id="mins" type="number" min="1" max="90" value="'+Math.max(1,Math.ceil(state.remainingSeconds/60))+'" style="width:95px;display:inline-block"> мин.</label><button class="btn secondary" data-act="settime">Обновить таймер</button></div>'+(state.room.stage===5?'<hr><h3>Текст итоговой декларации</h3><textarea id="declaration">'+s(state.room.declaration)+'</textarea><button class="btn secondary" data-act="declaration">Сохранить декларацию</button>':'')+'</section>'}
 function hostActivity(){return '<section class="panel"><h2>Действия команд в реальном времени</h2><div class="feed">'+(state.activity||[]).map(x=>'<div class="entry"><b>'+s(x.actor)+'</b> — '+s(x.action)+'<small>'+new Date(x.created_at).toLocaleTimeString('ru-RU')+'</small></div>').join('')+'</div></section>'}
 function hostDecisions(){return '<section class="panel"><h2>Принятые решения и голоса</h2><div>'+state.decisions.map(x=>'<div class="entry"><b>'+s(state.teams[x.team].short)+' · раунд '+x.turn+'</b>: '+s(state.choices[x.team][x.turn-1][x.option_id].name)+'</div>').join('')+'</div><hr><h3>Союзы</h3>'+(state.alliances.length?state.alliances.map(a=>'<div class="entry">'+s(state.teams[a.low_team].short)+' — '+s(state.teams[a.high_team].short)+': '+(a.status==='accepted'?'подтверждён':a.status==='pending'?'ожидает подтверждения':'отклонён')+'</div>').join(''):'<p class="muted">Пока нет</p>')+'<hr><h3>Голоса</h3>'+state.votes.map(v=>'<div class="entry">'+s(state.teams[v.team].short)+': '+({yes:'за',no:'против',abstain:'воздержались'}[v.vote])+'</div>').join('')+'</section>'}
@@ -127,7 +139,7 @@ applyBackground();
 var content='';
 if(role==='visitor'){content=lobby()+metrics();}else{
 content=stageInfo()+(st===1?agenda():'')+metrics();
-if(role==='host'){content=hostTools()+hostGuide()+backgroundTools()+content+'<div class="cols"><div>'+teams()+hostDecisions()+(st>=1?statementsPanel():'')+'</div><div>'+hostActivity()+((st===2||st===3)?chats():'')+'</div>'+(st===6?results():'');}
+if(role==='host'){content=hostTools()+hostRoster()+hostGuide()+backgroundTools()+content+'<div class="cols"><div>'+teams()+hostDecisions()+(st>=1?statementsPanel():'')+'</div><div>'+hostActivity()+((st===2||st===3)?chats():'')+'</div>'+(st===6?results():'');}
 else{content+='<div class="cols"><div>'+own()+(st===1||st===4?decision():'')+(st===1?statementForm():'')+(st===2||st===3?alliances()+chats():'')+(st===5?vote():'')+(st===6?results():'')+'</div><div>'+teams()+(st>=2?statementsPanel():'')+'</div></div>';}
 }
 document.getElementById('app').innerHTML=content;
@@ -147,11 +159,14 @@ if(a==='openroom'){var x=document.getElementById('roomcode').value.trim().toUppe
 if(a==='pick'){document.getElementById('jointeam').value=b.dataset.team;document.getElementById('nickname').focus();return;}
 if(a==='reload'){return reload(true)}
 if(a==='reset'&&!confirm('Сбросить все решения, союзы и голоса текущей сессии? Участники останутся подключены.'))return;
+if(a==='clearMembers'&&!confirm('Удалить ВСЕХ '+(state.members||[]).length+' участников из комнаты '+room+'? Они будут отключены, но результаты игры сохранятся.'))return;
+if(a==='kickMember'&&!confirm('Удалить участника «'+b.dataset.nick+'» из комнаты?'))return;
 apiBusy=true;b.disabled=true;
 var data={};
 if(a==='join'){data={nickname:document.getElementById('nickname').value.trim(),team:Number(document.getElementById('jointeam').value)};var ans=await api('join',data);token=ans.token;localStorage.setItem('eco_token_'+room,token);toast('Вы подключены');await reload(true);return;}
 if(a==='create'){var x=await api('create');room=x.room;token=x.token;location.href=x.hostUrl;return;}
 if(a==='removeBg')data={};
+if(a==='kickMember')data={memberId:b.dataset.member};
 if(a==='decision')data={option:Number(b.dataset.option)};
 if(a==='statement')data={statement:document.getElementById('statement').value.trim()};
 if(a==='ally'||a==='accept')data={otherTeam:Number(b.dataset.team),kind:a};
