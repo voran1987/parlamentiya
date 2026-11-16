@@ -30,7 +30,7 @@ function view(s:any,who:any,isHost:boolean){ const mine=s.players.find((p:any)=>
 hostActivity:isHost?(s.activity||[]).slice(-120):undefined,
 };if(isHost){v={...v,allVotes:s.votes,allActions:s.actions};}return v;}
 function tally(s:any){let t:number[]=[];for(let i=0;i<5;i++){let c=[0,0,0];for(const p of s.players.filter((p:any)=>p.team===i)){let v=s.votes[s.round+':'+p.id];if(Number.isInteger(v)&&v>=0&&v<3)c[v]++;}t[i]=c.indexOf(Math.max(...c));if(!c.some(x=>x>0))t[i]=-1;}return t;}
-function finish(s:any){const r=rounds[s.round],choices=tally(s), gov=s.government,roleRound=isRoleCurrent(s);
+function finish(s:any){const r=rounds[s.round],choices=tally(s), gov=s.government,roleRound=isRoleCurrent(s);const metricsBefore=[...s.metrics],scoresBefore=[...s.scores];
 let winning=choices[gov]>=0?choices[gov]:0;const voters=choices.filter(x=>x===winning).length;
 const coalition=choices.filter(x=>x>=0).reduce((m:any,x:number)=>(m[x]=(m[x]||0)+1,m),{});
 const majority=Object.entries(coalition).sort((a:any,b:any)=>b[1]-a[1])[0];
@@ -54,7 +54,10 @@ let regime='Сохранение правящей коалиции';
 if((coup&&s.metrics[2]<45)||(noConfidence&&choices.filter(x=>x===opposition&&x>=0).length>=3&&opposition!==choices[gov])){s.government=1;regime='Смена правящей элиты';}
 if(s.metrics[0]<20&&s.metrics[2]<20)regime='Политический кризис';
 if(s.metrics.every((m:number)=>m>=60))regime='Политический компромисс';
-s.history.push({round:s.round,title:r.title,winning,choice:r.options[winning][0],teamChoices:choices,teamDecisions:roleRound?choices.map((v:number,i:number)=>v<0?null:ROLE_CHOICES[s.round][i][v]):undefined,roleMode:roleRound,changes,metrics:[...s.metrics],scores:[...s.scores],regime,actions:s.actions.filter((a:any)=>a.round===s.round).map((a:any)=>({team:a.team,type:a.type,target:a.target}))});
+s.history.push({round:s.round,title:r.title,winning,choice:r.options[winning][0],teamChoices:choices,teamDecisions:roleRound?choices.map((v:number,i:number)=>v<0?null:ROLE_CHOICES[s.round][i][v]):undefined,roleMode:roleRound,changes,metrics:[...s.metrics],scores:[...s.scores],regime,actions:s.actions.filter((a:any)=>a.round===s.round).map((a:any)=>({team:a.team,type:a.type,target:a.target,value:a.value,public:a.public})),
+alliances:s.alliances.filter((a:any)=>a.round===s.round).map((a:any)=>({from:a.from,to:a.to,status:a.status})),
+participantVotes:s.players.map((p:any)=>({name:p.name,team:p.team,choice:s.votes[s.round+':'+p.id]??null})),
+metricsBefore,scoresBefore,governmentBefore:gov,governmentAfter:s.government});
 s.phase='results';if(s.round===rounds.length-1){s.completed=true;const goals=[s.government===0,s.history.some((h:any)=>h.teamChoices[1]===h.winning&&h.teamChoices[0]!==h.winning),s.metrics[1]>=60,s.metrics[0]>65,s.metrics[2]>50];s.missionResults=goals;s.scores=s.scores.map((v:number,i:number)=>v+(goals[i]?5:0));}
 }
 Deno.serve(async(req:Request)=>{if(req.method==='OPTIONS')return new Response(null,{headers:C});if(req.method!=='POST')return J({error:'POST only'},405);
