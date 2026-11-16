@@ -142,6 +142,15 @@ body{background:var(--paper);color:var(--ink)}
 .power-used{font-size:12px;color:#7c7266}
 .brief-step{border-left:3px solid #8d4039;padding:9px 12px;font-size:12px;background:#f4eee6;line-height:1.7;margin:12px 0}
 @media(max-width:700px){.brief-list{grid-template-columns:1fr}}
+
+.round-report h2{margin:6px 0 12px}.report-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.report-metric{border:1px solid #ded8cf;border-radius:7px;padding:12px;background:#f6f3ed}.report-metric span,.report-metric strong,.report-metric small{display:block}
+.report-metric span{font-size:11px;color:#645e58}.report-metric strong{font-size:26px;margin:4px 0}.report-metric small{font-size:12px;color:#7d3832;font-weight:800}
+.report-team{border:1px solid #dbd4ca;padding:14px;margin:10px 0;border-radius:7px;background:#faf8f4}.report-team p{font-size:13px;line-height:1.6;margin:8px 0}
+.report-head{display:flex;justify-content:space-between;align-items:center;gap:9px;flex-wrap:wrap}.report-head strong{font-size:15px}
+.report-points{font-size:12px;color:#824037;font-weight:800}.report-team details{margin-top:10px;border-top:1px solid #e6e0d7;padding-top:9px}
+.report-team summary{cursor:pointer;font-weight:800;font-size:12px}.report-voter{padding:7px 0;font-size:12px;border-bottom:1px solid #e9e4dc}
+@media(max-width:600px){.report-metrics{gap:5px}.report-metric{padding:8px}.report-metric strong{font-size:20px}.report-metric span{font-size:10px}}
 </style></head><body><div id="app" class="shell"></div><div id="toasts"></div>
 <script>
 const ENDPOINT='https://logzbhhftwvqsrqvmnik.supabase.co/functions/v1/political-leadership';
@@ -191,7 +200,7 @@ function hostTabs(){return '<div class="tabs" role="tablist" aria-label="Раз�
 function hostView(){
 const phase=state.phase,done=state.completed,cta=stage[phase]||'Продолжить';
 const primary='<section class="host-hero"><div class="eyebrow">Кабинет преподавателя · Раунд '+(state.round+1)+' из 8</div><h1>'+(done?'Игра завершена':esc(state.scenario?.title||'Ожидание начала'))+'</h1><p class="sub">Этап: <strong>'+esc(ph[phase])+'</strong>. Участников: <strong>'+state.players.length+'</strong>. Подано голосов: <strong>'+state.votesCount+'</strong>.</p><div class="actions">'+(done?'':button(cta,"action('phase')"))+button('QR для новых участников','showTeacherQR()','alt')+button('Обновить','refresh()','alt small')+'</div></section>';
-const content=hostTab==='teams'
+const content=phase==='results' ? roundReport(state.history.filter(h=>!h.manual).at(-1))+'<div class="section"></div>'+historyPanel() : hostTab==='teams'
 ? '<div class="host-grid"><div>'+players()+'</div><div>'+ranking()+'</div></div><div class="section"></div>'+hostRoleOptionsUI()
 :hostTab==='activity'
 ? '<div id="host-activity">'+hostActivityUI()+'</div><div class="section"></div>'+historyPanel()
@@ -205,6 +214,29 @@ function sendMessage(){const text=document.querySelector('#msgText')?.value?.tri
 function adjustmentUI(){return '<div class="panel"><h3>Корректировка ведущего</h3><p class="muted">Изменение очков или показателей с сохранением в протоколе.</p><select class="field" id="adjustKind" onchange="adjustTargets()"><option value="metric">Показатель государства</option><option value="score">Очки делегации</option></select><select class="field" id="adjustTarget"><option value="0">Доверие</option><option value="1">Экономика</option><option value="2">Политическая стабильность</option></select><input class="field" type="number" id="adjustAmount" value="1" min="-20" max="20">'+button('Применить поправку','adjust()','small alt')+'</div>'}
 function adjustTargets(){const k=document.querySelector('#adjustKind').value;document.querySelector('#adjustTarget').innerHTML=(k==='score'?TEAMS:['Доверие','Экономика','Политическая стабильность']).map((t,i)=>'<option value="'+i+'">'+esc(t)+'</option>').join('')}
 function adjust(){const kind=document.querySelector('#adjustKind').value,metric=Number(document.querySelector('#adjustTarget').value),amount=Number(document.querySelector('#adjustAmount').value);if(!Number.isInteger(amount)||Math.abs(amount)>20)return toast('Допустимо целое изменение от −20 до +20');action('adjust',{kind,metric,amount})}
+
+const ACTION_LABELS={emergency:'Объявила чрезвычайное положение',endorse:'Публично поддержала / раскритиковала делегацию',referendum:'Инициировала референдум',no_confidence:'Вынесла вотум недоверия',investment:'Предоставила политические инвестиции',blockade:'Применила экономическую блокаду',veto:'Использовала право вето',investigation:'Провела расследование',coup:'Предприняла попытку переворота',block:'Заблокировала правительственный курс'};
+function signed(n){if(n==null)return '—';return (n>0?'+':'')+n}
+function roundReport(h){
+if(!h)return '<div class="panel">Отчёт станет доступен после завершения раунда.</div>';
+const labels=(h.teamDecisions||[]),choices=h.teamChoices||[],alliances=h.alliances||[],actions=h.actions||[];
+const before=h.metricsBefore||[],scoreOld=h.scoresBefore||[];
+return '<section class="panel round-report"><div class="eyebrow">Политический отчёт · Раунд '+(h.round+1)+'</div><h2>'+esc(h.title)+'</h2><p class="sub">Общее решение республики: <strong>'+esc(h.choice)+'</strong>. Итог: <strong>'+esc(h.regime)+'</strong>.</p>'+
+'<div class="report-metrics">'+METRIC_NAMES.map((n,i)=>'<div class="report-metric"><span>'+esc(n)+'</span><strong>'+h.metrics[i]+'</strong><small>'+(before[i]==null?'Текущее значение':esc(signed(h.metrics[i]-before[i]))+' за раунд')+'</small></div>').join('')+'</div>'+
+'<h3 style="margin:20px 0 10px">Как действовали делегации</h3>'+
+TEAMS.map((name,i)=>{
+const decision=labels[i]||(choices[i]==null||choices[i]<0?'Не участвовала в голосовании':(h.roleMode?'Вариант '+(choices[i]+1):'Вариант '+(choices[i]+1)));
+const arr=actions.filter(a=>a.team===i),out=alliances.filter(a=>(a.from===i||a.to===i)&&a.status==='accepted');
+const delta=h.changes?.[i]??(h.scores?.[i]!=null&&scoreOld[i]!=null?h.scores[i]-scoreOld[i]:null);
+const voters=(h.participantVotes||[]).filter(p=>p.team===i);
+return '<article class="report-team"><div class="report-head"><strong>'+EMO[i]+' '+esc(name)+'</strong><span class="report-points">Влияние '+(h.scores?.[i]??'—')+' ('+signed(delta)+')</span></div><p><b>Решение:</b> '+esc(decision)+'</p>'+
+'<p><b>Спецвозможности:</b> '+(arr.length?arr.map(a=>esc(ACTION_LABELS[a.type]||a.type)+(a.target!=null?' → '+esc(TEAMS[a.target]):'')).join('; '):'не использовались')+'</p>'+
+'<p><b>Союзы:</b> '+(out.length?out.map(a=>esc(TEAMS[a.from===i?a.to:a.from])).join(', '):'нет подтверждённых')+'</p>'+
+(voters.length?'<details><summary>Индивидуальные голоса ('+voters.length+')</summary>'+voters.map(p=>'<div class="report-voter">'+esc(p.name)+' — '+(p.choice==null?'не голосовал':esc(labels[i]&&p.choice===choices[i]?labels[i]:'вариант '+(p.choice+1)))+'</div>').join('')+'</details>':'')+
+'</article>';
+}).join('')+
+'<p class="brief-foot">Отчёт отражает зафиксированные решения и действия. Скрытые дипломатические сообщения не публикуются; личные голоса раскрываются только после закрытия голосования. Изменение влияния может включать бонусы, штрафы и условия кризиса.</p></section>';
+}
 function historyPanel(){return '<section class="panel"><h3>Протокол решений</h3>'+(state.history.length?state.history.slice().reverse().map(h=>'<div class="history"><div class="number">РАУНД '+(h.round+1)+'</div><strong>'+esc(h.title)+'</strong><p class="muted">Решение: '+esc(h.choice)+'</p><p class="note">Итог: '+esc(h.regime)+'</p><p class="note">Доверие '+h.metrics[0]+' · Экономика '+h.metrics[1]+' · Стабильность '+h.metrics[2]+'</p></div>').join(''):'<p class="muted">История появится после первого кризиса.</p>')+'</section>'}
 async function runSimulation(){try{const x=await api('simulate');const outcomes=Object.entries(x.outcomes).map(([k,v])=>k+': '+v+' / '+x.trials).join('\\n');const winners=x.wins.map((n,i)=>TEAMS[i]+': '+n).join('\\n');alert('Автотест '+x.trials+' случайных полных партий (случайные стратегии, не оптимальные):\\n\\nИсходы:\\n'+outcomes+'\\n\\nПобеды/разделённое лидерство:\\n'+winners+'\\n\\nСредние показатели: '+x.averages.join(' / '))}catch(e){toast(e.message)}}
 function exportCSV(){if(!state?.history?.length){toast('Сначала завершите первый раунд');return}const rows=[['Раунд','Кризис','Решение','Доверие','Экономика','Стабильность','Исход'],...state.history.map(h=>[h.round+1,h.title,h.choice,...h.metrics,h.regime])];const csv='\ufeff'+rows.map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(';')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='areya-'+auth.code+'-protocol.csv';a.click();URL.revokeObjectURL(url)}
@@ -303,7 +335,7 @@ const phase=state.phase;
 if(phase==='lobby')return situationPanel()+'<div class="section"></div><div class="panel focus-card"><h2>Вы в игре!</h2><p class="sub">Выберите командную стратегию после начала первого кризиса. Пока ожидайте преподавателя.</p><div class="nextstep">✓ Подключение выполнено. Участников: '+state.players.length+'</div></div>';
 if(phase==='scenario'||phase==='negotiations')return situationPanel()+'<div class="section"></div>'+roleOptionsUI()+'<div class="nextstep">Изучите последствия действий, обсудите их во вкладке «Союзы и связь» и при необходимости примените «Спецвозможности». Окончательное решение — только на голосовании.</div>';
 if(phase==='voting')return situationPanel()+'<div class="section"></div>'+voteUI()+'<div class="nextstep">Проверьте ответ и дождитесь, когда преподаватель подведёт итоги раунда.</div>';
-return '<div class="panel focus-card"><h2>'+(state.completed?'Игра завершена':'Раунд завершён')+'</h2><p class="sub">Решения учтены. Посмотрите последствия и обсудите их с командой.</p>'+historyPanel()+'</div>';
+return roundReport(state.history.filter(h=>!h.manual).at(-1))+'<div class="section"></div>'+historyPanel();
 }
 function playerTalk(){
 if(state.phase==='negotiations')return '<div class="panel"><h2>Договоритесь с другими делегациями</h2><p class="sub">Сначала обсудите условия, затем предложите союз или отправьте сообщение. Итоговые голоса других делегаций останутся закрытыми до подведения итогов.</p></div><div class="section"></div>'+allyUI()+'<div class="section"></div>'+chatUI();
