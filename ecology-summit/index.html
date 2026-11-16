@@ -29,11 +29,19 @@ hr{border:0;border-top:1px solid var(--line);margin:17px 0}
 .host-guide .guide-line b{color:var(--navy)}
 .host-guide .guide-line .meta{font-size:12px;color:#286f73;font-weight:800}
 body.with-game-bg{background-attachment:fixed;background-size:cover;background-position:center center;background-repeat:no-repeat}
-body.with-game-bg .panel,body.with-game-bg .team,body.with-game-bg .metric,body.with-game-bg header,body.with-game-bg .qr{background-color:rgba(255,255,255,.94)}
+body.with-game-bg .panel,body.with-game-bg .team,body.with-game-bg .metric,body.with-game-bg header,body.with-game-bg .qr{background-color:rgba(255,255,255,.90)}
 body.with-game-bg .host-guide .guide-line{background-color:rgba(249,252,252,.97)}
 @media(max-width:860px){body.with-game-bg{background-attachment:scroll;background-size:cover} }
+
+.photo-hero{display:none}
+body.with-game-bg .photo-hero{display:flex;min-height:230px;align-items:flex-end;background-image:linear-gradient(180deg,rgba(9,30,42,.08),rgba(9,30,42,.82)),var(--game-photo);background-size:cover;background-position:center 45%;border-bottom:5px solid #147a7b}
+.photo-hero .hero-inside{max-width:1180px;margin:0 auto;padding:32px 25px;width:100%;color:white;text-shadow:0 2px 10px #10232c}
+.photo-hero .hero-inside h1{font-size:32px;color:white;margin-bottom:4px}
+.photo-hero .hero-inside p{margin:0;color:#eaf5f6}
+@media(max-width:680px){body.with-game-bg .photo-hero{min-height:145px}.photo-hero .hero-inside{padding:18px}.photo-hero .hero-inside h1{font-size:23px}}
 </style></head><body>
 <header><div class="brand"><div><div class="kicker">ГУУ · Международные отношения</div><strong>ЭКОЛОГИЧЕСКИЙ САММИТ · МИР НА ГРАНИ</strong></div><div id="headinfo" class="pill">Учебный веб-симулятор</div></div></header>
+<div id="photoHero" class="photo-hero"><div class="hero-inside"><h1>Экологический саммит: мир на грани</h1><p>Международный климатический кризис · 2035 год</p></div></div>
 <main class="wrap" id="app"><div class="panel"><h2>Загрузка симулятора…</h2></div></main><div id="qrslot"></div>
 <script>
 (function(){
@@ -48,7 +56,7 @@ var s=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>'
 var clip=async t=>{try{await navigator.clipboard.writeText(t);toast('Ссылка скопирована')}catch(e){prompt('Скопируйте ссылку',t)}};
 var toast=m=>{var o=document.getElementById('toast');if(!o){o=document.createElement('div');o.id='toast';o.style='position:fixed;left:14px;bottom:14px;z-index:10;background:#183b49;color:white;padding:13px;border-radius:10px;max-width:75vw';document.body.appendChild(o)}o.textContent=m;setTimeout(()=>{o.remove()},3300)};
 async function api(action,data){var r=await fetch(BASE+'/api/'+action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({room:room,token:token},data||{}))});var j=await r.json().catch(()=>({error:'Неверный ответ сервера'}));if(!r.ok||j.error)throw Error(j.error||'Ошибка соединения');return j}
-async function reload(force){if(refreshBusy)return;refreshBusy=true;try{state=await api('state');if(force||!['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName))render();}catch(e){if(!state)document.getElementById('app').innerHTML='<div class="panel"><h2>Не удалось загрузить игру</h2><p>'+s(e.message)+'</p><button class="btn" data-act="reload">Повторить</button></div>';lastError=e.message}finally{refreshBusy=false}}
+async function reload(force){if(refreshBusy)return;refreshBusy=true;try{state=await api('state');applyBackground();if(force||!['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName))render();}catch(e){if(!state)document.getElementById('app').innerHTML='<div class="panel"><h2>Не удалось загрузить игру</h2><p>'+s(e.message)+'</p><button class="btn" data-act="reload">Повторить</button></div>';lastError=e.message}finally{refreshBusy=false}}
 function bar(m,i){var v=Number(m||0),bad=(i===0?v>=105:i===1?v>=75:i===2?v<=36:i===3?v<=30:v<=18),lim=[105,75,36,30,18][i];return '<div class="metric"><div class="lbl">'+N[i]+'</div><div class="n">'+v+' '+(bad?'⚠':'')+'</div><div class="bar"><div class="fill '+(bad?'red':'')+'" style="width:'+Math.min(100,v/120*100)+'%"></div></div><div class="tip">'+(i<=1?'Красная зона от ':'Красная зона до ')+lim+'</div></div>'}
 function delta(e){return '<div class="deltas">'+e.map((x,i)=>x?'<span class="delta '+((i<=1?x>0:x<0)?'negative':'positive')+'">'+N[i]+' '+(x>0?'+':'')+x+'</span>':'').join('')+'</div>'}
 function userTeam(){return state?.role?.team}
@@ -106,8 +114,8 @@ function applyBackground(){
  let url=state?.room?.backgroundUrl;
  if(url){
  document.body.classList.add('with-game-bg');
- document.body.style.backgroundImage='linear-gradient(rgba(10,31,40,.35),rgba(10,31,40,.48)),url("'+url.replace(/"/g,'')+'")';
- }else{document.body.classList.remove('with-game-bg');document.body.style.backgroundImage='';}
+ document.documentElement.style.setProperty('--game-photo','url("'+url.replace(/"/g,'')+'")');document.body.style.backgroundImage='linear-gradient(rgba(10,31,40,.32),rgba(10,31,40,.48)),url("'+url.replace(/"/g,'')+'")';
+ }else{document.body.classList.remove('with-game-bg');document.body.style.backgroundImage='';document.documentElement.style.removeProperty('--game-photo');}
 }
 function hostTools(){return '<section class="panel"><h2>Кабинет ведущего</h2><div class="actions"><span class="pill">Раунд '+state.room.stage+' / 6</span><span id="timer">'+timeFormat()+'</span><button class="btn" data-act="next" '+(state.room.stage===6?'disabled':'')+'>'+(state.room.stage===0?'Начать игру':'Следующий этап')+'</button><button class="btn secondary" data-act="pause" '+(state.room.stage===0||state.room.stage===6?'disabled':'')+'>'+(state.room.paused?'Продолжить':'Пауза')+'</button><button class="btn ghost" data-act="copyJoin">Ссылка студентов</button><button class="btn ghost" data-act="copyHost">Ссылка ведущего</button><button class="btn danger" data-act="reset">Сбросить сессию</button></div><hr><div class="actions"><label>Длительность текущего этапа: <input id="mins" type="number" min="1" max="90" value="'+Math.max(1,Math.ceil(state.remainingSeconds/60))+'" style="width:95px;display:inline-block"> мин.</label><button class="btn secondary" data-act="settime">Обновить таймер</button></div>'+(state.room.stage===5?'<hr><h3>Текст итоговой декларации</h3><textarea id="declaration">'+s(state.room.declaration)+'</textarea><button class="btn secondary" data-act="declaration">Сохранить декларацию</button>':'')+'</section>'}
 function hostActivity(){return '<section class="panel"><h2>Действия команд в реальном времени</h2><div class="feed">'+(state.activity||[]).map(x=>'<div class="entry"><b>'+s(x.actor)+'</b> — '+s(x.action)+'<small>'+new Date(x.created_at).toLocaleTimeString('ru-RU')+'</small></div>').join('')+'</div></section>'}
