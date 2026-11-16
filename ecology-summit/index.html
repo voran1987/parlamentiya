@@ -22,6 +22,16 @@ input,textarea,select{border:1px solid #bdd0d5;border-radius:10px;padding:10px;b
 hr{border:0;border-top:1px solid var(--line);margin:17px 0}
 @media(max-width:860px){.cols{grid-template-columns:1fr}.metric-grid{grid-template-columns:repeat(2,1fr)}.team-grid{grid-template-columns:repeat(2,1fr)}.qr{width:120px;padding:5px;right:8px;bottom:8px}.qr img{width:88px;height:88px}.qr small{font-size:9px}.brand strong{font-size:16px}.wrap{padding:0 11px;margin-top:13px}.panel{padding:14px}.actions{gap:7px}}
 @media(max-width:420px){.team-grid{grid-template-columns:1fr 1fr}.metric-grid{grid-template-columns:repeat(2,1fr)}h1{font-size:23px}}
+.host-guide summary{cursor:pointer;color:var(--navy);font-size:19px;font-weight:800;list-style-position:inside}
+.host-guide .guide-line{border-left:3px solid #c8dfe0;margin:10px 0;padding:9px 12px;background:rgba(249,252,252,.97);border-radius:0 9px 9px 0}
+.host-guide .guide-line.current{border-left-color:#c17d37;background:#fff7e9}
+.host-guide .guide-line p{margin:3px 0;color:var(--muted);font-size:13px}
+.host-guide .guide-line b{color:var(--navy)}
+.host-guide .guide-line .meta{font-size:12px;color:#286f73;font-weight:800}
+body.with-game-bg{background-attachment:fixed;background-size:cover;background-position:center center;background-repeat:no-repeat}
+body.with-game-bg .panel,body.with-game-bg .team,body.with-game-bg .metric,body.with-game-bg header,body.with-game-bg .qr{background-color:rgba(255,255,255,.94)}
+body.with-game-bg .host-guide .guide-line{background-color:rgba(249,252,252,.97)}
+@media(max-width:860px){body.with-game-bg{background-attachment:scroll;background-size:cover} }
 </style></head><body>
 <header><div class="brand"><div><div class="kicker">ГУУ · Международные отношения</div><strong>ЭКОЛОГИЧЕСКИЙ САММИТ · МИР НА ГРАНИ</strong></div><div id="headinfo" class="pill">Учебный веб-симулятор</div></div></header>
 <main class="wrap" id="app"><div class="panel"><h2>Загрузка симулятора…</h2></div></main><div id="qrslot"></div>
@@ -56,22 +66,73 @@ function alliances(){var me=userTeam();var a=state.alliances||[];return '<div cl
 function chats(){var me=userTeam();return '<div class="panel"><h2>Единый переговорный канал</h2><div class="feed">'+(state.messages||[]).map(m=>'<div class="entry"><b>'+s(state.teams[m.sender_team]?.short||'?')+' · '+s(m.nickname)+'</b> '+(m.target_team>=0?'<span class="pill">→ '+s(state.teams[m.target_team]?.short||'?')+'</span>':'<span class="pill">Общий канал</span>')+'<div>'+s(m.message)+'</div><small>'+new Date(m.created_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})+'</small></div>').join('')+'</div>'+(state.role.type==='student'&&!state.expired&&!state.room.paused?'<div class="actions" style="margin-top:10px"><select id="target" style="max-width:190px"><option value="-1">Всем делегациям</option>'+state.teams.map((t,i)=>i===me?'':'<option value="'+i+'">'+s(t.short)+'</option>').join('')+'</select><input id="message" maxlength="650" placeholder="Ваше предложение…"><button class="btn" data-act="chat">Отправить</button></div>':'')+'</div>'}
 function vote(){var v=(state.votes||[]).find(x=>x.team===userTeam());return '<div class="panel"><h2>Голосование по декларации</h2><div class="callout" style="white-space:pre-line">'+s(state.room.declaration)+'</div><p class="sub">Каждая делегация подаёт один голос. Решение можно изменить до окончания голосования.</p><div class="actions">'+[['yes','За'],['no','Против'],['abstain','Воздержаться']].map(([x,n])=>'<button class="btn '+(v?.vote===x?'secondary':'')+'" data-act="vote" data-vote="'+x+'" '+(state.expired||state.room.paused?'disabled':'')+'>'+(v?.vote===x?'✓ ':'')+n+'</button>').join('')+'</div></div>'}
 function results(){return '<section class="panel"><h2>Итоги саммита</h2><div class="callout '+(state.globalSuccess?'':'critical')+'"><b>'+(state.globalSuccess?'Международная система сохранила устойчивость':'Общее соглашение не сняло основных рисков')+'</b><p>Голосов за декларацию: '+state.votes.filter(v=>v.vote==='yes').length+' из 6. Решения изменили состояние всей системы.</p></div><div class="team-grid">'+state.scores.map((v,i)=>'<div class="team"><div class="nm">'+state.teams[i].icon+' '+s(state.teams[i].short)+'</div><div class="score">'+v+'</div><div class="summary">Национальные баллы</div></div>').join('')+'</div><p class="muted">Итоговые баллы включают решения, союзы, специальные возможности и голосование. Успех команды не гарантирует успех мировой системы.</p></section>'}
+
+function hostGuide(){
+ var blocks=[
+ {n:0,title:'Подключение участников',time:'5 минут',who:'Ведущий: показать QR, проверить численность команд и объяснить правила. Делегации: выбрать роль, войти без пароля.',out:'Результат: шесть делегаций подключены. Дальше — открытие саммита.'},
+ {n:1,title:'Раунд 1. Национальные позиции',time:'15 минут',who:'4 мин — подготовка; 3 мин — один выбор стратегии на команду; 6 мин — шесть устных выступлений (по 1 мин); 2 мин — фиксация противоречий. Ведущий модерирует выступления и видит официальные заявления.',out:'Результат: выбранная стратегия и вступительное заявление каждой делегации. Союзы и чат пока закрыты.'},
+ {n:2,title:'Раунд 2. Международные переговоры',time:'20 минут',who:'2 мин — объявление задач; 12 мин — открытые переговоры, обмен предложениями; 4 мин — подтверждение союзов любой стороной; 2 мин — фиксация договорённостей. Ведущий следит за сообщениями и действиями.',out:'Результат: подтверждённые союзы, использованные спецвозможности и изменение глобальных показателей.'},
+ {n:3,title:'Раунд 3. Международный экологический кризис',time:'15 минут',who:'3 мин — оглашение кризиса; 8 мин — экстренные переговоры и поиск партнёров; 4 мин — выступления о мерах. Переговоры включаются автоматически, союзы продолжают действовать.',out:'Результат: предложения о совместных мерах, реакция на красные зоны и критические показатели.'},
+ {n:4,title:'Раунд 4. Национальный ответ на кризис',time:'15 минут',who:'5 мин — обсуждение внутри делегаций; 5 мин — принятие нового коллективного решения; 5 мин — разбор итоговых эффектов. Ведущий сравнивает состояние системы до и после ответов.',out:'Результат: второй набор национальных решений и обновлённые глобальные показатели.'},
+ {n:5,title:'Раунд 5. Заключительный саммит',time:'15 минут',who:'4 мин — подготовка текста декларации ведущим; 6 мин — согласование формулировок; 3 мин — голосование делегаций; 2 мин — объявление результата. Ведущий может корректировать шесть пунктов документа.',out:'Результат: голосование «за / против / воздержался». Для принятия нужно не менее четырёх голосов «за».'},
+ {n:6,title:'Подведение итогов',time:'5 минут',who:'Обсудить, кому удалось защитить национальные интересы, почему показатели системы улучшились или ухудшились и какие обязательства оказались неэффективными.',out:'Результат: сопоставление национальной победы и устойчивости мировой системы.'}
+ ];
+return '<section class="panel host-guide"><details open><summary>Повестка саммита и сценарий ведущего · 90 минут</summary>'+
+ '<p class="muted" style="margin-top:12px">Главный вопрос: как распределить ответственность за сокращение выбросов, обеспечить развитие, финансирование адаптации и контроль обязательств?</p>'+
+ '<div class="callout"><b>Общая повестка (2035–2040):</b> ① ответственность за выбросы; ② экономика и энергетическая безопасность; ③ финансирование и технологии; ④ национальные обязательства, контроль и климатическая справедливость.</div>'+
+ blocks.map(function(b){return '<div class="guide-line '+(state.room.stage===b.n?'current':'')+'"><b>'+(state.room.stage===b.n?'▶ ':'')+b.title+'</b> <span class="meta"> · '+b.time+'</span><p>'+b.who+'</p><p><b>Итог:</b> '+b.out+'</p></div>'}).join('')+
+ '<div class="callout warning"><b>Важное для ведущего:</b> QR-подключение остаётся на экране. Если все команды ответили раньше, можно переходить далее вручную. Для паузы и продления этапа используйте кнопки управления. Национальные заявления видны ведущему сразу, участникам других делегаций — со второго раунда.</div>'+
+ '</details></section>'
+}
+function backgroundTools(){
+return '<section class="panel"><h2>Оформление игры · фоновое изображение</h2><p class="sub">Выберите изображение с компьютера. Оно появится на фоне всех экранов этой сессии, текст останется на светлых подложках.</p><div class="actions"><label style="flex:1;min-width:220px"><span class="muted">Загрузить фото или картинку</span><input type="file" id="bgpicker" accept="image/png,image/jpeg,image/webp"></label><button class="btn ghost" data-act="removeBg" '+(state.room.backgroundUrl?'':'disabled')+'>Убрать фон</button></div><p class="muted" style="margin-bottom:0">'+(state.room.backgroundUrl?'Фон подключён к текущей сессии и виден всем участникам.':'Фон пока не загружен. Выберите прикреплённую картинку здесь.')+'</p></section>'
+}
+async function uploadBackground(file){
+ if(!file)return;
+ if(!/^image\/(png|jpeg|webp)$/.test(file.type))throw Error('Выберите PNG, JPEG или WebP');
+ if(file.size>12000000)throw Error('Изображение больше 12 МБ');
+ let bitmap=await createImageBitmap(file);
+ let scale=Math.min(1,1920/bitmap.width,1300/bitmap.height);
+ let c=document.createElement('canvas');c.width=Math.max(1,Math.floor(bitmap.width*scale));c.height=Math.max(1,Math.floor(bitmap.height*scale));
+ let ctx=c.getContext('2d');if(!ctx)throw Error('Не удалось обработать изображение');
+ ctx.drawImage(bitmap,0,0,c.width,c.height);
+ if(bitmap.close)bitmap.close();
+ let url=c.toDataURL('image/webp',0.78);
+ let base64=url.split(',')[1];
+ if(!base64||base64.length>4700000)throw Error('Не удалось сжать фон, выберите изображение меньше');
+ await api('background',{base64:base64,mime:'image/webp'});
+}
+function applyBackground(){
+ let url=state?.room?.backgroundUrl;
+ if(url){
+ document.body.classList.add('with-game-bg');
+ document.body.style.backgroundImage='linear-gradient(rgba(10,31,40,.35),rgba(10,31,40,.48)),url("'+url.replace(/"/g,'')+'")';
+ }else{document.body.classList.remove('with-game-bg');document.body.style.backgroundImage='';}
+}
 function hostTools(){return '<section class="panel"><h2>Кабинет ведущего</h2><div class="actions"><span class="pill">Раунд '+state.room.stage+' / 6</span><span id="timer">'+timeFormat()+'</span><button class="btn" data-act="next" '+(state.room.stage===6?'disabled':'')+'>'+(state.room.stage===0?'Начать игру':'Следующий этап')+'</button><button class="btn secondary" data-act="pause" '+(state.room.stage===0||state.room.stage===6?'disabled':'')+'>'+(state.room.paused?'Продолжить':'Пауза')+'</button><button class="btn ghost" data-act="copyJoin">Ссылка студентов</button><button class="btn ghost" data-act="copyHost">Ссылка ведущего</button><button class="btn danger" data-act="reset">Сбросить сессию</button></div><hr><div class="actions"><label>Длительность текущего этапа: <input id="mins" type="number" min="1" max="90" value="'+Math.max(1,Math.ceil(state.remainingSeconds/60))+'" style="width:95px;display:inline-block"> мин.</label><button class="btn secondary" data-act="settime">Обновить таймер</button></div>'+(state.room.stage===5?'<hr><h3>Текст итоговой декларации</h3><textarea id="declaration">'+s(state.room.declaration)+'</textarea><button class="btn secondary" data-act="declaration">Сохранить декларацию</button>':'')+'</section>'}
 function hostActivity(){return '<section class="panel"><h2>Действия команд в реальном времени</h2><div class="feed">'+(state.activity||[]).map(x=>'<div class="entry"><b>'+s(x.actor)+'</b> — '+s(x.action)+'<small>'+new Date(x.created_at).toLocaleTimeString('ru-RU')+'</small></div>').join('')+'</div></section>'}
 function hostDecisions(){return '<section class="panel"><h2>Принятые решения и голоса</h2><div>'+state.decisions.map(x=>'<div class="entry"><b>'+s(state.teams[x.team].short)+' · раунд '+x.turn+'</b>: '+s(state.choices[x.team][x.turn-1][x.option_id].name)+'</div>').join('')+'</div><hr><h3>Союзы</h3>'+(state.alliances.length?state.alliances.map(a=>'<div class="entry">'+s(state.teams[a.low_team].short)+' — '+s(state.teams[a.high_team].short)+': '+(a.status==='accepted'?'подтверждён':a.status==='pending'?'ожидает подтверждения':'отклонён')+'</div>').join(''):'<p class="muted">Пока нет</p>')+'<hr><h3>Голоса</h3>'+state.votes.map(v=>'<div class="entry">'+s(state.teams[v.team].short)+': '+({yes:'за',no:'против',abstain:'воздержались'}[v.vote])+'</div>').join('')+'</section>'}
 function stageInfo(){var st=state.room.stage;var explanations=['Команды подключаются по QR-коду и знакомятся с ролью.','Открытие саммита: команды выбирают стратегию, пишут короткое заявление и выступают по одной минуте. Союзы и переговоры откроются во втором раунде.','Переговоры, союзы и специальные возможности открыты.','Вспыхнул кризис. Переговоры открылись автоматически. Союзы и спецвозможности доступны.','Делегации пересматривают решения с учётом кризиса.','Голосование по шести пунктам общей декларации.','Сравнение национальных и общесистемных результатов.'];return '<div class="panel"><div class="actions"><span class="pill">Этап '+st+'</span><strong id="timer">'+timeFormat()+'</strong></div><h1>'+STAGES[st]+'</h1><p>'+explanations[st]+'</p>'+(state.room.crisis_kind&&st>=3?'<div class="callout warning"><b>'+s(state.crisis.name)+'</b><p>'+s(state.crisis.desc)+'</p>'+delta(state.crisis.effect)+'</div>':'')+'</div>'}
 function render(){if(!state)return;var role=state.role.type,st=state.room.stage;
 document.getElementById('headinfo').textContent='Комната '+state.room.code+' · '+(role==='host'?'Ведущий':role==='student'?state.teams[userTeam()].short:'Подключение');
+applyBackground();
 var content='';
 if(role==='visitor'){content=lobby()+metrics();}else{
 content=stageInfo()+(st===1?agenda():'')+metrics();
-if(role==='host'){content=hostTools()+content+'<div class="cols"><div>'+teams()+hostDecisions()+(st>=1?statementsPanel():'')+'</div><div>'+hostActivity()+((st===2||st===3)?chats():'')+'</div>'+(st===6?results():'');}
+if(role==='host'){content=hostTools()+hostGuide()+backgroundTools()+content+'<div class="cols"><div>'+teams()+hostDecisions()+(st>=1?statementsPanel():'')+'</div><div>'+hostActivity()+((st===2||st===3)?chats():'')+'</div>'+(st===6?results():'');}
 else{content+='<div class="cols"><div>'+own()+(st===1||st===4?decision():'')+(st===1?statementForm():'')+(st===2||st===3?alliances()+chats():'')+(st===5?vote():'')+(st===6?results():'')+'</div><div>'+teams()+(st>=2?statementsPanel():'')+'</div></div>';}
 }
 document.getElementById('app').innerHTML=content;
 if(role==='host'){var url=state.joinUrl;document.getElementById('qrslot').innerHTML='<div class="qr"><b>Подключение</b><img src="'+BASE+'/qr?room='+encodeURIComponent(room)+'" alt="QR-код для студентов"><small>Сканируйте камерой<br>'+s(room)+'</small></div>';}else document.getElementById('qrslot').innerHTML='';
 }
 async function initial(){if(!room){document.getElementById('app').innerHTML='<div class="panel"><span class="pill">Учебная дипломатическая игра</span><h1>Экологический саммит: мир на грани</h1><p>Шесть делегаций защищают национальные интересы. Их решения изменяют глобальные показатели, кризисы и возможность международного компромисса.</p><div class="actions"><button class="btn" data-act="create">Создать игру для преподавателя</button></div><hr><h3>Присоединиться к существующей игре</h3><div class="actions"><input id="roomcode" maxlength="8" placeholder="Код комнаты" style="max-width:200px"><button class="btn secondary" data-act="openroom">Подключиться</button></div></div>';return;}await reload(true);}
+document.addEventListener('change',async e=>{
+ if(e.target?.id!=='bgpicker')return;
+ let input=e.target;
+ try{input.disabled=true;toast('Загружаю фон игры…');await uploadBackground(input.files[0]);await reload(true);toast('Фон установлен на всех экранах игры');}
+ catch(ex){toast('Не удалось установить фон: '+ex.message)}
+ finally{input.disabled=false}
+});
 document.addEventListener('click',async e=>{var b=e.target.closest('[data-act]');if(!b||apiBusy)return;var a=b.dataset.act;try{
 if(a==='copyJoin')return clip(state.joinUrl);if(a==='copyHost')return clip(location.origin+location.pathname+'?room='+room+'#host='+token);
 if(a==='openroom'){var x=document.getElementById('roomcode').value.trim().toUpperCase();if(!x)return toast('Введите код');location.href=PAGE+'?room='+encodeURIComponent(x);return;}
@@ -82,6 +143,7 @@ apiBusy=true;b.disabled=true;
 var data={};
 if(a==='join'){data={nickname:document.getElementById('nickname').value.trim(),team:Number(document.getElementById('jointeam').value)};var ans=await api('join',data);token=ans.token;localStorage.setItem('eco_token_'+room,token);toast('Вы подключены');await reload(true);return;}
 if(a==='create'){var x=await api('create');room=x.room;token=x.token;location.href=x.hostUrl;return;}
+if(a==='removeBg')data={};
 if(a==='decision')data={option:Number(b.dataset.option)};
 if(a==='statement')data={statement:document.getElementById('statement').value.trim()};
 if(a==='ally'||a==='accept')data={otherTeam:Number(b.dataset.team),kind:a};
