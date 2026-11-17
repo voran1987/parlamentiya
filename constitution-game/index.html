@@ -232,12 +232,12 @@ function bind(d){$("theme")?.addEventListener("click",toggleTheme);$("home")?.ad
  document.querySelectorAll("[data-adjust]").forEach(b=>b.addEventListener("click",()=>act("adjust",{team:Number(b.dataset.team),delta:Number(b.dataset.adjust)})));
  $("buzz")?.addEventListener("click",()=>act("buzz",{wager:d.question?.round===3?Number($("wager")?.value||0):0}));
  $("wager")?.addEventListener("change",e=>{wager=Number(e.target.value)});
- $("lockFinal")?.addEventListener("click",()=>{if(confirm("Завершить приём письменных ответов? После этого команды не смогут ничего добавить."))act("lock_final")});
- $("submitFinal")?.addEventListener("click",()=>{const text=$("finalText")?.value?.trim()||"";if(text.length<8)return show("Ответ слишком короткий",true);if(confirm("Отправить ответ и ставку? Изменить их уже нельзя."))act("submit_final",{text,wager:Number($("wager")?.value||0)})});
+ $("lockFinal")?.addEventListener("click",()=>act("lock_final"));
+ $("submitFinal")?.addEventListener("click",()=>{const text=$("finalText")?.value?.trim()||"";if(text.length<8)return show("Ответ слишком короткий",true);act("submit_final",{text,wager:Number($("wager")?.value||0)})});
  $("reveal")?.addEventListener("click",()=>act("reveal"));
  $("close")?.addEventListener("click",()=>act("close"));
  $("finish")?.addEventListener("click",()=>act("advance"));
- $("advance")?.addEventListener("click",()=>{if(confirm("Перейти к следующему туру? Неоткрытые вопросы станут недоступны."))act("advance")});
+ $("advance")?.addEventListener("click",()=>act("advance"));
  $("reset")?.addEventListener("click",()=>{if(confirm("Сбросить ответы, баллы и сыгранные вопросы? Подключения участников сохранятся."))act("reset",{dropPlayers:false})});
  $("csv")?.addEventListener("click",()=>{const rows=[["Команда","Баллы","Участников"],...[...d.teams].sort((a,b)=>b.score-a.score).map(t=>[t.team_name,t.score,t.members])];const csv="\ufeff"+rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(";")).join("\r\n");const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));const a=document.createElement("a");a.href=url;a.download="konstituciya-"+code+".csv";a.click();setTimeout(()=>URL.revokeObjectURL(url),1200)})}
 $("copyJoin").onclick=()=>copy(joinLink());
