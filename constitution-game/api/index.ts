@@ -26,7 +26,7 @@ async function state(room,secret,token){
  const [teams,people,ans]=await Promise.all([
   getTeams(room.room_code),
   db("constitution_players","GET","?room_code=eq."+param(room.room_code)+"&select=id,player_token,team_num,player_name"),
-  room.current_key?db("constitution_answers","GET","?room_code=eq."+param(room.room_code)+"&question_key=eq."+param(room.current_key)+"&select=team_num,answer_text,wager,grade"):Promise.resolve([])
+  room.current_key?db("constitution_answers","GET","?room_code=eq."+param(room.room_code)+"&question_key=eq."+param(room.current_key)+"&select=team_num,wager,grade,submitted_at&order=submitted_at.asc"):Promise.resolve([])
  ]);
  const player=people.find(p=>p.player_token===token)||null;
  const used=Array.isArray(room.used_keys)?room.used_keys:[];
@@ -37,8 +37,8 @@ async function state(room,secret,token){
  return {ok:true,room:room.room_code,phase:room.phase,host,player:player?{name:player.player_name,team:player.team_num}:null,
  teams:counts,round1:board(1,used),round2:board(2,used),superBoard:board(3,used),
  question:slim(q,host||room.revealed),revealed:room.revealed,remaining,answeredTeams:ans.length,
- myAnswer:myAnswer?myAnswer.answer_text:null,myWager:myAnswer?myAnswer.wager:null,
- answers:(host||room.revealed)?ans.map(a=>({team:a.team_num,text:a.answer_text,wager:a.wager,grade:a.grade})):undefined,
+ myBuzz:!!myAnswer,myGrade:myAnswer?myAnswer.grade:null,myWager:myAnswer?myAnswer.wager:null,buzzActiveTeam:room.buzz_active_team,buzzOpen:room.buzz_open,attemptedTeams:ans.map(a=>a.team_num),
+ answers:(host||room.revealed)?ans.map(a=>({team:a.team_num,wager:a.wager,grade:a.grade})):undefined,
  usedCount:used.length,
  canSeeHostLink:host,
  timestamp:Date.now()
@@ -77,34 +77,31 @@ Deno.serve(async req=>{
    const a=await db("constitution_players","POST","",{room_code:code,player_name:name,team_num:team});
    return respond({ok:true,room:code,playerToken:a[0].player_token,team});
   }
-  if(action==="answer"){
-   if(!player)return fail("Сначала подключитесь к команде",403);
-   if(!room.current_key||room.revealed)return fail("Ответы сейчас не принимаются",409);
-   const question=getQuestion(room.current_key);
-   if(!question)return fail("Вопрос не найден",404);
-   if(room.opened_at&&Date.now()-Date.parse(room.opened_at)>92000)return fail("Время на ответ истекло",409);
-   const text=String(x.text||"").trim().slice(0,700);
-   if(text.length<2)return fail("Напишите текст ответа (не меньше двух символов)");
-   let wager=0;
-   if(question.round===3){
-     const scores=await getTeams(code);
-     const t=scores.find(a=>a.team_num===player.team_num);
-     wager=Number(x.wager);
-     if(!Number.isInteger(wager)||wager<0||wager>Math.max(300,t?.score||0)||wager%100!==0)return fail("Ставка кратна 100 и не превышает допустимый лимит");
-   }
-   try{await db("constitution_answers","POST","",{room_code:code,question_key:room.current_key,team_num:player.team_num,answer_text:text,wager})}
-   catch(e){if(e.code==="23505"||String(e.message||"").includes("duplicate key"))return fail("Ваша команда уже ответила на этот вопрос",409);throw e}
-   return respond({ok:true});
+  if(action==="buzz"){
+    if(!player)return fail("Сначала присоединитесь к команде",403);
+    if(!room.current_key||room.revealed)return fail("Вопрос сейчас не открыт",409);
+    const question=getQuestion(room.current_key);
+    if(!question)return fail("Вопрос не найден",404);
+    let wager=0;
+    if(question.round===3){
+      const scores=await getTeams(code),t=scores.find(z=>z.team_num===player.team_num);
+      wager=Number(x.wager);
+      if(!Number.isInteger(wager)||wager<0||wager>Math.max(300,t?.score||0)||wager%100!==0)return fail("Некорректная ставка: шаг 100 баллов",400);
+    }
+    const won=await db("rpc/constitution_claim_buzz","POST","",{p_room:code,p_question:question.id,p_team:player.team_num,p_wager:wager});
+    if(!won)return fail("Кнопка уже нажата другой командой или ваша команда уже отвечала",409);
+    return respond({ok:true,team:player.team_num});
   }
   if(!host)return fail("Доступно только ведущему",403);
   if(action==="grade"){
-   if(!room.current_key)return fail("Нет открытого вопроса",409);
+   if(!room.current_key||room.revealed)return fail("Сначала откройте вопрос и дождитесь устного ответа",409);
    const team=Number(x.team),grade=Number(x.grade);
    const q=getQuestion(room.current_key);
    if(!Number.isInteger(team)||team<1||team>5||![-1,0,1].includes(grade))return fail("Некорректная оценка");
    const ans=await db("constitution_answers","GET","?room_code=eq."+param(code)+"&question_key=eq."+param(q.id)+"&team_num=eq."+team+"&select=team_num,wager,grade");
    if(!ans.length)return fail("Команда не отправила ответ",404);
    if(ans[0].grade!==null)return fail("Ответ команды уже оценён",409);
+   if(room.buzz_active_team!==team)return fail("Сейчас отвечает другая команда",409);
    const delta=grade===0?0:grade===1?(q.round===3?ans[0].wager:q.value):-(q.round===3?ans[0].wager:Math.ceil(q.value/2));
    const scored=await db("rpc/constitution_apply_grade","POST","",{p_room:code,p_question:q.id,p_team:team,p_grade:grade,p_delta:delta});
    if(scored!==true)return fail("Ответ уже оценён или отсутствует",409);
@@ -136,19 +133,20 @@ Deno.serve(async req=>{
    const used=Array.isArray(room.used_keys)?room.used_keys:[];
    if(used.includes(q.id))return fail("Этот вопрос уже сыгран",409);
    if(round===3&&used.some(v=>v.startsWith("s")))return fail("В суперигре выбирается один вопрос",409);
-   await db("constitution_sessions","PATCH","?room_code=eq."+param(code),{current_key:q.id,opened_at:new Date().toISOString(),revealed:false,used_keys:[...used,q.id]});
+   await db("constitution_sessions","PATCH","?room_code=eq."+param(code),{current_key:q.id,opened_at:new Date().toISOString(),revealed:false,buzz_open:true,buzz_active_team:null,used_keys:[...used,q.id]});
    return respond({ok:true});
   }
   if(action==="reveal"){
    if(!room.current_key||room.revealed)return fail("Нет активного нераскрытого вопроса",409);
-   await db("constitution_sessions","PATCH","?room_code=eq."+param(code),{revealed:true});
+   if(room.buzz_active_team!==null)return fail("Сначала оцените устный ответ команды",409);
+   await db("constitution_sessions","PATCH","?room_code=eq."+param(code),{revealed:true,buzz_open:false});
    return respond({ok:true});
   }
   if(action==="close"){
    if(!room.current_key||!room.revealed)return fail("Сначала откройте правильный ответ",409);
    const pending=await db("constitution_answers","GET","?room_code=eq."+param(code)+"&question_key=eq."+param(room.current_key)+"&grade=is.null&select=team_num");
    if(pending.length)return fail("Сначала оцените ответы всех команд",409);
-   await db("constitution_sessions","PATCH","?room_code=eq."+param(code),{current_key:null,opened_at:null,revealed:false});
+   await db("constitution_sessions","PATCH","?room_code=eq."+param(code),{current_key:null,opened_at:null,revealed:false,buzz_open:false,buzz_active_team:null});
    return respond({ok:true});
   }
   if(action==="advance"){
@@ -157,14 +155,14 @@ Deno.serve(async req=>{
    const to={round1:"round2",round2:"super",super:"finished"}[room.phase];
    if(!to)return fail("Нельзя перейти к следующему этапу",409);
    if(room.phase==="super"&&!room.current_key)return fail("Сначала сыграйте вопрос суперигры",409);
-   await db("constitution_sessions","PATCH","?room_code=eq."+param(code),{phase:to,current_key:null,opened_at:null,revealed:false});
+   await db("constitution_sessions","PATCH","?room_code=eq."+param(code),{phase:to,current_key:null,opened_at:null,revealed:false,buzz_open:false,buzz_active_team:null});
    return respond({ok:true});
   }
   if(action==="reset"){
    await db("constitution_answers","DELETE","?room_code=eq."+param(code));
    if(x.dropPlayers)await db("constitution_players","DELETE","?room_code=eq."+param(code));
    await db("constitution_teams","PATCH","?room_code=eq."+param(code),{score:0});
-   await db("constitution_sessions","PATCH","?room_code=eq."+param(code),{phase:"lobby",current_key:null,opened_at:null,revealed:false,used_keys:[]});
+   await db("constitution_sessions","PATCH","?room_code=eq."+param(code),{phase:"lobby",current_key:null,opened_at:null,revealed:false,buzz_open:false,buzz_active_team:null,used_keys:[]});
    return respond({ok:true});
   }
   return fail("Неизвестное действие",404);
