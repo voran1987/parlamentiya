@@ -53,7 +53,7 @@ footer{margin-top:auto;font-size:12px;color:var(--muted);padding:8px 0;text-alig
 #teamTitle{color:var(--accent);font-weight:700}
 #gamemode{color:var(--accent);font-weight:700}
 @media(max-width:410px){body{padding:10px}.card{padding:14px}.buzzer{min-height:150px}h1{font-size:21px}}
-</style></head>
+#finalArea{margin-top:18px}#finalWager{width:100%;margin-bottom:9px}#finalText{width:100%;min-height:164px;resize:vertical;border:1px solid #bbb7ab;padding:13px;background:var(--surface);border-radius:10px;font:16px/1.5 "Source Sans 3",Arial,sans-serif;color:var(--ink)}#finalText:focus{outline:3px solid var(--accent);outline-offset:1px}#finalForm .primary{width:100%}.final-receipt-text{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5;padding:15px;background:#eae8e0;border-radius:10px;margin-top:6px}</style></head>
 <body>
 <main>
 <header><div><div class="kicker">МЭИ · Основы российской государственности</div><h1>Своя игра: Конституция</h1></div><div class="pill" id="roomPill">Подключение</div></header>
@@ -73,6 +73,18 @@ footer{margin-top:auto;font-size:12px;color:var(--muted);padding:8px 0;text-alig
   <div id="superWager"><label for="wager">Ваша ставка на суперигру</label><select id="wager"></select></div>
   <div id="statusArea" aria-live="polite"></div>
   <div id="buzzerRow"><button type="button" id="buzz" class="buzzer" disabled>ОТВЕТИТЬ<span>Нажать на скорость — устный ответ</span></button><p class="hint" id="buzzerNote">Кнопка заработает, когда ведущий откроет вопрос.</p></div>
+  <div id="finalArea" style="display:none">
+   <div id="finalStatus" class="status" aria-live="polite"></div>
+   <div id="finalForm">
+    <label for="finalWager">Ставка команды</label><select id="finalWager"></select>
+    <p class="hint">Верный ответ прибавляет ставку; неверный — вычитает её. Частично верный — 0 баллов.</p>
+    <label for="finalText">Ваш общий ответ на сложный вопрос</label>
+    <textarea id="finalText" maxlength="1500" rows="7" placeholder="Перечислите конституционные принципы и объясните все три ситуации"></textarea>
+    <button type="button" id="submitFinal" class="primary">Отправить ставку и ответ</button>
+    <p class="hint">От команды принимается один письменный ответ. После отправки изменить ставку и текст нельзя.</p>
+   </div>
+   <div id="finalReceipt" style="display:none"><div class="hint">Отправленный ответ</div><div class="final-receipt-text" id="finalSavedText"></div></div>
+  </div>
   <div class="answer" id="rightAnswer" style="display:none"></div>
  </div>
  <div class="card" id="leader"><div class="kicker">Баллы команд</div><div class="scores" id="scores"></div></div>
@@ -112,6 +124,8 @@ function render(d){
  $("question").style.display=q?"block":"none";
  $("waitingBox").style.display=q?"none":"block";
  $("superWager").style.display="none";
+ $("finalArea").style.display="none";
+ $("buzzerRow").style.display="flex";
  $("rightAnswer").style.display="none";
  const btn=$("buzz");
  btn.disabled=true;btn.style.opacity="";$("statusArea").textContent="";
@@ -120,10 +134,40 @@ function render(d){
   $("buzzerNote").textContent="Кнопка будет активна после открытия вопроса.";
   questionId="";locked=false;return
  }
- if(q.id!==questionId){locked=false;questionId=q.id}
+ if(q.id!==questionId){locked=false;questionId=q.id;$("finalText").value="";wager=0}
  $("cat").textContent=q.cat;
  $("points").textContent=q.round===3?"Ставка":q.value+" очков";
  $("qtext").textContent=q.text;
+
+ if(q.round===3){
+  $("buzzerRow").style.display="none";$("finalArea").style.display="block";
+  const submitted=d.myFinal,closed=d.finalLocked;
+  const form=$("finalForm"),receipt=$("finalReceipt"),status=$("finalStatus");
+  if(submitted){
+    form.style.display="none";receipt.style.display="block";
+    $("finalSavedText").textContent=submitted.text;
+    status.textContent="Ответ команды принят. Ставка: "+submitted.wager+" баллов. "+(d.revealed?"Игра завершена.":"Ожидайте завершения приёма и оценки ведущего.");
+  }else if(closed||d.revealed){
+    form.style.display="none";receipt.style.display="none";
+    status.textContent="Приём ответов завершён. Ваша команда не успела отправить ответ.";
+  }else{
+    form.style.display="block";receipt.style.display="none";
+    status.textContent="III тур: ответьте письменно. Все команды могут отправить по одному ответу со ставкой.";
+    const mx=Math.max(300,team?.score||0),select=$("finalWager"),current=Number(select.value);
+    if(wager>mx)wager=0;
+    const vals=[];for(let i=0;i<=mx;i+=100)vals.push(i);
+    if(select.options.length!==vals.length){
+      select.innerHTML=vals.map(i=>'<option value="'+i+'">'+i+' баллов</option>').join("");
+      select.value=String(wager);
+    }
+  }
+  if(d.revealed){
+    $("rightAnswer").style.display="block";
+    $("rightAnswer").textContent="Эталон ответа: "+q.answer;
+  }
+  $("connection").textContent="Подключено · финальный ответ обрабатывается через Supabase";
+  return;
+ }
  const active=d.teams.find(t=>t.team_num===d.buzzActiveTeam),myAttempt=d.myBuzz,activeMe=active&&active.team_num===player.team;
  if(d.revealed){
   $("rightAnswer").style.display="block";$("rightAnswer").textContent="Правильный ответ: "+q.answer;
@@ -176,12 +220,25 @@ $("buzz").onclick=async()=>{
  }finally{inFlight=false;await refresh(true)}
 };
 $("wager").onchange=e=>wager=Number(e.target.value);
+$("finalWager").onchange=e=>wager=Number(e.target.value);
+$("submitFinal").onclick=async()=>{
+ const text=$("finalText").value.trim(),stake=Number($("finalWager").value||0);
+ if(text.length<8)return err("Ответ слишком короткий: укажите принципы и обоснования.");
+ if(inFlight)return;
+ if(!confirm("Отправить ответ команды и ставку "+stake+" баллов? Изменить их будет нельзя."))return;
+ inFlight=true;$("submitFinal").disabled=true;
+ try{
+  await call("submit_final",{text,wager:stake});
+  await refresh(true);
+ }catch(e){err(e.message)}
+ finally{inFlight=false;$("submitFinal").disabled=false;if(token)await refresh(true)}
+};
 async function refresh(force=false){
  if(inFlight&&!force)return;
  try{
   const d=await call("state");
   if(token&&!d.player){token="";localStorage.removeItem(key)}
-  const sig=JSON.stringify([d.phase,d.player?.team,d.question?.id,d.revealed,d.buzzOpen,d.buzzActiveTeam,d.myBuzz,d.myGrade,d.teams.map(t=>[t.score,t.members,t.team_name])]);
+  const sig=JSON.stringify([d.phase,d.player?.team,d.question?.id,d.revealed,d.buzzOpen,d.buzzActiveTeam,d.myBuzz,d.myGrade,d.myFinal?.text,d.myFinal?.wager,d.myFinal?.grade,d.finalLocked,d.teams.map(t=>[t.score,t.members,t.team_name])]);
   if(force||sig!==displaySig){displaySig=sig;render(d)}
   $("connection").textContent="Соединение с Supabase активно";
  }catch(e){$("connection").textContent="Повторная попытка подключения…";if(force)err(e.message)}
