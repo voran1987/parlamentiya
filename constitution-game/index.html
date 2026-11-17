@@ -139,7 +139,7 @@ function panel(d){
  const col=cols[Math.max(0,cats.indexOf(q.cat))]||cols[0];
  const activeTeam=d.teams.find(t=>t.team_num===d.buzzActiveTeam);
  const attempts=d.attemptedTeams||[];
- let out='<section class="panel" role="dialog" aria-label="Открытый вопрос"><div class="pin"><div class="ptop"><span class="plabel" style="color:var('+col+')">'+esc(q.cat)+' · '+esc(q.round===1?"I ТУР":q.round===2?"II ТУР":"СУПЕРИГРА")+'</span><div class="row"><span id="clock" class="timer">1:30</span>'+(q.round===3?'':'<span class="pval" style="color:var('+col+')">'+q.value+'</span>')+'</div></div><div class="ctx"><b style="color:var('+col+')">Конституция Российской Федерации</b>Первое нажатие определяет команду, отвечающую вслух</div><h2 class="qq">'+esc(q.text)+'</h2>';
+ let out='<section class="panel" role="dialog" aria-label="Открытый вопрос"><div class="pin"><div class="ptop"><span class="plabel" style="color:var('+col+')">'+esc(q.cat)+' · '+esc(q.round===1?"I ТУР":q.round===2?"II ТУР":"СУПЕРИГРА")+'</span><div class="row"><span class="timer" aria-label="Приоритет по скорости нажатия">⚡ На скорость</span>'+(q.round===3?'':'<span class="pval" style="color:var('+col+')">'+q.value+'</span>')+'</div></div><div class="ctx"><b style="color:var('+col+')">Конституция Российской Федерации</b>Первое нажатие определяет команду, отвечающую вслух</div><h2 class="qq">'+esc(q.text)+'</h2>';
  if(d.host){
   if(activeTeam)out+='<div class="buzzer-winner" role="status"><div class="label">Первой нажала кнопка</div><div class="winner-name">'+esc(activeTeam.team_name)+'</div><p>Команда отвечает вслух. Выслушайте ответ и оцените его.</p></div>';
   else if(d.buzzOpen)out+='<div class="status buzz-ready">Кнопки ответа активны. Ожидаем первое нажатие команды.</div>';
@@ -166,7 +166,7 @@ function panel(d){
    }else if(d.myBuzz){
      out+='<div class="status" role="status">'+(d.myGrade===1?'Ваша команда ответила верно!':d.myGrade===-1?'Ответ неверный. У команды больше нет попыток на этот вопрос.':'Попытка вашей команды завершена.')+'</div><button class="buzzer" disabled>ОТВЕТИТЬ</button>';
    }else if(d.buzzOpen){
-     out+='<div class="buzzer-ready-label">Готовы? Нажмите быстрее соперников.</div>';
+     out+='<div class="buzzer-ready-label">Готовы? Первый сигнал, полученный сервером, даёт право устного ответа.</div>';
      if(q.round===3)out+='<label for="wager">Ставка команды</label>'+wagerSelect(d);
      out+='<button id="buzz" class="buzzer" type="button"><span>ОТВЕТИТЬ</span><small>Нажать первым и отвечать вслух</small></button>';
    }else{
