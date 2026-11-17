@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F6F5F1"><title>Своя игра · Команда</title>
+<link href="https://fonts.googleapis.com/css2?family=Literata:wght@500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F6F5F1;--surface:white;--ink:#1B1B18;--muted:#66665D;--line:#D9D6CB;--accent:#8A3B2A;--good:#2F6B3F;--bad:#A02A2A}
+*{box-sizing:border-box}body{margin:0;padding:12px;background:var(--bg);font:17px "Source Sans 3",Arial,sans-serif;color:var(--ink);min-height:100svh}
+main{max-width:650px;margin:0 auto;min-height:calc(100svh - 24px);display:flex;flex-direction:column;gap:13px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+h1,h2,h3{font-family:Literata,Georgia,serif;line-height:1.23}h1{font-size:24px;margin:0}h2{font-size:25px;margin:0 0 10px}
+.sub,.hint{color:var(--muted);font-size:14px;line-height:1.5}
+.kicker{font-size:11px;text-transform:uppercase;letter-spacing:.13em;font-weight:700;color:var(--accent)}
+.pill{font-size:13px;font-weight:700;padding:8px 10px;background:#EAE8E0;border-radius:9px;white-space:nowrap}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:19px}
+label{display:block;font-weight:700;font-size:14px;margin:12px 0 5px}input,select,button{font:inherit}
+input,select{width:100%;background:#fff;padding:14px 12px;border:1px solid #bbb7ab;border-radius:9px;color:var(--ink)}
+button{border:1px solid var(--line);border-radius:10px;padding:12px 16px;background:var(--surface);color:var(--ink);font-weight:700;cursor:pointer;touch-action:manipulation}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent);width:100%;margin:14px 0}
+button:disabled{cursor:default;opacity:.75}
+.game-top{display:flex;align-items:center;justify-content:space-between;gap:9px}
+.q-text{font:bold clamp(22px,5.7vw,35px)/1.3 Literata,Georgia,serif;margin:18px 0}
+.q-points{font:bold 28px Literata,serif;color:var(--accent)}
+.buzzer{width:100%;min-height:170px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:4px solid #7e2316;border-radius:21px;background:linear-gradient(165deg,#ba513b,#8A3B2A);color:#fff;font:bold clamp(30px,9vw,55px) Literata,Georgia,serif;box-shadow:0 9px 0 #642b1f,0 20px 30px #0002;margin:12px 0 16px}
+.buzzer span{font:700 14px "Source Sans 3",Arial,sans-serif;margin-top:6px;letter-spacing:0}
+.buzzer:active:not(:disabled){transform:translateY(7px);box-shadow:0 2px 0 #642b1f}
+.buzzer:disabled{background:#dedbd2;border-color:#b7b4ab;color:#77736b;box-shadow:none}
+.won{background:#e6f1e8;color:#1e6836;border:2px solid #5b9b70;border-radius:12px;padding:18px;text-align:center;font-weight:700;font-size:21px}
+.lost{background:#eae8e0;color:#5c5850;border:1px solid #d0cbc0;border-radius:12px;padding:15px;text-align:center}
+.status{border-radius:10px;background:#EAE8E0;padding:11px 13px;font-size:15px;line-height:1.45}
+.status.error{border:1px solid #ce8680;color:#992b22}
+.answer{border-radius:12px;background:var(--good);color:white;padding:16px 19px;font:bold 19px/1.4 Literata,serif}
+.scores{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.score{padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:13px}
+.score strong{display:block;font:bold 29px Literata,serif}
+.score.mine{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.score .nm{overflow-wrap:anywhere;font-weight:700}
+.waiting-label{font-weight:700;text-align:center;font-size:17px}
+footer{margin-top:auto;font-size:12px;color:var(--muted);padding:8px 0;text-align:center}
+#error{display:none;background:#fee;border:1px solid #e99;padding:14px;border-radius:9px;color:#922}
+#game{display:none}#lobby{display:none}
+#statusArea{font-size:16px}
+#modeRow{display:none}
+#buzzerRow{display:flex;flex-direction:column;align-items:center}
+#buzzerNote{margin-top:0}
+#waitingBox{margin-top:10px}
+#question{display:none}
+#joinForm{display:none}
+#superWager{display:none}
+#ended{display:none}
+#leader{display:none}
+#connection{font-size:11px;color:var(--muted)}
+#teamTitle{color:var(--accent);font-weight:700}
+#gamemode{color:var(--accent);font-weight:700}
+@media(max-width:410px){body{padding:10px}.card{padding:14px}.buzzer{min-height:150px}h1{font-size:21px}}
+</style></head>
+<body>
+<main>
+<header><div><div class="kicker">МЭИ · Основы российской государственности</div><h1>Своя игра: Конституция</h1></div><div class="pill" id="roomPill">Подключение</div></header>
+<div id="error" role="alert"></div>
+<section class="card" id="joinForm">
+ <div class="kicker">Студенческий кабинет</div><h2>Войти в команду</h2>
+ <p class="hint">Кнопка «ОТВЕТИТЬ» появится после входа и активируется, когда ведущий откроет вопрос. Отвечать нужно вслух.</p>
+ <label for="name">Ваше имя</label><input id="name" placeholder="Введите имя" maxlength="40" autocomplete="nickname">
+ <label for="team">Команда</label><select id="team"></select>
+ <button id="join" class="primary">Присоединиться</button>
+</section>
+<section id="game">
+ <div class="card"><div class="game-top"><div><div class="kicker" id="gamemode">Ожидание</div><div id="teamTitle"></div></div><div class="pill" id="memberCount"></div></div></div>
+ <div class="card" id="questionCard">
+  <div id="question"><div class="game-top"><span class="kicker" id="cat"></span><span class="q-points" id="points"></span></div><div class="q-text" id="qtext"></div></div>
+  <div class="waiting-label" id="waitingBox">Ожидайте вопрос ведущего</div>
+  <div id="superWager"><label for="wager">Ваша ставка на суперигру</label><select id="wager"></select></div>
+  <div id="statusArea" aria-live="polite"></div>
+  <div id="buzzerRow"><button type="button" id="buzz" class="buzzer" disabled>ОТВЕТИТЬ<span>Нажать на скорость — устный ответ</span></button><p class="hint" id="buzzerNote">Кнопка заработает, когда ведущий откроет вопрос.</p></div>
+  <div class="answer" id="rightAnswer" style="display:none"></div>
+ </div>
+ <div class="card" id="leader"><div class="kicker">Баллы команд</div><div class="scores" id="scores"></div></div>
+</section>
+<footer><span id="connection">Подключение к серверу…</span></footer>
+</main>
+<script>
+(function(){
+"use strict";
+const API="https://logzbhhftwvqsrqvmnik.supabase.co/functions/v1/constitution-game-api";
+const $=id=>document.getElementById(id);
+const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const room=(new URLSearchParams(location.search).get("room")||"").toUpperCase().trim();
+const key="constitution_player_"+room;
+let token=localStorage.getItem(key)||"",player=null,locked=false,inFlight=false,questionId="",displaySig="",wager=0;
+$("roomPill").textContent=room||"Нет комнаты";
+function err(msg){$("error").textContent=msg;$("error").style.display="block"}
+function clearError(){$("error").style.display="none"}
+if(!/^[A-Z2-9]{6}$/.test(room)){err("Неверный код комнаты. Отсканируйте QR-код, который показал ведущий.");return}
+async function call(action,extra={}){
+ const r=await fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,room,playerToken:token||undefined,...extra})});
+ const data=await r.json().catch(()=>({error:"Сервер не ответил"}));if(!r.ok||data.error)throw new Error(data.error||"Ошибка подключения");return data
+}
+function showTeams(teams){const choose=$("team"),value=choose.value;choose.innerHTML=teams.map(t=>'<option value="'+t.team_num+'">'+esc(t.team_name)+' · '+t.members+' участн.</option>').join("");if(value)choose.value=value}
+function showScores(d){const list=$("scores");list.innerHTML=d.teams.map(t=>'<div class="score '+(player&&t.team_num===player.team?'mine':'')+'"><div class="nm">'+esc(t.team_name)+'</div><strong>'+t.score+'</strong><span>'+t.members+' человек</span></div>').join("")}
+function render(d){
+ player=d.player;clearError();
+ if(!player){
+  $("joinForm").style.display="block";$("game").style.display="none";showTeams(d.teams);$("connection").textContent="Подключение к игре · обновление";return
+ }
+ $("joinForm").style.display="none";$("game").style.display="block";$("leader").style.display="block";
+ const team=d.teams.find(t=>t.team_num===player.team);$("teamTitle").textContent=team?.team_name||"Команда";
+ $("memberCount").textContent=(team?.members||0)+" участн.";
+ $("gamemode").textContent={lobby:"Подключение команд",round1:"Тур I",round2:"Тур II",super:"Суперигра",finished:"Итоги"}[d.phase]||"Игра";
+ showScores(d);
+ const q=d.question;
+ $("question").style.display=q?"block":"none";
+ $("waitingBox").style.display=q?"none":"block";
+ $("superWager").style.display="none";
+ $("rightAnswer").style.display="none";
+ const btn=$("buzz");
+ btn.disabled=true;btn.style.opacity="";$("statusArea").textContent="";
+ if(!q){
+  $("waitingBox").textContent=d.phase==="finished"?"Игра завершена. Результаты команд — ниже.":d.phase==="lobby"?"Ожидайте начала первого тура.":"Ведущий выбирает следующий вопрос.";
+  $("buzzerNote").textContent="Кнопка будет активна после открытия вопроса.";
+  questionId="";locked=false;return
+ }
+ if(q.id!==questionId){locked=false;questionId=q.id}
+ $("cat").textContent=q.cat;
+ $("points").textContent=q.round===3?"Ставка":q.value+" очков";
+ $("qtext").textContent=q.text;
+ const active=d.teams.find(t=>t.team_num===d.buzzActiveTeam),myAttempt=d.myBuzz,activeMe=active&&active.team_num===player.team;
+ if(d.revealed){
+  $("rightAnswer").style.display="block";$("rightAnswer").textContent="Правильный ответ: "+q.answer;
+  $("statusArea").innerHTML='<div class="status">Вопрос завершён. Ждите следующего.</div>';
+  $("buzzerNote").textContent="Приём сигналов завершён.";return
+ }
+ if(active){
+  $("statusArea").innerHTML=activeMe?'<div class="won">Ваша команда ПЕРВАЯ! Отвечайте вслух.</div>':'<div class="lost">Первой нажала команда <strong>'+esc(active.team_name)+'</strong>. Слушаем ответ.</div>';
+  $("buzzerNote").textContent="Кнопки заблокированы, пока ведущий оценивает ответ.";return
+ }
+ if(myAttempt){
+  $("statusArea").innerHTML='<div class="status">'+(d.myGrade===1?"Верно! Баллы начислены.":d.myGrade===-1?"Ответ неверный. Повторно нажать нельзя.":"Попытка завершена.")+'</div>';
+  $("buzzerNote").textContent="На этом вопросе у команды больше нет попыток.";return
+ }
+ if(d.buzzOpen){
+  if(q.round===3){
+   const mx=Math.max(300,team?.score||0),select=$("wager"),opts=[];
+   for(let i=0;i<=mx;i+=100)opts.push(i);
+   if(wager>mx)wager=0;
+   select.innerHTML=opts.map(i=>'<option value="'+i+'" '+(i===wager?"selected":"")+'>'+i+' баллов</option>').join("");
+   $("superWager").style.display="block"
+  }
+  btn.disabled=locked||inFlight;
+  $("statusArea").innerHTML='<div class="status"><strong>Кнопка активна.</strong> Нажмите раньше соперников и отвечайте вслух.</div>';
+  $("buzzerNote").textContent="Система определяет первое полученное сервером нажатие.";
+ }else{
+  $("statusArea").innerHTML='<div class="status">Вопрос открыт, ждём решения ведущего.</div>';
+  $("buzzerNote").textContent="Кнопка временно заблокирована.";
+ }
+ $("connection").textContent="Подключено · счёт и кнопки обновляются автоматически";
+}
+$("join").onclick=async()=>{
+ const name=$("name").value.trim(),team=Number($("team").value);
+ if(name.length<2)return err("Введите имя — не меньше двух символов");
+ if(inFlight)return;inFlight=true;$("join").disabled=true;
+ try{
+  const result=await call("join",{name,team});token=result.playerToken;localStorage.setItem(key,token);displaySig="";await refresh(true)
+ }catch(e){err(e.message)}finally{inFlight=false;$("join").disabled=false}
+};
+$("buzz").onclick=async()=>{
+ if(locked||inFlight||!questionId)return;
+ locked=true;inFlight=true;$("buzz").disabled=true;
+ $("statusArea").innerHTML='<div class="status"><strong>Нажатие отправлено!</strong> Определяем, кто первый…</div>';
+ try{
+  const result=await call("buzz",{wager:Number($("wager").value||0)});
+  if(result.ok){$("statusArea").innerHTML='<div class="won">Вы первыми нажали! Отвечайте вслух!</div>'}
+ }catch(e){
+  $("statusArea").innerHTML='<div class="lost">'+esc(e.message)+'</div>';
+ }finally{inFlight=false;await refresh(true)}
+};
+$("wager").onchange=e=>wager=Number(e.target.value);
+async function refresh(force=false){
+ if(inFlight&&!force)return;
+ try{
+  const d=await call("state");
+  if(token&&!d.player){token="";localStorage.removeItem(key)}
+  const sig=JSON.stringify([d.phase,d.player?.team,d.question?.id,d.revealed,d.buzzOpen,d.buzzActiveTeam,d.myBuzz,d.myGrade,d.teams.map(t=>[t.score,t.members,t.team_name])]);
+  if(force||sig!==displaySig){displaySig=sig;render(d)}
+  $("connection").textContent="Соединение с Supabase активно";
+ }catch(e){$("connection").textContent="Повторная попытка подключения…";if(force)err(e.message)}
+}
+refresh(true);
+setInterval(()=>refresh(false),850);
+})();
+</script></body></html>
