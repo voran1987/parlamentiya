@@ -146,7 +146,7 @@ function render(d){
    select.innerHTML=opts.map(i=>'<option value="'+i+'" '+(i===wager?"selected":"")+'>'+i+' баллов</option>').join("");
    $("superWager").style.display="block"
   }
-  btn.disabled=locked||inFlight;
+  btn.disabled=locked; // Join request may still be finishing while the new student state renders.
   $("statusArea").innerHTML='<div class="status"><strong>Кнопка активна.</strong> Нажмите раньше соперников и отвечайте вслух.</div>';
   $("buzzerNote").textContent="Система определяет первое полученное сервером нажатие.";
  }else{
@@ -161,7 +161,7 @@ $("join").onclick=async()=>{
  if(inFlight)return;inFlight=true;$("join").disabled=true;
  try{
   const result=await call("join",{name,team});token=result.playerToken;localStorage.setItem(key,token);displaySig="";await refresh(true)
- }catch(e){err(e.message)}finally{inFlight=false;$("join").disabled=false}
+ }catch(e){err(e.message)}finally{inFlight=false;$("join").disabled=false;if(token)await refresh(true)}
 };
 $("buzz").onclick=async()=>{
  if(locked||inFlight||!questionId)return;
