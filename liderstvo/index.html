@@ -186,7 +186,7 @@ async function copyLink(){try{await navigator.clipboard.writeText(location.origi
 function players(){return '<div class="panel"><h3>Состав делегаций</h3><div class="teamgrid">'+TEAMS.map((t,i)=>'<div class="team"><strong>'+EMO[i]+' '+esc(t)+' ('+state.counts[i]+'/6)</strong>'+state.players.filter(p=>p.team===i).map(p=>'<div>• '+esc(p.name)+'</div>').join('')+'</div>').join('')+'</div></div>'}
 function hostActivityUI(){
 const opts=state.allTeamOptions||[], votes=state.allVotes||{}, events=state.hostActivity||[];
-const what={vote:'Голос',alliance:'Предложен союз',accept:'Ответ на союз',message:'Сообщение',action:'Специальное полномочие',phase:'Смена этапа',adjust:'Изменение ведущего'};
+const what={vote:'Голос',alliance:'Предложен союз',accept:'Ответ на союз',cancel_alliance:'Расторжение союза',message:'Сообщение',action:'Специальное полномочие',phase:'Смена этапа',adjust:'Изменение ведущего'};
 return '<section class="panel"><div class="eyebrow">Монитор ведущего</div><h3>Все действия участников</h3><p class="sub">Данные доступны ведущему. Голоса команд скрыты от остальных делегаций до итогов.</p><h3>Голоса текущего раунда</h3>'+
 state.players.map(p=>{const v=votes[state.round+':'+p.id];return '<div class="rank"><span>'+esc(p.name)+' · '+esc(TEAMS[p.team])+'</span><strong>'+(v==null?'Не голосовал':esc(opts[p.team]?.[v]||state.scenario?.options?.[v]?.[0]||'Вариант '+(v+1)))+'</strong></div>'}).join('')+
 '<div class="section"></div><h3>Хронология событий</h3><div style="max-height:520px;overflow:auto">'+
@@ -258,6 +258,10 @@ return '<div class="panel"><h3>Примите окончательное реш�
 (state.scenario?.options||[]).map((x,i)=>'<button class="choice '+(state.myVote===i?'selected':'')+'" onclick="action(&#39;vote&#39;,{value:'+i+'})"><span style="font-size:24px">'+(state.myVote===i?'◉':'○')+'</span><span><strong>'+esc(x[0])+'</strong>'+(state.myTeam===0?impactPills(state.nationalBaseImpacts?.[i]):impactPills(state.roleImpact?.[i]))+'<small>'+(state.myVote===i?'Голос принят; можно изменить до закрытия':'Нажмите, чтобы проголосовать')+'</small></span></button>').join('')+
 '<p class="note">'+(voted?'Ваш голос принят.':'Голос ещё не подан.')+' Всего проголосовало: '+state.votesCount+'.</p><p class="effect-context">Показанные изменения — ожидаемый вклад выбранного действия, а не окончательный прогноз. На итог влияют действия других команд и последствия предыдущих раундов.</p></div>';
 }
+function cancelAlliance(id){
+if(!confirm('Расторгнуть заключённый союз? Бонус за этот союз в текущем раунде не начислится.'))return;
+action('cancel_alliance',{id});
+}
 function allyUI(){
 const me=state.myTeam,items=(state.alliances||[]).filter(a=>a.to===me||a.from===me);
 return '<div class="panel"><h3>Политические союзы</h3><p class="muted">Любой участник делегации может предложить союз другой команде. Союз действует только в текущем раунде. При подведении итогов обе стороны получают по +1 очку влияния, если их позиции совпали с итоговым государственным решением. Если союз не подтверждён — бонуса нет.</p>'+
@@ -265,7 +269,7 @@ return '<div class="panel"><h3>Политические союзы</h3><p class=
 '<label for="target">Кому предложить союз?</label><select class="field" id="target">'+TEAMS.map((name,i)=>i!==me?'<option value="'+i+'">'+esc(name)+'</option>':'').join('')+'</select>'+
 button('Предложить союз',"action('alliance',{target:Number(document.querySelector('#target').value)})",'small')+
 '<div class="section"></div><h3>Предложения и договорённости</h3>'+
-(items.length?items.map(a=>'<div class="power-entry"><strong>'+esc(TEAMS[a.from])+' → '+esc(TEAMS[a.to])+'</strong><p>Статус: '+(a.status==='accepted'?'Союз заключён':a.status==='rejected'?'Отклонён':'Ожидает подтверждения')+'</p>'+(a.to===me&&a.status==='pending'?button('Принять','action(&#39;accept&#39;,{id:&#39;'+esc(a.id)+'&#39;,accept:true})','small')+' '+button('Отклонить','action(&#39;accept&#39;,{id:&#39;'+esc(a.id)+'&#39;,accept:false})','small alt'):'')+'</div>').join(''):'<p class="muted">Пока нет предложений о союзе.</p>')+
+(items.length?items.map(a=>'<div class="power-entry"><strong>'+esc(TEAMS[a.from])+' → '+esc(TEAMS[a.to])+'</strong><p>Статус: '+(a.status==='accepted'?'Союз заключён':a.status==='cancelled'?'Союз расторгнут':a.status==='rejected'?'Отклонён':'Ожидает подтверждения')+'</p>'+(a.to===me&&a.status==='pending'?button('Принять','action(&#39;accept&#39;,{id:&#39;'+esc(a.id)+'&#39;,accept:true})','small')+' '+button('Отклонить','action(&#39;accept&#39;,{id:&#39;'+esc(a.id)+'&#39;,accept:false})','small alt'):'')+(a.status==='accepted'?button('Расторгнуть союз','cancelAlliance(&#39;'+esc(a.id)+'&#39;)','small danger'):'')+'</div>').join(''):'<p class="muted">Пока нет предложений о союзе.</p>')+
 '</div>';
 }
 const POWERS=[['emergency','endorse'],['referendum','no_confidence'],['investment','blockade','veto'],['investigation','endorse'],['coup','veto','block']];
