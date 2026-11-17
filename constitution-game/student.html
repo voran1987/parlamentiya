@@ -171,6 +171,7 @@ $("buzz").onclick=async()=>{
   const result=await call("buzz",{wager:Number($("wager").value||0)});
   if(result.ok){$("statusArea").innerHTML='<div class="won">Вы первыми нажали! Отвечайте вслух!</div>'}
  }catch(e){
+  locked=false; // If another team was first, allow this team to buzz when the host reopens the button after a wrong answer.
   $("statusArea").innerHTML='<div class="lost">'+esc(e.message)+'</div>';
  }finally{inFlight=false;await refresh(true)}
 };
