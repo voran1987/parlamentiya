@@ -225,7 +225,7 @@ $("submitFinal").onclick=async()=>{
  const text=$("finalText").value.trim(),stake=Number($("finalWager").value||0);
  if(text.length<8)return err("Ответ слишком короткий: укажите принципы и обоснования.");
  if(inFlight)return;
- if(!confirm("Отправить ответ команды и ставку "+stake+" баллов? Изменить их будет нельзя."))return;
+ // Отправка выполняется сразу по кнопке, без блокирующего системного диалога.
  inFlight=true;$("submitFinal").disabled=true;
  try{
   await call("submit_final",{text,wager:stake});
