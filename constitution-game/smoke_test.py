@@ -1,65 +1,63 @@
 #!/usr/bin/env python3
-"""End-to-end remote smoke test for the Constitution game Supabase endpoint."""
+"""Integration smoke test: two open-answer 5x5 rounds and supergame."""
 import json
-import sys
-import urllib.error
 import urllib.request
+import urllib.error
 
-API = "https://logzbhhftwvqsrqvmnik.supabase.co/functions/v1/constitution-game-api"
-
-def call(action, **params):
-    payload = json.dumps({"action": action, **params}, ensure_ascii=False).encode("utf-8")
-    req = urllib.request.Request(API, data=payload, headers={"Content-Type": "application/json"}, method="POST")
+API="https://logzbhhftwvqsrqvmnik.supabase.co/functions/v1/constitution-game-api"
+def call(action,**params):
+    body=json.dumps({"action":action,**params},ensure_ascii=False).encode()
+    req=urllib.request.Request(API,body,headers={"Content-Type":"application/json"},method="POST")
     try:
-        with urllib.request.urlopen(req, timeout=20) as response:
-            return response.status, json.load(response)
+        with urllib.request.urlopen(req,timeout=25) as r:return r.status,json.load(r)
     except urllib.error.HTTPError as e:
-        return e.code, json.loads(e.read().decode("utf-8"))
-
-def check(label, condition, payload=None):
-    if not condition:
-        raise AssertionError(label + ": " + repr(payload))
-    print("PASS", label)
-
-status, created = call("create")
-check("create game", status == 200 and created.get("room") and created.get("hostSecret"), {"status":status,"error":created.get("error")})
-room, secret = created["room"], created["hostSecret"]
-host = {"room":room,"hostSecret":secret}
-status, joined = call("join", room=room, name="Тестовый участник", team=1)
-check("student joins with no password", status == 200 and joined.get("playerToken"), {"status":status,"error":joined.get("error")})
-student = {"room":room,"playerToken":joined["playerToken"]}
-status, result = call("start", **host)
-check("start first round", status == 200, result)
-status, result = call("open", key="r1a1", **host)
-check("open round 1 question", status == 200, result)
-status, result = call("answer", choice=1, **student)
-check("first team answer accepted", status == 200, result)
-status, result = call("answer", choice=0, **student)
-check("duplicate team answer blocked", status == 409, result)
-status, result = call("reveal", **host)
-check("reveal and score first round", status == 200, result)
-status, snapshot = call("state", **host)
-check("team earned 100 points", status == 200 and next(t for t in snapshot["teams"] if t["team_num"] == 1)["score"] == 100, {"status":status,"error":snapshot.get("error")})
-status, result = call("close", **host)
-check("close question", status == 200, result)
-status, result = call("advance", **host)
-check("advance to round 2", status == 200, result)
-status, result = call("open", key="r2a1", **host)
-check("open round 2 question", status == 200, result)
-status, result = call("reveal", **host)
-check("reveal unanswered question", status == 200, result)
-status, result = call("advance", **host)
-check("advance to supergame", status == 200, result)
-status, result = call("open", key="s1", **host)
-check("open supergame", status == 200, result)
-status, result = call("answer", choice=1, wager=100, **student)
-check("team supergame wager accepted", status == 200, result)
-status, result = call("reveal", **host)
-check("reveal supergame", status == 200, result)
-status, snapshot = call("state", **host)
-check("supergame wager credited", status == 200 and next(t for t in snapshot["teams"] if t["team_num"] == 1)["score"] == 200, {"status":status,"error":snapshot.get("error")})
-status, result = call("advance", **host)
-check("finish game", status == 200, result)
-status, result = call("reset", dropPlayers=True, **host)
-check("reset game", status == 200, result)
-print("ALL SMOKE TESTS PASSED")
+        return e.code,json.loads(e.read().decode())
+def check(name,ok,value=None):
+    if not ok:raise AssertionError(name+" — "+repr(value))
+    print("PASS",name,flush=True)
+code,x=call("create")
+check("create room",code==200 and bool(x.get("room")),x)
+room=x["room"];h={"room":room,"hostSecret":x["hostSecret"]}
+code,first=call("join",room=room,name="Alpha",team=1)
+check("first participant",code==200,first)
+code,second=call("join",room=room,name="Beta",team=1)
+check("second participant same team",code==200,second)
+code,third=call("join",room=room,name="Gamma",team=2)
+check("participant second team",code==200,third)
+p={"room":room,"playerToken":first["playerToken"]}
+p2={"room":room,"playerToken":second["playerToken"]}
+p3={"room":room,"playerToken":third["playerToken"]}
+code,x=call("state",**h)
+check("25 questions each round",len(x.get("round1",[]))==25 and len(x.get("round2",[]))==25,x)
+check("three supergame choices",len(x.get("superBoard",[]))==3,x)
+check("empty lobby ready",x.get("phase")=="lobby",x)
+code,x=call("start",**h);check("start",code==200,x)
+code,x=call("open",key="r1a1",**h);check("open 100-point question",code==200,x)
+code,x=call("state",**p)
+check("question is free-text and has no options",x.get("question",{}).get("text") and "options" not in x.get("question",{}) and "answer" not in x.get("question",{}),x.get("question"))
+code,x=call("answer",text="1993 год",**p);check("team1 text answer accepted",code==200,x)
+code,x=call("answer",text="другая версия",**p2);check("second answer from same team rejected",code==409,x)
+code,x=call("grade",team=1,grade=1,**h);check("teacher grade +100",code==200 and x.get("delta")==100,x)
+code,x=call("grade",team=1,grade=1,**h);check("double grading blocked",code==409,x)
+code,x=call("state",**h)
+check("score after grading",next(t for t in x["teams"] if t["team_num"]==1)["score"]==100,x["teams"])
+code,x=call("reveal",**h);check("reveal expected answer",code==200,x)
+code,x=call("state",**p)
+check("answer visible only after reveal",x["question"].get("answer")=="1993",x["question"])
+code,x=call("close",**h);check("close first round question",code==200,x)
+code,x=call("advance",**h);check("advance to second round",code==200,x)
+code,x=call("open",key="r2a1",**h);check("second round 200-point question",code==200,x)
+code,x=call("answer",text="Глава суда",**p3);check("team2 answer",code==200,x)
+code,x=call("grade",team=2,grade=-1,**h);check("wrong answer is minus half",code==200 and x.get("delta")==-100,x)
+code,x=call("reveal",**h);check("reveal second-round answer",code==200,x)
+code,x=call("close",**h);check("close second-round question",code==200,x)
+code,x=call("advance",**h);check("enter supergame",code==200,x)
+code,x=call("open",key="s1",**h);check("choose supergame topic",code==200,x)
+code,x=call("answer",text="Запрет цензуры",wager=100,**p);check("supergame text and wager",code==200,x)
+code,x=call("grade",team=1,grade=1,**h);check("supergame awarded wager",code==200 and x.get("delta")==100,x)
+code,x=call("reveal",**h);check("reveal supergame",code==200,x)
+code,x=call("advance",**h);check("finish game",code==200,x)
+code,x=call("state",**h)
+check("final score",x["phase"]=="finished" and next(t for t in x["teams"] if t["team_num"]==1)["score"]==200,x)
+code,x=call("reset",dropPlayers=True,**h);check("reset",code==200,x)
+print("ALL INTEGRATION TESTS PASSED",flush=True)
