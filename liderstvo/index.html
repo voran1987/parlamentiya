@@ -226,12 +226,12 @@ return '<section class="panel round-report"><div class="eyebrow">Политич�
 '<h3 style="margin:20px 0 10px">Как действовали делегации</h3>'+
 TEAMS.map((name,i)=>{
 const decision=labels[i]||(choices[i]==null||choices[i]<0?'Не участвовала в голосовании':(h.roleMode?'Вариант '+(choices[i]+1):'Вариант '+(choices[i]+1)));
-const arr=actions.filter(a=>a.team===i),out=alliances.filter(a=>(a.from===i||a.to===i)&&a.status==='accepted');
+const arr=actions.filter(a=>a.team===i),out=alliances.filter(a=>(a.from===i||a.to===i)&&a.status==='accepted'),cancelled=alliances.filter(a=>(a.from===i||a.to===i)&&a.status==='cancelled');
 const delta=h.changes?.[i]??(h.scores?.[i]!=null&&scoreOld[i]!=null?h.scores[i]-scoreOld[i]:null);
 const voters=(h.participantVotes||[]).filter(p=>p.team===i);
 return '<article class="report-team"><div class="report-head"><strong>'+EMO[i]+' '+esc(name)+'</strong><span class="report-points">Влияние '+(h.scores?.[i]??'—')+' ('+signed(delta)+')</span></div><p><b>Решение:</b> '+esc(decision)+'</p>'+
 '<p><b>Спецвозможности:</b> '+(arr.length?arr.map(a=>esc(ACTION_LABELS[a.type]||a.type)+(a.target!=null?' → '+esc(TEAMS[a.target]):'')).join('; '):'не использовались')+'</p>'+
-'<p><b>Союзы:</b> '+(out.length?out.map(a=>esc(TEAMS[a.from===i?a.to:a.from])).join(', '):'нет подтверждённых')+'</p>'+
+'<p><b>Союзы:</b> '+(out.length?out.map(a=>esc(TEAMS[a.from===i?a.to:a.from])).join(', '):'нет действующих')+'</p>'+(cancelled.length?'<p><b>Расторгнутые союзы:</b> '+cancelled.map(a=>esc(TEAMS[a.from===i?a.to:a.from])).join(', ')+'</p>':'')+
 (voters.length?'<details><summary>Индивидуальные голоса ('+voters.length+')</summary>'+voters.map(p=>'<div class="report-voter">'+esc(p.name)+' — '+(p.choice==null?'не голосовал':esc(labels[i]&&p.choice===choices[i]?labels[i]:'вариант '+(p.choice+1)))+'</div>').join('')+'</details>':'')+
 '</article>';
 }).join('')+
