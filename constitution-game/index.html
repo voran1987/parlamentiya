@@ -107,12 +107,12 @@ const cols=["--c0","--c1","--c2","--c3","--c4"];
 const phases={lobby:"Подключение",round1:"Первый тур",round2:"Второй тур",super:"Суперигра",finished:"Финал"};
 let code="",hostSecret="",playerToken="",role="",state=null,lastSignature="",remaining=90,lastSync=0,active=false,wager=0,busy=false;
 function show(msg,bad=false){const el=$("toast");el.textContent=msg;el.className="toast"+(bad?" error":"");clearTimeout(show.t);show.t=setTimeout(()=>el.classList.add("hidden"),5000)}
-function joinLink(){let u=new URL(location.href);u.search="?room="+encodeURIComponent(code)+"&join=1";return u.toString()}
+function joinLink(){let u=new URL("student.html",location.href);u.search="?room="+encodeURIComponent(code);return u.toString()}
 function hostLink(){let u=new URL(location.href);u.search="?room="+encodeURIComponent(code)+"&host="+encodeURIComponent(hostSecret);return u.toString()}
 function copy(text){if(navigator.clipboard?.writeText)navigator.clipboard.writeText(text).then(()=>show("Ссылка скопирована")).catch(()=>fallback(text));else fallback(text)}
 function fallback(text){const el=document.createElement("textarea");el.value=text;document.body.appendChild(el);el.select();document.execCommand("copy");el.remove();show("Ссылка скопирована")}
 function dock(){const on=role==="host"&&!!code;$("qrDock").classList.toggle("hidden",!on);document.body.classList.toggle("hostbody",on);if(!on)return;const link=joinLink();$("dockCode").textContent=code;$("dockUrl").textContent=link;$("qrImage").onerror=function(){if(!this.dataset.fallback){this.dataset.fallback="1";this.src="https://quickchart.io/qr?size=240&text="+encodeURIComponent(link)}};$("qrImage").dataset.fallback="";$("qrImage").src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&margin=8&data="+encodeURIComponent(link)}
-function setSession(room,secret,token){code=room;hostSecret=secret||"";playerToken=token||"";role=hostSecret?"host":playerToken?"player":"guest";state=null;lastSignature="";if(hostSecret)localStorage.setItem("constitution_host_"+room,hostSecret);if(playerToken)localStorage.setItem("constitution_player_"+room,playerToken);history.replaceState(null,"",location.pathname+"?room="+encodeURIComponent(room));dock()}
+function setSession(room,secret,token){code=room;hostSecret=secret||"";playerToken=token||"";role=hostSecret?"host":playerToken?"player":"guest";state=null;lastSignature="";if(hostSecret)localStorage.setItem("constitution_host_"+room,hostSecret);if(playerToken)localStorage.setItem("constitution_player_"+room,playerToken);history.replaceState(null,"",location.pathname+"?room="+encodeURIComponent(room)+(role==="player"?"&join=1":""));dock()}
 async function api(action,extra={}){const r=await fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,room:code,hostSecret:hostSecret||undefined,playerToken:playerToken||undefined,...extra})});let x;try{x=await r.json()}catch{x={error:"Не удалось получить ответ сервера"}}if(!r.ok||x.error)throw Error(x.error||"Ошибка сервера");return x}
 async function act(action,params={}){if(busy)return;busy=true;try{const x=await api(action,params);if(action==="create"){setSession(x.room,x.hostSecret,"");show("Комната создана")}else if(action==="join"){setSession(code,"",x.playerToken);show("Вы присоединились к команде")}else if(action==="grade"){show(x.delta>0?"Баллы начислены":x.delta<0?"Баллы списаны":"Ответ оценён")}await refresh(true)}catch(e){show(e.message,true)}finally{busy=false}}
 function sign(d){return JSON.stringify([d.phase,d.question?.id,d.revealed,d.usedCount,d.host,d.player?.team,d.myBuzz,d.myGrade,d.buzzOpen,d.buzzActiveTeam,d.attemptedTeams,d.answeredTeams,d.answers?.map(x=>[x.team,x.grade,x.wager]),d.teams.map(t=>[t.team_name,t.score,t.members])])}
@@ -180,10 +180,15 @@ function panel(d){
 }
 function wagerSelect(d){const score=d.teams.find(t=>t.team_num===d.player.team)?.score||0,max=Math.max(300,score),values=[];for(let n=0;n<=max;n+=100)values.push(n);if(wager>max)wager=max-max%100;return '<select id="wager" class="wager">'+values.map(n=>'<option value="'+n+'" '+(n===wager?'selected':'')+'>'+n+' баллов</option>').join("")+'</select>'}
 function finale(d){const sorted=[...d.teams].sort((a,b)=>b.score-a.score||a.team_num-b.team_num);return '<div class="box" style="padding:30px 25px"><div class="label">Итоговый рейтинг</div><h2>Победитель: '+esc(sorted[0].team_name)+'</h2><div class="resultlist">'+sorted.map((t,i)=>'<div class="result"><span>'+(i+1)+'. '+esc(t.team_name)+'</span><b class="score">'+t.score+'</b></div>').join("")+'</div>'+(d.host?'<p class="tools"><button id="csv">Скачать результаты CSV</button><button id="reset" class="pri">Сыграть ещё раз</button></p>':'')+'</div>'}
-function render(d){let out=header(d);if(d.phase==="lobby")out+=lobby(d);else if(d.phase==="finished")out+=finale(d);else if(!d.question&&d.phase==="super")out+=superBoard(d);else if(!d.question)out+=board(d);if(d.phase!=="lobby"&&d.phase!=="finished")out+=scores(d);
- if(d.phase!=="lobby"&&!d.host&&!d.player)out+=joinForm(d);
+function render(d){let out=header(d);const guest=!d.host&&!d.player;
+ if(d.phase==="lobby")out+=lobby(d);
+ else if(guest)out+=joinForm(d);
+ else if(d.phase==="finished")out+=finale(d);
+ else if(!d.question&&d.phase==="super")out+=superBoard(d);
+ else if(!d.question)out+=board(d);
+ if(!guest&&d.phase!=="lobby"&&d.phase!=="finished")out+=scores(d);
  if(d.host&&["round1","round2","super"].includes(d.phase)&&!d.question)out+='<p class="tools"><button id="reset">Сбросить игру</button><button id="joinCopy">Ссылка студентов</button><button id="hostCopy">Секретная ссылка ведущего</button></p>';
- if(d.question)out+=panel(d);
+ if(d.question&&!guest)out+=panel(d);
  $("app").innerHTML=out+'<footer>Учебная игра НИУ «МЭИ» · <a href="https://www.minjust.gov.ru/ru/documents/8011/" rel="noopener" target="_blank">Конституция Российской Федерации</a></footer>';
  bind(d);updateClock()}
 function bind(d){$("theme")?.addEventListener("click",toggleTheme);$("home")?.addEventListener("click",home);$("join")?.addEventListener("click",()=>act("join",{name:$("name").value.trim(),team:Number($("team").value)}));$("start")?.addEventListener("click",()=>act("start"));$("joinCopy")?.addEventListener("click",()=>copy(joinLink()));$("hostCopy")?.addEventListener("click",()=>copy(hostLink()));
@@ -203,6 +208,6 @@ $("copyJoin").onclick=()=>copy(joinLink());
 const params=new URLSearchParams(location.search);
 if(localStorage.getItem("constitution_theme")==="dark")document.documentElement.dataset.theme="dark";
 const c=(params.get("room")||"").toUpperCase(),secret=params.get("host")||"";
-if(/^[A-Z2-9]{6}$/.test(c)){code=c;hostSecret=secret||localStorage.getItem("constitution_host_"+code)||"";playerToken=hostSecret?"":localStorage.getItem("constitution_player_"+code)||"";role=hostSecret?"host":playerToken?"player":"guest";if(secret)localStorage.setItem("constitution_host_"+code,secret);history.replaceState(null,"",location.pathname+"?room="+code);dock();refresh(true)}else renderHome();
+if(/^[A-Z2-9]{6}$/.test(c)){code=c;const studentEntry=params.has("join");hostSecret=studentEntry?"":secret||localStorage.getItem("constitution_host_"+code)||"";playerToken=hostSecret?"":localStorage.getItem("constitution_player_"+code)||"";role=hostSecret?"host":playerToken?"player":"guest";if(secret&&!studentEntry)localStorage.setItem("constitution_host_"+code,secret);history.replaceState(null,"",location.pathname+"?room="+code+(studentEntry?"&join=1":""));dock();refresh(true)}else renderHome();
 setInterval(()=>refresh(false),2800);setInterval(updateClock,350);
 })();</script></body></html>
