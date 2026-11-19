@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#213749">
+<title>Детективная лаборатория · демонстрация четырёх мини-испытаний</title>
+<style>
+:root{--navy:#243b4e;--ink:#243b4e;--muted:#627586;--line:#dedbd2;--bg:#f4f1e9;--gold:#bc925f}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Segoe UI,Arial,sans-serif;color:var(--ink)}
+a{color:#305f72;text-decoration:underline}main{width:min(1020px,calc(100% - 24px));margin:0 auto;padding:21px 0 60px}
+.panel{background:white;border:1px solid var(--line);border-radius:14px;padding:24px;margin:16px 0;box-shadow:0 7px 24px #30404a0a}
+.row{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+.eyebrow,.filetag{font-size:11px;letter-spacing:1.35px;font-weight:800;color:#977044;text-transform:uppercase}
+.eyebrow{margin-bottom:8px}
+h1{font:700 clamp(30px,5vw,49px)/1.11 Georgia,serif;margin:13px 0 14px}
+h2{font:700 26px/1.18 Georgia,serif;margin:14px 0}
+p{line-height:1.63}
+.muted{color:var(--muted)}
+.noticebar{border-left:4px solid #b7976e;background:#f4eee2;color:#4c5961;padding:15px;border-radius:7px;line-height:1.5;margin:14px 0}
+button{cursor:pointer;border-radius:8px;border:1px solid #365c6e;padding:12px 17px;font-weight:700;color:white;background:#284a5c;font-family:inherit;font-size:14px}
+button:hover{filter:brightness(1.07)}button:focus-visible{outline:3px solid #c5a477;outline-offset:2px}
+button:disabled{cursor:default;opacity:.6}button.light{background:#fff;color:#30516a;border-color:#c8d1d6}
+button.slim{padding:8px 11px;font-size:12px;min-height:0}
+.demo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px}
+.demo-choice{background:white;border:1px solid #dfd5c3;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:13px}
+.demo-choice h3{font:700 20px Georgia,serif;margin:0}.demo-choice p{font-size:13px;margin:0;color:var(--muted)}
+.demo-icon{width:50px;height:50px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:#f3eadb;font-size:26px}
+.demo-choice button{margin-top:auto}
+.status-chip{display:inline-block;background:#e4f0e8;border-radius:99px;font-size:11px;padding:5px 9px;color:#2b654c;font-weight:800}
+.full-evidence{white-space:pre-wrap;background:#fff9e8;padding:18px;border-radius:9px;border:1px solid #dccbae;font:16px/1.6 Georgia,serif}
+.demo-help{font-size:12px;color:var(--muted);line-height:1.5}
+footer{margin:25px auto;text-align:center;color:#829099;font-size:12px}
+@media(max-width:560px){.panel{padding:14px}.demo-grid{grid-template-columns:1fr}.demo-choice{padding:15px}main{padding-top:14px}}
+</style>
+<link rel="stylesheet" href="./lab-minigames.css">
+</head>
+<body>
+<main>
+  <div class="row">
+    <div class="eyebrow">КОНСТИТУЦИОННЫЙ ДЕТЕКТИВ · ЛАБОРАТОРИЯ</div>
+    <a href="./">Вернуться к игре</a>
+  </div>
+  <h1>Четыре следственные операции</h1>
+  <p class="muted">Демонстрация механик получения дополнительных доказательств. Вы обнаружите важную часть документа <b>в процессе выполнения задания</b>, а после его завершения увидите полный текст улики.</p>
+  <div class="noticebar">Это локальная демонстрация. Она не создаёт игровую сессию, не подключается к Supabase, не расходует жетоны и не влияет на настоящие результаты команд.</div>
+  <div id="demo-app"></div>
+  <footer>Учебные документы и события вымышлены · Для мобильных браузеров и компьютеров</footer>
+</main>
+<script src="./lab-minigames.js"></script>
+<script>
+const DEMO=[
+ {kind:"shreds",name:"Собрать разорванную страницу",icon:"🧩",file:"Карточка прохождения законопроекта",text:"Законопроект внесён 12 марта. К третьему чтению подготовлена изменённая редакция. 19 июня Государственная Дума приняла окончательный текст. 1 июля закон подписан Президентом. Новые нормы вступают в силу 1 сентября."},
+ {kind:"flashlight",name:"Осмотреть архив с фонариком",icon:"🔦",file:"Письмо диспетчерского центра",text:"Системный оператор подтвердил, что команды по режиму межрегиональной энергосистемы выдаёт уполномоченный диспетчерский центр. Сетевая организация обслуживает линию. Региональные службы обеспечивают аварийное питание больниц."},
+ {kind:"loupe",name:"Найти отметки под лупой",icon:"🔍",file:"Фотокопия ведомственного приказа",text:"На первой странице обнаружена отметка «Проект». Подпись отсутствует, регистрационный номер не присвоен. Итоговый приказ подписан позднее и регулирует только графики дежурств, а не федеральный закон."},
+ {kind:"board",name:"Восстановить цепочку улик",icon:"📌",file:"Хронология судебного решения",text:"Краевой суд рассмотрел вопрос о пункте 6 ведомственного приказа. Решение вынесено 18 августа. Оно вступило в законную силу 23 сентября. Сам краевой закон этим решением не затронут."}
+];
+let working=false,state={},demoIndex=0,completed=new Set();
+const esc=x=>String(x??'').replace(/[&<>"']/g,y=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[y]));
+function message(m){alert(String(m))}
+async function request(action,b={}){
+ if(action==='challenge'){
+  let doc=DEMO[demoIndex];return {state:{},challenge:{id:b.id,kind:doc.kind,label:doc.file,nonce:"demonstration",evidenceText:doc.text}};
+ }
+ if(action==='cancelChallenge')return{state:{}};
+ if(action==='state')return{state:{}};
+ if(action==='solveChallenge'){
+  const v=b.proof||{},c=DEMO[demoIndex];
+  const validOrder=(n)=>Array.isArray(v.order)&&v.order.length===n&&v.order.every((x,i)=>x===i);
+  const validFound=Array.isArray(v.found)&&v.found.length===3&&new Set(v.found).size===3&&v.found.every(x=>Number.isInteger(x)&&x>=0&&x<3);
+  const passed=c.kind==='shreds'?validOrder(9):c.kind==='board'?validOrder(4):validFound;
+  if(!passed)throw Error("Испытание пока не завершено.");
+  completed.add(demoIndex);return{state:{},unlocked:true};
+ }
+ throw Error("Неизвестное действие демонстрации");
+}
+function pick(n){demoIndex=n;trial=null;play={};render();beginChallenge(n+2)}
+function showList(){trial=null;play={};render()}
+function render(){
+ const el=document.getElementById('demo-app');
+ let body='<section class="demo-grid">'+DEMO.map((x,i)=>'<article class="demo-choice"><div class="demo-icon">'+x.icon+'</div><h3>'+String(i+1)+'. '+esc(x.name)+'</h3><p>Доказательство: '+esc(x.file)+'</p>'+(completed.has(i)?'<div class="status-chip">Доказательство восстановлено</div>':'')+'<button onclick="pick('+i+')">'+(completed.has(i)?'Повторить испытание':'Начать испытание')+'</button></article>').join('')+'</section>';
+ if(trial)body+=miniView();
+ if(!trial&&completed.has(demoIndex))body+='<section class="panel"><div class="eyebrow">ДОКУМЕНТ ВОССТАНОВЛЕН</div><h2>'+esc(DEMO[demoIndex].file)+'</h2><div class="full-evidence">'+esc(DEMO[demoIndex].text)+'</div><div class="row"><button class="light" onclick="showList()">Выбрать другое испытание</button>'+(demoIndex<3?'<button onclick="pick('+(demoIndex+1)+')">Следующее испытание</button>':'')+'</div></section>';
+ el.innerHTML=body;
+ if(trial)miniMount();
+}
+render();
+</script>
+</body></html>
