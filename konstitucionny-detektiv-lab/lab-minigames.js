@@ -52,13 +52,13 @@ function miniPaperImage(label,content){
  ctx.font='bold 29px Georgia, serif';
  ctx.fillText('АРХИВНЫЙ ДОКУМЕНТ',450,89);
  ctx.font='18px Georgia, serif';ctx.fillText(String(label||'Письменное доказательство').slice(0,80),450,120);
- ctx.textAlign='left';ctx.font='27px Georgia, serif';ctx.fillStyle='#3c3830';
+ ctx.textAlign='left';ctx.font='32px Georgia, serif';ctx.fillStyle='#3c3830';
  const words=String(content||'').trim().split(/\s+/);
  let line='',y=195;
  for(const word of words){
   const next=line?line+' '+word:word;
   if(ctx.measureText(next).width>757&&line){
-   ctx.fillText(line,71,y);y+=49;line=word;
+   ctx.fillText(line,71,y);y+=53;line=word;
   }else line=next;
  }
  if(line)ctx.fillText(line,71,y);
@@ -88,7 +88,7 @@ function miniPaperFragment(piece){
 
 const miniOrdered=a=>a.every((v,i)=>v===i);
 function miniReset(){
- play={pieces:miniSplit(trial.evidenceText,9),segments:miniSplit(trial.evidenceText,trial.kind==='board'?4:3),order:miniShuffle(9),paperImage:trial.kind==='shreds'?miniPaperImage(trial.label,trial.evidenceText):null,selected:null,found:[],threads:[],lastProof:null,scanTarget:null,scanTimer:null};
+ play={pieces:miniSplit(trial.evidenceText,9),segments:miniSplit(trial.evidenceText,trial.kind==='board'?4:3),order:miniShuffle(9),zoom:false,paperImage:trial.kind==='shreds'?miniPaperImage(trial.label,trial.evidenceText):null,selected:null,found:[],threads:[],lastProof:null,scanTarget:null,scanTimer:null};
 }
 async function beginChallenge(id){
  if(working)return;
@@ -133,9 +133,17 @@ function miniChooseScrap(n){
  if(play.selected===null){play.selected=n;miniDrawScraps();return}
  let first=play.selected;play.selected=null;miniSwap(first,n);miniDrawScraps();
 }
+function miniToggleZoom(){
+ play.zoom=!play.zoom;
+ const zone=document.getElementById('miniScraps');
+ const button=document.getElementById('miniZoomButton');
+ if(zone)zone.classList.toggle('mini-zoom',play.zoom);
+ if(button)button.textContent=play.zoom?'Уменьшить лист':'Увеличить фрагменты';
+}
 function miniDrawScraps(){
  const root=document.getElementById('miniScraps');if(!root||!trial)return;
  root.classList.toggle('mini-assembled',miniOrdered(play.order));
+ root.classList.toggle('mini-zoom',!!play.zoom);
  root.innerHTML=play.order.map((piece,slot)=>'<button type="button" class="mini-scrap '+(slot===play.selected?'mini-picked':'')+'" data-slot="'+slot+'" onclick="miniChooseScrap('+slot+')" aria-label="Фрагмент разорванной бумаги. Выбрать или поменять местами">'+miniPaperFragment(piece)+'</button>').join('');
  const status=document.getElementById('miniCorrect');
  if(status)status.textContent=miniOrdered(play.order)?'Лист восстановлен. Соседние края, строки и печать совпали.':'Сопоставляйте соседние линии разрыва, строки текста и части архивной печати.';
@@ -211,7 +219,7 @@ function miniView(){
  if(!trial)return '';
  let stage='',k=trial.kind;
  if(k==='shreds'){
-  stage='<p class="mini-instruction">Перед вами девять фрагментов одной повреждённой страницы. <b>У каждого клочка неповторимый рваный контур: соседние края дополняют друг друга.</b> Сопоставляйте линии разрыва, продолжения строк и части архивного штампа. Перетаскивайте детали либо нажимайте на две по очереди, чтобы поменять их местами.</p><div class="mini-correct" id="miniCorrect"></div><div class="mini-scraps" id="miniScraps"></div>';
+  stage='<p class="mini-instruction">Перед вами девять фрагментов одной повреждённой страницы. <b>У каждого клочка неповторимый рваный контур: соседние края дополняют друг друга.</b> Сопоставляйте линии разрыва, продолжения строк и части архивного штампа. Перетаскивайте детали либо нажимайте на две по очереди, чтобы поменять их местами.</p><div class="mini-correct" id="miniCorrect"></div><div class="mini-puzzle-scroll"><div class="mini-scraps" id="miniScraps"></div></div><button id="miniZoomButton" class="light slim" onclick="miniToggleZoom()">Увеличить фрагменты</button>';
  }else if(k==='flashlight'){
   const at=[[19,22],[79,45],[46,79]];
   stage='<p class="mini-instruction">Архив погружён во тьму. Ведите пальцем по комнате — фонарик покажет детали. Найдите три папки и ненадолго задержите луч на каждой: <b>внутри фрагменты самого доказательства</b>.</p><div class="mini-scene mini-dark" onpointermove="miniBeam(event)" onpointerdown="miniBeam(event)" onpointerup="miniEndScan(event)" onpointercancel="miniEndScan(event)" onpointerleave="miniEndScan(event)"><div class="mini-cabinets">▥　▤　▥　▦<br>▤　▥　▦　▤<br>▦　▤　▥　▥</div>'+at.map((p,i)=>'<span class="mini-hotspot" data-finder="'+i+'" style="left:'+p[0]+'%;top:'+p[1]+'%" aria-hidden="true">▤</span>').join('')+'<div class="mini-darkness"></div></div><div id="miniFound" class="mini-notes"></div>';
