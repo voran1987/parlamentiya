@@ -39,7 +39,7 @@ async function miniWin(proof){
  try{
   const r=await request('solveChallenge',{id:trial.id,nonce:trial.nonce,proof});
   clearTimeout(play.scanTimer);state=r.state;trial=null;play={};error='';render();
-  alert('Документ добыт! Списан один жетон. Полная улика теперь открыта всем участникам команды.');
+  alert(typeof DEMO_MODE!=='undefined'&&DEMO_MODE?'Демонстрация пройдена! Ниже открыт полный текст восстановленного документа.':'Документ добыт! Списан один жетон. Полная улика теперь открыта всем участникам команды.');
  }catch(e){
   let cleared=false;
   try{const r=await request('state');state=r.state;cleared=!!state.case?.items?.[trial.id]?.unlocked;}catch(_e){}
