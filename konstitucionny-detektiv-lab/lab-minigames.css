@@ -12,7 +12,7 @@
 .mini-scraps.mini-assembled{gap:0;background:#b9a58b}
 .mini-scrap{position:relative;display:block;min-width:0;width:100%;height:auto;aspect-ratio:5/4;padding:0!important;margin:0;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;clip-path:none!important;transform:none!important;overflow:visible;touch-action:none;cursor:grab;user-select:none}
 .mini-scrap:active{cursor:grabbing}
-.mini-paper-svg{position:absolute;left:-8%;top:-10%;width:116%;height:120%;overflow:visible;filter:drop-shadow(1px 3px 2px #59472c61);pointer-events:none;transition:filter .15s,transform .15s}
+.mini-paper-svg{position:absolute;left:-12%;top:-15%;width:124%;height:130%;overflow:visible;filter:drop-shadow(1px 3px 2px #59472c61);pointer-events:none;transition:filter .15s,transform .15s}
 .mini-scrap:hover .mini-paper-svg{filter:drop-shadow(1px 4px 4px #392c2566)}
 .mini-scrap.mini-picked{z-index:8}
 .mini-scrap.mini-picked .mini-paper-svg{filter:drop-shadow(0 0 5px #a36a1d) drop-shadow(0 0 2px #be944f);transform:scale(1.045)}
