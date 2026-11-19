@@ -59,9 +59,42 @@ const DEMO=[
 let working=false,state={},demoIndex=0,completed=new Set();
 const esc=x=>String(x??'').replace(/[&<>"']/g,y=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[y]));
 function message(m){alert(String(m))}
+
+function demoArchive(){
+ const lines=miniSplit(DEMO[1].text,3),code='Д-15-29-26';
+ const good=n=>({code,year:2026,status:'Подлинник',part:n,text:lines[n-1]});
+ const bad=(c,y,status,part)=>({code:c,year:y,status,part,text:'Материал другого архивного производства. Сведения не относятся к разыскиваемому делу.'});
+ return {code,files:[
+ bad('Д-15-29-25',2025,'Подлинник',1),
+ bad(code,2025,'Подлинник',3),
+ good(2),
+ bad(code,2026,'Черновик',1),
+ bad('Д-15-30-26',2026,'Подлинник',3),
+ bad(code,2026,'Копия без заверения',2),
+ good(3),
+ bad('Д-17-29-26',2026,'Подлинник',1),
+ bad(code,2026,'Отозван',3),
+ bad('Д-15-31-26',2026,'Подлинник',2),
+ good(1),
+ bad(code,2026,'Черновик',2)
+ ]};
+}
+function demoComparison(){
+ return {pairs:[
+  {left:'Фонд: ведомственный архив',right:'Фонд: ведомственный архив'},
+  {left:'Статус документа: проект',right:'Статус документа: утверждённый приказ'},
+  {left:'Экземпляр: копия для ознакомления',right:'Экземпляр: копия для ознакомления'},
+  {left:'Отдел: юридическая служба',right:'Отдел: юридическая служба'},
+  {left:'Подпись составителя: отсутствует',right:'Подпись составителя: имеется'},
+  {left:'Номер страницы: 2',right:'Номер страницы: 2'},
+  {left:'Предмет: графики дежурств',right:'Предмет: изменение федерального закона'},
+  {left:'Источник: журнал министерства',right:'Источник: журнал министерства'}
+ ]};
+}
+
 async function request(action,b={}){
  if(action==='challenge'){
-  let doc=DEMO[demoIndex];return {state:{},challenge:{id:b.id,kind:doc.kind,label:doc.file,nonce:"demonstration",evidenceText:doc.text}};
+  let doc=DEMO[demoIndex];const challenge={id:b.id,kind:doc.kind,label:doc.file,nonce:'demonstration',evidenceText:doc.text};if(doc.kind==='flashlight')challenge.archive=demoArchive();if(doc.kind==='loupe')challenge.comparison=demoComparison();return {state:{},challenge};
  }
  if(action==='cancelChallenge')return{state:{}};
  if(action==='state')return{state:{}};
@@ -69,7 +102,8 @@ async function request(action,b={}){
   const v=b.proof||{},c=DEMO[demoIndex];
   const validOrder=(n)=>Array.isArray(v.order)&&v.order.length===n&&v.order.every((x,i)=>x===i);
   const validFound=Array.isArray(v.found)&&v.found.length===3&&new Set(v.found).size===3&&v.found.every(x=>Number.isInteger(x)&&x>=0&&x<3);
-  const passed=c.kind==='shreds'?validOrder(9):c.kind==='board'?validOrder(4):validFound;
+  const desired=c.kind==='flashlight'?[2,6,10]:c.kind==='loupe'?[1,4,6]:[];
+  const passed=c.kind==='shreds'?validOrder(9):c.kind==='board'?validOrder(4):validFound&&desired.slice().sort((a,b)=>a-b).join(',')===v.found.slice().sort((a,b)=>a-b).join(',');
   if(!passed)throw Error("Испытание пока не завершено.");
   completed.add(demoIndex);return{state:{},unlocked:true};
  }
