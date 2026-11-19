@@ -150,6 +150,10 @@ function leave(){if(!confirm('Выйти из кабинета? Сессия и 
 async function control(stage){if(working||!confirm('Перейти к этапу «'+LABELS[STAGES.indexOf(stage)]+'»?'))return;working=true;try{const a=await request('control',{stage});state=a.state;error='';render()}catch(e){message(e.message)}finally{working=false}}
 async function teamAction(kind,id){if(working)return;let text=val(kind+'Text');if(kind==='clue'){if(!confirm('Потратить один жетон на улику?'))return;}else if(!confirm('Это общий ответ команды. После отправки изменить его не сможет никто из участников. Согласовали ответ?'))return;
  working=true;try{const payload={kind,id,text};if(kind==='prepare')payload.answers=QUESTIONS.map((_,i)=>val('answer'+i));const a=await request('act',payload);state=a.state;error='';render()}catch(e){message(e.message)}finally{working=false}}
+async function hostAssist(team){
+ if(working||!confirm('Открыть документ команде через техническую помощь? Будет списан один жетон, а помощь отмечена в журнале.'))return;
+ working=true;try{const a=await request('assistChallenge',{team});state=a.state;error='';render()}catch(e){message(e.message)}finally{working=false}
+}
 async function score(t){const x=Number(val('score'+TEAMS.indexOf(t)));if(!Number.isInteger(x)||x<0||x>100)return message('Баллы от 0 до 100');working=true;try{const a=await request('score',{team:t,points:x});state=a.state;error='';render()}catch(e){message(e.message)}finally{working=false}}
 function render(){
  const expanded=root.querySelectorAll?Array.from(root.querySelectorAll('details.detailscase[open]')).map(x=>x.dataset.case):[];
@@ -173,7 +177,7 @@ function render(){
  body+='<section class="panel lab-monitor"><div class="eyebrow">ЛАБОРАТОРИЯ · МОНИТОРИНГ МИНИ-ИСПЫТАНИЙ</div><h2>Как команды добывают доказательства</h2><p class="muted">Отображаются завершённые операции, текущая активная мини-игра и число добытых улик. Прогресс движения пальца внутри испытания остаётся локальным на телефоне.</p><div class="cards">'+state.teams.map(t=>{
   const active=state.trials?.[t.name],history=state.challengeHistory?.[t.name]||[];
   const label=active?(MINI_KINDS[active.kind]||'Испытание'):null;
-  return '<article class="card lab-team-monitor"><div class="filetag">'+esc(t.name)+'</div><h3>'+history.length+' / 4 операций завершено</h3><div class="lab-progress">'+[0,1,2,3].map(i=>'<span class="'+(i<history.length?'complete':'')+'"></span>').join('')+'</div><p class="small">'+(active?'<b>Сейчас:</b> '+esc(label)+' · документ № '+String(active.id+1):'<span class="muted">Активного испытания нет</span>')+'</p><p class="muted small">'+(history.length?history.map(h=>esc(MINI_KINDS[h.kind]||h.kind)+' ('+Math.max(0,h.elapsedSec||0)+' с)').join(' · '):'Пока нет завершённых операций')+'</p></article>';
+  return '<article class="card lab-team-monitor"><div class="filetag">'+esc(t.name)+'</div><h3>'+history.length+' / 4 операций завершено</h3><div class="lab-progress">'+[0,1,2,3].map(i=>'<span class="'+(i<history.length?'complete':'')+'"></span>').join('')+'</div><p class="small">'+(active?'<b>Сейчас:</b> '+esc(label)+' · документ № '+String(active.id+1):'<span class="muted">Активного испытания нет</span>')+'</p>'+(active?'<button class="light slim" onclick="hostAssist(TEAMS['+TEAMS.indexOf(t.name)+'])">Открыть документ · техпомощь</button>':'')+'<p class="muted small">'+(history.length?history.map(h=>esc(MINI_KINDS[h.kind]||h.kind)+' ('+Math.max(0,h.elapsedSec||0)+' с'+(h.assisted?', помощь ведущего':'')+')').join(' · '):'Пока нет завершённых операций')+'</p></article>';
  }).join('')+'</div></section>';
 
  body+='<div class="section">Материалы и ответы команд</div>';
