@@ -88,7 +88,7 @@ function miniPaperFragment(piece){
 
 const miniOrdered=a=>a.every((v,i)=>v===i);
 function miniReset(){
- play={pieces:miniSplit(trial.evidenceText,9),segments:miniSplit(trial.evidenceText,trial.kind==='board'?4:3),order:miniShuffle(9),zoom:false,paperImage:trial.kind==='shreds'?miniPaperImage(trial.label,trial.evidenceText):null,selected:null,found:[],threads:[],lastProof:null,scanTarget:null,scanTimer:null};
+ play={pieces:miniSplit(trial.evidenceText,9),segments:miniSplit(trial.evidenceText,trial.kind==='board'?4:3),order:miniShuffle(9),zoom:false,paperImage:trial.kind==='shreds'?miniPaperImage(trial.label,trial.evidenceText):null,selected:null,found:[],inspected:[],marked:[],threads:[],lastProof:null,scanTarget:null,scanTimer:null};
 }
 async function beginChallenge(id){
  if(working)return;
@@ -163,25 +163,31 @@ function miniEnableDrag(){
   start=null;
  });
 }
+
+const MINI_ARCHIVE_POINTS=Array.from({length:12},(_,i)=>[14+(i%4)*24,18+Math.floor(i/4)*31]);
+const MINI_LOUPE_POINTS=Array.from({length:8},(_,i)=>[50,6.25+i*12.5]);
 function miniBeam(ev){
- const zone=ev.currentTarget,r=zone.getBoundingClientRect();
- if(!r.width||!r.height)return;
- const px=Math.max(0,Math.min(100,100*(ev.clientX-r.left)/r.width));
- const py=Math.max(0,Math.min(100,100*(ev.clientY-r.top)/r.height));
- zone.style.setProperty('--bx',px+'%');
- zone.style.setProperty('--by',py+'%');
+ const zone=ev.currentTarget,rect=zone.getBoundingClientRect();
+ if(!rect.width||!rect.height)return;
+ const px=Math.max(0,Math.min(100,100*(ev.clientX-rect.left)/rect.width));
+ const py=Math.max(0,Math.min(100,100*(ev.clientY-rect.top)/rect.height));
+ zone.style.setProperty('--bx',px+'%');zone.style.setProperty('--by',py+'%');
  if(!trial||!['flashlight','loupe'].includes(trial.kind))return;
- const positions=trial.kind==='flashlight'?[[19,22],[79,45],[46,79]]:[[21,23],[76,50],[39,81]];
- let target=positions.findIndex((p,i)=>!play.found.includes(i)&&Math.hypot((px-p[0])*r.width/100,(py-p[1])*r.height/100)<42);
+ const archive=trial.kind==='flashlight';
+ const pts=archive?MINI_ARCHIVE_POINTS:MINI_LOUPE_POINTS;
+ const target=pts.findIndex((p,i)=>!play.inspected.includes(i)&&(
+  archive?Math.hypot((px-p[0])*rect.width/100,(py-p[1])*rect.height/100)<30:
+  Math.abs((py-p[1])*rect.height/100)<Math.min(31,rect.height*.052)&&px>=8&&px<=92
+ ));
  if(target===play.scanTarget)return;
  clearTimeout(play.scanTimer);
  play.scanTarget=target;
  if(target>=0)play.scanTimer=setTimeout(()=>{
-  if(trial&&play.scanTarget===target&&!play.found.includes(target)){
-   miniFind(target);
+  if(trial&&play.scanTarget===target&&!play.inspected.includes(target)){
+   miniInspect(target);
    play.scanTarget=null;
   }
- },350);
+ },470);
 }
 function miniEndScan(ev){
  if(ev.pointerType==='touch'||ev.type==='pointerleave'||ev.type==='pointercancel'){
@@ -189,16 +195,43 @@ function miniEndScan(ev){
   play.scanTimer=null;play.scanTarget=null;
  }
 }
-function miniFind(n){
- if(!trial||play.found.includes(n))return;
- clearTimeout(play.scanTimer);
- play.found.push(n);
- const note=document.querySelector('[data-finder="'+n+'"]');if(note)note.classList.add('found');
- let shelf=document.getElementById('miniFound');
- if(shelf)shelf.innerHTML=play.found.map(i=>'<div class="mini-note"><div class="filetag">ОБНАРУЖЕННЫЙ ФРАГМЕНТ '+(i+1)+'</div><p>'+esc(play.segments[i])+'</p></div>').join('');
- miniHint('Найдено '+play.found.length+' из 3 фрагментов. '+(play.found.length===3?'Документ восстановлен.':'Продолжайте поиск.'));
- if(play.found.length===3)setTimeout(()=>miniWin({found:play.found.slice()}),520);
+function miniInspect(n){
+ if(!trial||play.inspected.includes(n))return;
+ play.inspected.push(n);clearTimeout(play.scanTimer);
+ const el=document.querySelector('[data-finder="'+n+'"]');if(el)el.classList.add('found');
+ miniDrawInspected();
+ miniHint('Изучено '+play.inspected.length+' объектов. Отберите три доказательства, которые отвечают условиям ориентировки.');
 }
+function miniToggleMark(n){
+ if(!play.inspected.includes(n))return;
+ if(play.marked.includes(n))play.marked=play.marked.filter(x=>x!==n);
+ else if(play.marked.length<3)play.marked.push(n);
+ else{miniHint('Можно отметить только три документа. Сначала исключите один из выбранных.');return;}
+ miniDrawInspected();
+}
+function miniDrawInspected(){
+ const e=document.getElementById('miniFound');if(!e||!trial)return;
+ const archive=trial.kind==='flashlight';
+ const entries=archive?trial.archive?.files:trial.comparison?.pairs;
+ e.innerHTML=play.inspected.map(i=>{
+  const item=entries?.[i];if(!item)return '';
+  const isMarked=play.marked.includes(i);
+  const body=archive?
+   '<div class="mini-folio-metadata"><b>Шифр:</b> '+esc(item.code)+'<br><b>Год:</b> '+esc(item.year)+'<br><b>Статус:</b> '+esc(item.status)+'<br><b>Лист описи:</b> '+esc(item.part)+'</div><p>'+esc(item.text)+'</p>':
+   '<div class="mini-side-by-side"><div><small>ИСХОДНАЯ ЗАПИСЬ</small><p>'+esc(item.left)+'</p></div><div><small>ПРОВЕРЯЕМАЯ КОПИЯ</small><p>'+esc(item.right)+'</p></div></div>';
+  return '<article class="mini-note '+(isMarked?'mini-note-selected':'')+'"><div class="filetag">ОСМОТРЕН '+(archive?'АРХИВНЫЙ ЛИСТ':'УЧАСТОК КОПИИ')+' '+String(i+1).padStart(2,'0')+'</div>'+body+'<button type="button" class="'+(isMarked?'light':'')+' slim" onclick="miniToggleMark('+i+')">'+(isMarked?'Снять отметку':archive?'Приобщить к делу':'Отметить расхождение')+'</button></article>';
+ }).join('');
+ const stat=document.getElementById('miniMarkStatus');
+ if(stat)stat.textContent='Исследовано '+play.inspected.length+' из '+entries.length+'. Отобрано '+play.marked.length+' из 3.';
+ const button=document.getElementById('miniCheck');
+ if(button)button.disabled=play.marked.length!==3;
+}
+function miniCheckFinds(){
+ if(play.marked.length!==3){miniHint('Выберите ровно три доказательства.');return;}
+ miniHint('Сопоставляем отмеченные документы с описью расследования…');
+ miniWin({found:play.marked.slice()});
+}
+
 function miniConnect(n){
  if(play.threads.includes(n))return;
  play.threads.push(n);
