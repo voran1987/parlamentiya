@@ -15,7 +15,7 @@ function miniShuffle(n){
 }
 const miniOrdered=a=>a.every((v,i)=>v===i);
 function miniReset(){
- play={pieces:miniSplit(trial.evidenceText,9),segments:miniSplit(trial.evidenceText,trial.kind==='board'?4:3),order:miniShuffle(9),selected:null,found:[],threads:[],lastProof:null};
+ play={pieces:miniSplit(trial.evidenceText,9),segments:miniSplit(trial.evidenceText,trial.kind==='board'?4:3),order:miniShuffle(9),selected:null,found:[],threads:[],lastProof:null,scanTarget:null,scanTimer:null};
 }
 async function beginChallenge(id){
  if(working)return;
@@ -28,7 +28,7 @@ async function beginChallenge(id){
 }
 async function cancelChallenge(){
  if(!trial||!confirm('Отменить общее испытание команды? Жетон не списывается, но прогресс мини-игры на телефонах сбросится.'))return;
- working=true;try{const r=await request('cancelChallenge');state=r.state;trial=null;play={};error='';render()}
+ working=true;try{clearTimeout(play.scanTimer);const r=await request('cancelChallenge');state=r.state;trial=null;play={};error='';render()}
  catch(e){message(e.message)}finally{working=false}
 }
 function miniHint(t){const e=document.getElementById('miniHint');if(e)e.textContent=t}
@@ -38,12 +38,12 @@ async function miniWin(proof){
  working=true;
  try{
   const r=await request('solveChallenge',{id:trial.id,nonce:trial.nonce,proof});
-  state=r.state;trial=null;play={};error='';render();
+  clearTimeout(play.scanTimer);state=r.state;trial=null;play={};error='';render();
   alert('Документ добыт! Списан один жетон. Полная улика теперь открыта всем участникам команды.');
  }catch(e){
   let cleared=false;
   try{const r=await request('state');state=r.state;cleared=!!state.case?.items?.[trial.id]?.unlocked;}catch(_e){}
-  if(cleared){trial=null;play={};render();alert('Другой участник уже получил этот документ. Теперь он открыт всей команде.');}
+  if(cleared){clearTimeout(play.scanTimer);trial=null;play={};render();alert('Другой участник уже получил этот документ. Теперь он открыт всей команде.');}
   else {miniHint(e.message+' Нажмите «Повторить проверку», если испытание завершено.');const button=document.getElementById('miniRetry');if(button)button.hidden=false;}
  }finally{working=false}
 }
@@ -83,11 +83,27 @@ function miniEnableDrag(){
 }
 function miniBeam(ev){
  const zone=ev.currentTarget,r=zone.getBoundingClientRect();
- zone.style.setProperty('--bx',Math.max(0,Math.min(100,100*(ev.clientX-r.left)/r.width))+'%');
- zone.style.setProperty('--by',Math.max(0,Math.min(100,100*(ev.clientY-r.top)/r.height))+'%');
+ if(!r.width||!r.height)return;
+ const px=Math.max(0,Math.min(100,100*(ev.clientX-r.left)/r.width));
+ const py=Math.max(0,Math.min(100,100*(ev.clientY-r.top)/r.height));
+ zone.style.setProperty('--bx',px+'%');
+ zone.style.setProperty('--by',py+'%');
+ if(!trial||!['flashlight','loupe'].includes(trial.kind))return;
+ const positions=trial.kind==='flashlight'?[[19,22],[79,45],[46,79]]:[[21,23],[76,50],[39,81]];
+ let target=positions.findIndex((p,i)=>!play.found.includes(i)&&Math.hypot((px-p[0])*r.width/100,(py-p[1])*r.height/100)<42);
+ if(target===play.scanTarget)return;
+ clearTimeout(play.scanTimer);
+ play.scanTarget=target;
+ if(target>=0)play.scanTimer=setTimeout(()=>{
+  if(trial&&play.scanTarget===target&&!play.found.includes(target)){
+   miniFind(target);
+   play.scanTarget=null;
+  }
+ },350);
 }
 function miniFind(n){
- if(play.found.includes(n))return;
+ if(!trial||play.found.includes(n))return;
+ clearTimeout(play.scanTimer);
  play.found.push(n);
  const note=document.querySelector('[data-finder="'+n+'"]');if(note)note.classList.add('found');
  let shelf=document.getElementById('miniFound');
@@ -118,10 +134,10 @@ function miniView(){
   stage='<p class="mini-instruction">Перед вами девять разорванных клочков подлинного игрового документа. <b>В каждом видны слова, даты и факты.</b> Поставьте их в правильном порядке. Можно перетаскивать или нажимать последовательно на два клочка.</p><div class="mini-correct" id="miniCorrect"></div><div class="mini-scraps" id="miniScraps"></div>';
  }else if(k==='flashlight'){
   const at=[[19,22],[79,45],[46,79]];
-  stage='<p class="mini-instruction">Архив погружён во тьму. Ведите пальцем по комнате — фонарик покажет детали. Найдите три папки и нажмите на них: <b>внутри фрагменты самого доказательства</b>.</p><div class="mini-scene mini-dark" onpointermove="miniBeam(event)" onpointerdown="miniBeam(event)"><div class="mini-cabinets">▥　▤　▥　▦<br>▤　▥　▦　▤<br>▦　▤　▥　▥</div>'+at.map((p,i)=>'<button class="mini-hotspot" data-finder="'+i+'" style="left:'+p[0]+'%;top:'+p[1]+'%" onclick="miniFind('+i+')" aria-label="Скрытая папка">▤</button>').join('')+'<div class="mini-darkness"></div></div><div id="miniFound" class="mini-notes"></div>';
+  stage='<p class="mini-instruction">Архив погружён во тьму. Ведите пальцем по комнате — фонарик покажет детали. Найдите три папки и удерживайте на каждой луч около секунды: <b>внутри фрагменты самого доказательства</b>.</p><div class="mini-scene mini-dark" onpointermove="miniBeam(event)" onpointerdown="miniBeam(event)"><div class="mini-cabinets">▥　▤　▥　▦<br>▤　▥　▦　▤<br>▦　▤　▥　▥</div>'+at.map((p,i)=>'<span class="mini-hotspot" data-finder="'+i+'" style="left:'+p[0]+'%;top:'+p[1]+'%" aria-hidden="true">▤</span>').join('')+'<div class="mini-darkness"></div></div><div id="miniFound" class="mini-notes"></div>';
  }else if(k==='loupe'){
   const at=[[21,23],[76,50],[39,81]];
-  stage='<p class="mini-instruction">Копия документа выцвела. Двигайте лупу по бумаге и нажмите на три отметки. Каждая восстановит <b>часть реального текста документа</b>.</p><div class="mini-scene mini-forensic" onpointermove="miniBeam(event)" onpointerdown="miniBeam(event)"><div class="mini-page"><div class="filetag">ЭКСПЕРТНАЯ КОПИЯ · ПРОВЕРКА ДЕТАЛЕЙ</div><p>'+esc(trial.evidenceText)+'</p><p>'+esc(trial.evidenceText)+'</p></div>'+at.map((p,i)=>'<button class="mini-hotspot mini-stamp" data-finder="'+i+'" style="left:'+p[0]+'%;top:'+p[1]+'%" onclick="miniFind('+i+')" aria-label="Контрольная отметка">⌖</button>').join('')+'<div class="mini-fog"></div><div class="mini-lens"></div></div><div id="miniFound" class="mini-notes"></div>';
+  stage='<p class="mini-instruction">Копия документа выцвела. Двигайте лупу по бумаге, удерживая её на трёх важных отметках. Каждая восстановит <b>часть реального текста документа</b>.</p><div class="mini-scene mini-forensic" onpointermove="miniBeam(event)" onpointerdown="miniBeam(event)"><div class="mini-page"><div class="filetag">ЭКСПЕРТНАЯ КОПИЯ · ПРОВЕРКА ДЕТАЛЕЙ</div><p>'+esc(trial.evidenceText)+'</p><p>'+esc(trial.evidenceText)+'</p></div>'+at.map((p,i)=>'<span class="mini-hotspot mini-stamp" data-finder="'+i+'" style="left:'+p[0]+'%;top:'+p[1]+'%" aria-hidden="true">⌖</span>').join('')+'<div class="mini-fog"></div><div class="mini-lens"></div></div><div id="miniFound" class="mini-notes"></div>';
  }else if(k==='board'){
   stage='<p class="mini-instruction">На следственной доске найдены четыре фрагмента документа. Соедините их <b>красной нитью</b>, нажимая карточки в последовательности, в которой складывается смысл документа.</p><div class="mini-board">'+[2,0,3,1].map(j=>'<button class="mini-board-card" data-thread="'+j+'" onclick="miniConnect('+j+')"><i></i><p>'+esc(play.segments[j])+'</p></button>').join('')+'</div><div class="mini-threadline" id="miniThread"></div><button class="light slim" onclick="miniResetBoard()">Перепроверить связи</button>';
  }
