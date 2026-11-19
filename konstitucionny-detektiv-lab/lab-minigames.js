@@ -101,6 +101,12 @@ function miniBeam(ev){
   }
  },350);
 }
+function miniEndScan(ev){
+ if(ev.pointerType==='touch'||ev.type==='pointerleave'||ev.type==='pointercancel'){
+  clearTimeout(play.scanTimer);
+  play.scanTimer=null;play.scanTarget=null;
+ }
+}
 function miniFind(n){
  if(!trial||play.found.includes(n))return;
  clearTimeout(play.scanTimer);
@@ -134,10 +140,10 @@ function miniView(){
   stage='<p class="mini-instruction">Перед вами девять разорванных клочков подлинного игрового документа. <b>В каждом видны слова, даты и факты.</b> Поставьте их в правильном порядке. Можно перетаскивать или нажимать последовательно на два клочка.</p><div class="mini-correct" id="miniCorrect"></div><div class="mini-scraps" id="miniScraps"></div>';
  }else if(k==='flashlight'){
   const at=[[19,22],[79,45],[46,79]];
-  stage='<p class="mini-instruction">Архив погружён во тьму. Ведите пальцем по комнате — фонарик покажет детали. Найдите три папки и удерживайте на каждой луч около секунды: <b>внутри фрагменты самого доказательства</b>.</p><div class="mini-scene mini-dark" onpointermove="miniBeam(event)" onpointerdown="miniBeam(event)"><div class="mini-cabinets">▥　▤　▥　▦<br>▤　▥　▦　▤<br>▦　▤　▥　▥</div>'+at.map((p,i)=>'<span class="mini-hotspot" data-finder="'+i+'" style="left:'+p[0]+'%;top:'+p[1]+'%" aria-hidden="true">▤</span>').join('')+'<div class="mini-darkness"></div></div><div id="miniFound" class="mini-notes"></div>';
+  stage='<p class="mini-instruction">Архив погружён во тьму. Ведите пальцем по комнате — фонарик покажет детали. Найдите три папки и ненадолго задержите луч на каждой: <b>внутри фрагменты самого доказательства</b>.</p><div class="mini-scene mini-dark" onpointermove="miniBeam(event)" onpointerdown="miniBeam(event)" onpointerup="miniEndScan(event)" onpointercancel="miniEndScan(event)" onpointerleave="miniEndScan(event)"><div class="mini-cabinets">▥　▤　▥　▦<br>▤　▥　▦　▤<br>▦　▤　▥　▥</div>'+at.map((p,i)=>'<span class="mini-hotspot" data-finder="'+i+'" style="left:'+p[0]+'%;top:'+p[1]+'%" aria-hidden="true">▤</span>').join('')+'<div class="mini-darkness"></div></div><div id="miniFound" class="mini-notes"></div>';
  }else if(k==='loupe'){
   const at=[[21,23],[76,50],[39,81]];
-  stage='<p class="mini-instruction">Копия документа выцвела. Двигайте лупу по бумаге, удерживая её на трёх важных отметках. Каждая восстановит <b>часть реального текста документа</b>.</p><div class="mini-scene mini-forensic" onpointermove="miniBeam(event)" onpointerdown="miniBeam(event)"><div class="mini-page"><div class="filetag">ЭКСПЕРТНАЯ КОПИЯ · ПРОВЕРКА ДЕТАЛЕЙ</div><p>'+esc(trial.evidenceText)+'</p><p>'+esc(trial.evidenceText)+'</p></div>'+at.map((p,i)=>'<span class="mini-hotspot mini-stamp" data-finder="'+i+'" style="left:'+p[0]+'%;top:'+p[1]+'%" aria-hidden="true">⌖</span>').join('')+'<div class="mini-fog"></div><div class="mini-lens"></div></div><div id="miniFound" class="mini-notes"></div>';
+  stage='<p class="mini-instruction">Копия документа выцвела. Перемещайте лупу по бумаге и ненадолго задержите её над тремя важными отметками. Каждая восстановит <b>часть реального текста документа</b>.</p><div class="mini-scene mini-forensic" onpointermove="miniBeam(event)" onpointerdown="miniBeam(event)" onpointerup="miniEndScan(event)" onpointercancel="miniEndScan(event)" onpointerleave="miniEndScan(event)"><div class="mini-page"><div class="filetag">ЭКСПЕРТНАЯ КОПИЯ · ПРОВЕРКА ДЕТАЛЕЙ</div><p>'+esc(trial.evidenceText)+'</p><p>'+esc(trial.evidenceText)+'</p></div>'+at.map((p,i)=>'<span class="mini-hotspot mini-stamp" data-finder="'+i+'" style="left:'+p[0]+'%;top:'+p[1]+'%" aria-hidden="true">⌖</span>').join('')+'<div class="mini-fog"></div><div class="mini-lens"></div></div><div id="miniFound" class="mini-notes"></div>';
  }else if(k==='board'){
   stage='<p class="mini-instruction">На следственной доске найдены четыре фрагмента документа. Соедините их <b>красной нитью</b>, нажимая карточки в последовательности, в которой складывается смысл документа.</p><div class="mini-board">'+[2,0,3,1].map(j=>'<button class="mini-board-card" data-thread="'+j+'" onclick="miniConnect('+j+')"><i></i><p>'+esc(play.segments[j])+'</p></button>').join('')+'</div><div class="mini-threadline" id="miniThread"></div><button class="light slim" onclick="miniResetBoard()">Перепроверить связи</button>';
  }
