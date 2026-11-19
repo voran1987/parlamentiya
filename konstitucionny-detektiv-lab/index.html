@@ -1,0 +1,210 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#18344c"><title>Конституционный детектив · МЭИ</title>
+<style>
+:root{--navy:#223b4f;--ink:#1a3143;--gold:#b58b55;--gold-soft:#efe2cb;--bg:#f2f0e9;--line:#dcdcd4;--muted:#637787;--ok:#217555;--red:#a63d38;--paper:#fffdf8;--shadow:0 8px 26px #263e4a0c}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(circle at 92% -3%,#e9e1d2 0%,transparent 30%),linear-gradient(90deg,#243b4d06 1px,transparent 1px),var(--bg);background-size:auto,32px 32px,auto;color:var(--ink);font:15px/1.56 "Segoe UI",Arial,sans-serif}
+button,select,input,textarea{font:inherit}
+button{cursor:pointer;border:1px solid transparent;border-radius:10px;padding:12px 16px;min-height:43px;font-weight:700;background:var(--navy);color:#fff;transition:background .2s,transform .2s,box-shadow .2s}
+button:disabled{opacity:.5;cursor:not-allowed}
+button:hover:not(:disabled){background:#35586d;box-shadow:0 4px 14px #132b3d26;transform:translateY(-1px)}
+button:active:not(:disabled){transform:none}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid #c69f6b;outline-offset:3px}
+button.light{background:#fff;color:var(--navy);border:1px solid #cfd7d6}
+button.light:hover:not(:disabled){background:#f3f6f4}
+button.slim{padding:8px 12px;min-height:36px;font-size:12px}
+.full{width:100%}
+header{background:#fffdf8;color:var(--navy);padding:13px clamp(15px,4vw,52px);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:3px solid #d0ad7a;box-shadow:0 3px 16px #1a35430c}
+.brand{display:flex;align-items:center;gap:13px}
+.brandmark{width:46px;height:46px;display:grid;place-items:center;background:#eee3d2;border:1px solid #cbb38e;border-radius:12px;color:#4e4d45;font:700 27px Georgia,serif;flex-shrink:0}
+header strong{font:700 18px Georgia,serif;letter-spacing:.1px}
+header small{display:block;color:#687987;font-size:11px;margin-top:4px}
+header button{background:var(--navy);border:1px solid var(--navy)}
+#tag{font-size:12px;font-weight:700;color:#536b7c}
+.wrap{max-width:1200px;margin:0 auto;padding:25px clamp(14px,3vw,36px) 60px}
+.intro{position:relative;overflow:hidden;min-height:197px;background:linear-gradient(108deg,#fffdf8 0%,#f8f5ed 75%,#e9e9e2 100%);padding:32px clamp(24px,4vw,44px);border:1px solid #ddd9cf;border-left:6px solid var(--gold);border-radius:17px;box-shadow:var(--shadow);margin-bottom:20px}
+.intro:after{content:"§";position:absolute;right:48px;top:10px;font:700 190px Georgia,serif;color:#71818b1a;transform:rotate(-12deg);pointer-events:none}
+.intro h1{position:relative;z-index:1;font:700 clamp(32px,4.5vw,52px)/1.06 Georgia,serif;letter-spacing:-1.5px;color:var(--navy);margin:9px 0 14px}
+.intro p{position:relative;z-index:1;max-width:760px;color:#586d7c;font-size:15px;line-height:1.6;margin:0}
+.eyebrow{font-size:10px;font-weight:900;letter-spacing:1.6px;color:#9b743e;text-transform:uppercase}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:15px;padding:24px;margin:16px 0;box-shadow:var(--shadow)}
+.panel h2{font:700 24px/1.2 Georgia,serif;color:var(--navy);margin:0 0 14px}
+.muted{color:var(--muted)}.small{font-size:12px}
+.label{font-size:11px;color:#637a87;font-weight:800;margin:15px 0 7px;text-transform:uppercase;letter-spacing:.7px}
+.cols{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.card{position:relative;overflow:hidden;border:1px solid #e0ddd4;background:var(--paper);border-radius:13px;padding:20px;box-shadow:0 6px 18px #253f4d0b}
+.card:before{content:"";position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,#bc9460,#e2cbab)}
+.card h3{font:700 19px/1.2 Georgia,serif;margin:13px 0 9px}
+.card p{line-height:1.55;font-size:13px;color:#607486}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0 20px}
+.stat{background:var(--paper);padding:16px;border:1px solid var(--line);border-radius:12px;min-height:90px}
+.stat:before{content:"";display:block;width:24px;height:3px;background:var(--gold);border-radius:3px;margin-bottom:8px}
+.stat b{font-size:clamp(20px,2.6vw,29px);display:block;letter-spacing:-1px;line-height:1.25;color:var(--navy)}
+.stat span{font-size:12px;color:var(--muted)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.pill{font-size:11px;padding:6px 10px;border:1px solid #d6dfe0;border-radius:22px;background:#edf2f3;color:#4b6576;display:inline-block;font-weight:700}
+.pill.active{background:var(--navy);color:white}
+.field{width:100%;border:1px solid #bfced0;border-radius:10px;padding:13px;background:#fff;color:var(--ink)}
+textarea.field{min-height:160px;resize:vertical;line-height:1.6}
+a{color:#275e81;word-break:break-word}
+a:hover{color:#9c6a32}
+.qr{width:238px;max-width:100%;min-height:238px;background:white;border:1px solid var(--line);border-radius:12px;padding:14px;display:block;box-shadow:0 3px 14px #18344c0d}
+.qrarea{display:grid;grid-template-columns:245px 1fr;gap:25px;align-items:center}
+.invitepanel{background:linear-gradient(105deg,#fffefa,#f7f7f1);border-color:#dcd6c9}
+.invitetext{min-width:0}
+.invitetext a{display:block;background:white;border:1px solid var(--line);padding:12px;border-radius:10px;font-size:12px}
+.casebox{background:#eef3f3;border-left:4px solid var(--gold);border-radius:9px;padding:18px;line-height:1.65;margin:15px 0}
+.casefile{position:relative;border-top:5px solid var(--gold);background:var(--paper);padding:30px 26px;overflow:hidden}
+.casefile:after{content:"ДОСЬЕ";position:absolute;right:-10px;top:16px;transform:rotate(13deg);font:bold 23px Segoe UI,Arial,sans-serif;letter-spacing:3px;color:#bd997772;border:2px solid #bd997772;padding:5px 12px;border-radius:6px;pointer-events:none}
+.casefile h2{font-size:clamp(25px,3vw,34px);margin-top:15px;max-width:87%}
+.case-kicker{font-size:11px;font-weight:900;letter-spacing:1.5px;color:#9b763f;margin-bottom:10px}
+.case-brief{font-size:16px;line-height:1.7;color:#355268}
+.evidence{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.evidence button{position:relative;text-align:left;min-height:145px;background:#fffefa;border:1px solid #dedbd2;color:var(--navy);padding:20px;box-shadow:0 6px 20px #1936480b}
+.evidence button:before{content:"";position:absolute;top:0;left:18px;width:41px;height:5px;background:#c39b69;border-radius:0 0 4px 4px}
+.evidence button.unlocked{background:#eef7f1;border-color:#99bea9}
+.evidence button.unlocked:before{background:#76a88e}
+.evidence button b{font:700 17px/1.35 Georgia,serif}
+.evidence button p{font-size:13px;line-height:1.55;color:#597080;margin:9px 0 0;font-weight:400}
+.evidence button:disabled:not(.unlocked){opacity:.62}
+.file-index{display:block;font:800 10px Segoe UI,Arial,sans-serif;letter-spacing:1.2px;color:#a77c4b;margin-bottom:9px}
+.alert{background:#fcf1e6;border:1px solid #e9d5c0;border-left:4px solid #bd8451;border-radius:9px;padding:17px;margin:14px 0;line-height:1.6}
+.success{background:#edf7f0;border-left:4px solid #4b936d;border-radius:9px;padding:16px;margin:14px 0}
+.danger{background:#fff1ee;border:1px solid #eac5bf;color:var(--red);padding:13px;border-radius:9px;margin:12px 0}
+.section{font:700 24px Georgia,serif;margin:28px 0 15px;color:var(--navy)}
+.steps{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px}
+.steps button{font-size:11px;line-height:1.3;min-height:78px;padding:9px 6px;background:#fffefa;color:var(--navy);border:1px solid #d9dddb;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px}
+.steps button.selected{background:#f4e8d5;color:#7a5730;border-color:#c7a471;box-shadow:inset 0 4px var(--gold)}
+.step-num{font-weight:800;font-size:11px}
+.step-time{font-size:10px;color:#778894}
+.flowstrip{display:flex;gap:7px;align-items:stretch;overflow:auto;margin:0 0 17px;padding:0 0 7px}
+.flowstep{flex:1;min-width:84px;max-width:180px;border:1px solid #d9dcd8;background:#fffdf9;color:#647988;border-radius:10px;padding:10px 7px;text-align:center;font-size:11px;line-height:1.35}
+.flowstep .n{display:block;font-size:15px;font-weight:900;margin-bottom:2px}
+.flowstep.done{background:#eff4ed;color:#50775c;border-color:#cbdcca}
+.flowstep.current{background:var(--navy);color:white;border-color:var(--navy)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.score{width:80px;padding:9px;border:1px solid var(--line);border-radius:7px}
+.truncate{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55}
+.footer{text-align:center;color:var(--muted);font-size:12px;margin:37px auto 0;border-top:1px solid var(--line);padding-top:20px}
+.hidden{display:none!important}
+.entry-layout{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}
+.entry-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+.entry-step{background:#fffdf8;border:1px solid var(--line);border-radius:11px;padding:16px}
+.entry-step b{display:block;font:700 24px Georgia,serif;color:var(--gold);margin-bottom:5px}
+.entry-step span{font-size:12px;color:var(--muted)}
+.onboarding{border-left:4px solid var(--gold)}
+.onboarding button{margin-top:13px}
+.filetag{font:800 10px Segoe UI,Arial,sans-serif;color:#a27a4b;letter-spacing:1.3px;text-transform:uppercase}
+.rankingrow{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center;border-bottom:1px solid #eae6df;padding:11px 0;font-size:13px}
+.rankingrow:last-child{border-bottom:none}
+.rankingrow .num{color:#af8550;font-size:17px;font-weight:900}
+.rankingrow b{color:var(--navy);font-variant-numeric:tabular-nums}
+.detailscase{padding:0;overflow:hidden}
+.detailscase summary{cursor:pointer;font:700 17px Georgia,serif;padding:19px 22px;display:flex;justify-content:space-between;gap:10px;align-items:center;list-style:none}
+.detailscase summary::-webkit-details-marker{display:none}
+.detailscase summary:after{content:"＋";color:var(--gold);font:bold 23px Segoe UI,Arial,sans-serif}
+.detailscase[open] summary:after{content:"−"}
+.detailscase[open] summary{border-bottom:1px solid var(--line);background:#f7f6f1}
+.detailscase .inside{padding:20px 23px}
+.noticebar{display:flex;gap:12px;align-items:center;background:#f4ede1;border:1px solid #e6d5b9;border-radius:11px;padding:13px 17px;color:#6a5741;margin:16px 0}
+@media(max-width:1020px){.steps{grid-template-columns:repeat(4,minmax(0,1fr))}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:800px){.cols,.entry-layout,.qrarea{grid-template-columns:1fr}.qrarea .qr{margin:auto}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.evidence{grid-template-columns:1fr}.wrap{padding:18px 12px 35px}.intro{padding:25px 20px}.intro:after{right:12px;top:18px;font-size:145px}.panel{padding:19px}.steps{grid-template-columns:repeat(3,minmax(0,1fr))}.entry-steps{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:480px){.cards,.entry-steps{grid-template-columns:1fr}.intro h1{font-size:31px}.intro p{font-size:13px}.casefile{padding:25px 18px}.casefile h2{font-size:25px}.stat{padding:12px}.stat b{font-size:21px}.steps{grid-template-columns:repeat(2,minmax(0,1fr))}.brandmark{width:40px;height:40px;font-size:23px}header strong{font-size:14px}header{padding:11px 13px}.flowstep{min-width:86px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
+.answer-field{padding:13px 0 17px;border-bottom:1px solid var(--line)}.answer-field label{display:block;margin:0 0 9px;color:var(--navy)}.answer-field textarea{min-height:92px}.answer-field+.answer-field{margin-top:5px}.answer-field:last-of-type{margin-bottom:16px}.results-summary{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}.result-question{margin:16px 0;background:#f7f5ee;border:1px solid #e1ded4;border-radius:11px;padding:15px}.result-question h3{font:700 17px Georgia,serif;margin:7px 0;color:var(--navy)}.result-question p{margin:8px 0 0}.results-team[open]{border-color:#c8af86}</style></head><body><header><div class="brand"><div class="brandmark" aria-hidden="true">§</div><div><strong>КОНСТИТУЦИОННЫЙ ДЕТЕКТИВ · ЛАБОРАТОРИЯ</strong><small>НИУ «МЭИ» · Основы российской государственности</small></div></div><div class="row"><span id="tag" class="small"></span><button class="slim" id="leave" onclick="leave()" style="display:none">Выйти</button></div></header><main class="wrap" id="app"></main>
+<script>
+const API='https://logzbhhftwvqsrqvmnik.supabase.co/functions/v1/constitutional-detective-lab';
+const KEY='sb_publishable_gUO0b5EHdgs_vS39Iqi4pQ_tU-7tPuw';
+const BASE='https://voran1987.github.io/parlamentiya/konstitucionny-detektiv-lab/';
+const TEAMS=['Архив','Федерализм','Права человека','Исполнительная власть','Местное самоуправление','Правосудие'];
+const STAGES=['brief','investigate','hypothesis','twist','final','results'];
+const LABELS=['Получение дела','Сбор доказательств','Версия расследования','Новые обстоятельства','Итоговое заключение','Результаты'];
+const MINUTES=[10,25,15,10,25,5];
+const QUESTIONS=['Что вы предполагали первоначально?','Какие новые факты обнаружились?','Подтвердилась ли первоначальная версия или её пришлось изменить?','Какие конституционные нормы применимы?','Каково окончательное юридическое решение?'];
+const invite=new URLSearchParams(location.search).get('join')?.toUpperCase()||'';
+function read(k){try{return JSON.parse(localStorage.getItem(k)||'null')}catch{return null}}
+let auth=invite?(read('detective_lab_team_'+invite)||null):read('detective_lab_host');
+if(invite&&auth?.role!=='team')auth=null;
+let state=auth?.state||null,working=false,poll=null,error='',elapsedStart=Date.now();
+const root=document.getElementById('app'),tag=document.getElementById('tag');
+const esc=x=>String(x??'').replace(/[&<>"']/g,y=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[y]));
+const val=id=>document.getElementById(id)?.value??'';
+function url(){return BASE+'?join='+encodeURIComponent(auth.code)}
+function message(e){error=String(e);render()}
+async function request(action,opts={}){
+ const p={action,...opts};if(action!=='create'&&action!=='join'){p.code=auth.code;p.token=auth.token;}
+ const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','apikey':KEY,'Authorization':'Bearer '+KEY},body:JSON.stringify(p)});
+ const j=await r.json().catch(()=>({error:'Некорректный ответ сервера'}));if(!r.ok)throw Error(j.error||'Сервер недоступен');return j;
+}
+function save(a){auth=a;state=a.state;localStorage.setItem(a.role==='host'?'detective_lab_host':'detective_lab_team_'+a.code,JSON.stringify({role:a.role,code:a.code,team:a.team,token:a.token}));render();start();}
+async function create(){if(working)return;working=true;try{const a=await request('create');save({role:'host',code:a.code,token:a.token,state:a.state});error=''}catch(e){message(e.message)}finally{working=false}}
+async function join(){if(working)return;const team=val('team');if(!team)return message('Выберите команду');working=true;try{
+ const a=await request('join',{code:invite,team});save({role:'team',code:a.code,team,token:a.token,state:a.state});error='';
+ }catch(e){message(e.message)}finally{working=false}}
+async function load(){if(!auth||working)return;try{const a=await request('state');if(JSON.stringify(a.state)!==JSON.stringify(state)){state=a.state;error='';render()}}catch(e){error=e.message;render()}}
+function start(){clearInterval(poll);poll=setInterval(load,3500);load()}
+function leave(){if(!confirm('Выйти из кабинета? Сессия и данные команд останутся на сервере.'))return;
+ localStorage.removeItem(auth.role==='host'?'detective_lab_host':'detective_lab_team_'+auth.code);
+ auth=null;state=null;clearInterval(poll);location.href=BASE;}
+async function control(stage){if(working||!confirm('Перейти к этапу «'+LABELS[STAGES.indexOf(stage)]+'»?'))return;working=true;try{const a=await request('control',{stage});state=a.state;error='';render()}catch(e){message(e.message)}finally{working=false}}
+async function teamAction(kind,id){if(working)return;let text=val(kind+'Text');if(kind==='clue'){if(!confirm('Потратить один жетон на улику?'))return;}else if(!confirm('Это общий ответ команды. После отправки изменить его не сможет никто из участников. Согласовали ответ?'))return;
+ working=true;try{const payload={kind,id,text};if(kind==='prepare')payload.answers=QUESTIONS.map((_,i)=>val('answer'+i));const a=await request('act',payload);state=a.state;error='';render()}catch(e){message(e.message)}finally{working=false}}
+async function score(t){const x=Number(val('score'+TEAMS.indexOf(t)));if(!Number.isInteger(x)||x<0||x>100)return message('Баллы от 0 до 100');working=true;try{const a=await request('score',{team:t,points:x});state=a.state;error='';render()}catch(e){message(e.message)}finally{working=false}}
+function render(){
+ const expanded=root.querySelectorAll?Array.from(root.querySelectorAll('details.detailscase[open]')).map(x=>x.dataset.case):[];
+ const drafts={};
+ if(root.querySelectorAll)root.querySelectorAll('textarea.field').forEach(x=>{drafts[x.id]=x.value});
+ tag.textContent=auth?(auth.role==='host'?'Ведущий':'Команда «'+esc(auth.team)+'»'):'';
+ document.getElementById('leave').style.display=auth?'':'none';
+ if(!auth){if(invite){root.innerHTML='<section class="intro"><div class="eyebrow">Приглашение на расследование</div><h1>Вход команды</h1><p>Каждый студент выбирает свою команду и открывает общее досье. Можно присоединиться к команде, в которой уже есть участники. Пароль и код не нужны.</p></section><div class="panel onboarding"><div class="eyebrow">ЭКСПЕРТНАЯ ГРУППА</div><h2>Выберите команду</h2><p class="muted">Каждый участник входит со своего телефона. Улики и ответы общие для команды: четыре жетона на группу, одна согласованная версия расследования до появления новых фактов, затем её уточнение и итоговое заключение по пяти вопросам.</p><select id="team" class="field">'+TEAMS.map(t=>'<option>'+esc(t)+'</option>').join('')+'</select><button class="full" style="margin-top:15px" onclick="join()">Присоединиться</button></div>'+ (error?'<div class="danger">'+esc(error)+'</div>':'');return;}
+ root.innerHTML='<section class="intro"><div class="eyebrow">Экспериментальные мини-испытания · отдельная сессия</div><h1>Конституционный<br>детектив</h1><p>Шесть конкурирующих экспертных групп. Документы и свидетели, ограниченные запросы улик, неожиданные повороты, пять вопросов для подготовки ответов и общий разбор.</p></section><div class="entry-layout"><div><div class="entry-steps"><div class="entry-step"><b>01</b><span>Откройте игровую сессию</span></div><div class="entry-step"><b>02</b><span>Шесть команд получают дела</span></div><div class="entry-step"><b>03</b><span>Соберите улики и защитите выводы</span></div></div><div class="noticebar"><span>◆</span><span>Конституционный строй · Федерализм · Права человека · Публичная власть</span></div></div><div class="panel onboarding"><div class="eyebrow">РЕЖИМ ПРЕПОДАВАТЕЛЯ</div><h2>Открыть расследование</h2><p class="muted">Создайте игровую сессию. QR-код для студентов появится непосредственно на экране ведущего.</p><button class="full" onclick="create()">Создать новую игру →</button></div></div>'+(error?'<div class="danger">'+esc(error)+'</div>':'');return}
+ if(!state){root.innerHTML='<div class="panel"><h2>Восстановление игровой сессии…</h2><p>Загружаем данные с сервера.</p><button onclick="load()">Повторить</button></div>';return;}
+ const host=auth.role==='host',stage=state.stage,index=STAGES.indexOf(stage);
+ const intro='<section class="intro"><div class="eyebrow">Расследование · '+(index+1)+' / 6</div><h1>'+LABELS[index]+'</h1><p>Шесть дел об основах конституционного строя и публичной власти России. Предположения проверяются доказательствами, а выводы — правовыми аргументами.</p></section>';
+ let body='<div class="flowstrip" aria-label="Этапы расследования">'+STAGES.map((s,i)=>'<div class="flowstep '+(i<index?'done':i===index?'current':'')+'"><span class="n">'+(i<index?'✓':String(i+1).padStart(2,'0'))+'</span>'+LABELS[i]+'</div>').join('')+'</div>';
+ if(host){
+ const link=url();
+ body+='<div class="panel invitepanel qrarea"><div><div class="eyebrow">ПРИГЛАШЕНИЕ · БЕЗ КОДА ДОСТУПА</div><h2>Вход по QR-коду</h2><div id="qrArea" class="qr"><img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data='+encodeURIComponent(link)+'" width="208" height="208" alt="QR-код приглашения" style="max-width:100%" onerror="this.onerror=null;this.src=\'https://quickchart.io/qr?size=220&text='+encodeURIComponent(link)+'\'"></div></div><div class="invitetext"><div class="filetag">ПОДКЛЮЧЕНИЕ КОМАНД</div><p class="muted">Каждый студент открывает ссылку на своём телефоне и выбирает свою группу, даже если другие уже подключились. Все участники имеют одинаковые права доступа, вводить код не нужно.</p><p><a href="'+esc(link)+'" target="_blank" rel="noopener">'+esc(link)+'</a></p><button class="light" onclick="copyUrl()">Копировать приглашение</button></div></div>';
+ body+='<div class="stats">'+[(state.totalMembers??0),state.teams.filter(x=>x.joined).length+' / 6',''+state.teams.filter(x=>x.hypothesis).length, ''+state.teams.filter(x=>x.submitted).length].map((v,i)=>'<div class="stat"><b>'+v+'</b><span>'+['Студентов подключено','Команд участвует','Первых версий','Итоговых заключений'][i]+'</span></div>').join('')+'</div>';
+ body+='<div class="panel"><div class="eyebrow">ХРОНОЛОГИЯ РАССЛЕДОВАНИЯ</div><h2>Управление этапами</h2><p class="muted small">Рекомендованное время: 10 / 25 / 15 / 10 / 25 / 5 минут. Этапы переключает ведущий.</p><div class="steps">'+STAGES.map((s,i)=>'<button class="'+(s===stage?'selected':'light')+'" onclick="control(\''+s+'\')"><span class="step-num">'+(i+1)+'. '+LABELS[i]+'</span><span class="step-time">'+MINUTES[i]+' мин</span></button>').join('')+'</div></div>';
+ body+='<div class="cards">'+state.cases.map((c,i)=>{let t=TEAMS[i],p=state.teams[i];return '<div class="card"><div class="filetag">ДЕЛО № '+String(i+1).padStart(2,'0')+'</div><span class="pill">'+esc(t)+'</span><h3>'+esc(c.title)+'</h3><p>'+esc(c.topic)+'</p><div class="row"><span class="pill">'+(p.joined?'✓ '+p.members+' участник(ов)':'Нет участников')+'</span><span class="pill">Запрошено '+p.requests+'/4</span></div><p class="small muted">Первая версия: '+(p.hypothesis?'✓':'—')+' · Итоговое заключение: '+(p.submitted?'✓':'—')+' · Найдено материалов: '+(p.requests+2)+'/9'+'</p></div>'}).join('')+'</div>';
+ body+='<div class="section">Материалы и ответы команд</div>';
+ body+=state.cases.map((c,i)=>{let t=TEAMS[i],n=state.notes[t],submitted=state.prep?.[t];return '<details class="panel detailscase" data-case="'+i+'"><summary>'+esc(t)+' · '+esc(c.title)+'</summary><div class="inside"><p class="muted">'+esc(c.brief)+'</p><div class="casebox">'+esc(c.question)+'</div><div class="evidence">'+c.items.map((x,j)=>'<div class="card"><div class="filetag">МАТЕРИАЛ '+String(j+1).padStart(2,'0')+' · '+esc(x[2]||'Документ')+'</div><h3>'+esc(x[0])+'</h3><p class="truncate">'+esc(x[1])+'</p></div>').join('')+'</div><p class="alert"><b>Поворот:</b> '+esc(c.twist)+'</p><p><b>Первая версия расследования:</b></p><p class="truncate">'+esc(n?.text||'Не представлена')+'</p><p><b>После новых обстоятельств:</b></p><p class="truncate">'+esc(state.revisions?.[t]?.text||'Уточнение не представлено')+'</p><div class="softlabel">ПЯТЬ ОТВЕТОВ КОМАНДЫ</div>'+QUESTIONS.map((q,j)=>'<div class="result-question"><div class="filetag">ВОПРОС '+String(j+1).padStart(2,'0')+'</div><h3>'+esc(q)+'</h3><p class="truncate">'+esc(submitted?.answers?.[j]||'Ответ не поступил')+'</p></div>').join('')+'<div class="success"><b>Методический разбор:</b> '+esc(c.solution)+'</div><div class="row"><input class="score" type="number" id="score'+i+'" min="0" max="100" value="'+(state.scores[t]??0)+'"><button class="slim" onclick="score(\''+t+'\')">Сохранить оценку</button></div></div></details>'}).join('');
+ }else{
+ const c=state.case;
+ body+='<div class="stats"><div class="stat"><b>'+(state.teams.find(t=>t.name===auth.team)?.members??1)+'</b><span>Участников в вашей команде</span></div><div class="stat"><b>'+c.remaining+' / 4</b><span>Жетоны расследования</span></div><div class="stat"><b>'+state.myScore+'</b><span>Ваши баллы</span></div><div class="stat"><b>'+esc(LABELS[index])+'</b><span>Текущий этап</span></div></div>';
+ body+='<div class="panel casefile"><div class="case-kicker">ДЕЛО № '+String(TEAMS.indexOf(auth.team)+1).padStart(2,'0')+' · ОТКРЫТОЕ ДОСЬЕ</div><span class="pill">'+esc(auth.team)+'</span><h2>«'+esc(c.title)+'»</h2><p class="muted">'+esc(c.topic)+'</p><p class="case-brief">'+esc(c.brief)+'</p><div class="casebox"><b>Задание:</b> '+esc(c.question)+'</div><p class="muted small">Правовая основа для проверки: '+esc(c.norm)+'</p></div>';
+ if(index===0)body+='<div class="panel"><h2>Изучение дела</h2><p>Изучите обстоятельства и определите, что нужно проверить. В следующем раунде будут доступны запросы дополнительных документов.</p></div>';
+ if(index<4){
+ body+='<div class="panel"><div class="eyebrow">АРХИВ ДОКАЗАТЕЛЬСТВ</div><h2>Проверка улик</h2><p class="muted">Два исходных материала доступны сразу. Ещё четыре можно запросить из семи за жетоны; не все сведения одинаково достоверны.</p><div class="evidence">'+c.items.map(e=>'<button class="'+(e.unlocked?'unlocked':'')+'" '+(e.unlocked||index!==1||c.remaining===0?'disabled':'')+' onclick="teamAction(\'clue\','+e.id+')"><span class="file-index">МАТЕРИАЛ № '+String(e.id+1).padStart(2,'0')+' · '+esc(e.type||'Материал')+' · '+(e.unlocked?'ДОСТУПЕН':'НЕ ОТКРЫТ')+'</span><b>'+(e.unlocked?'✓ ':'▤ ')+esc(e.label)+'</b><p>'+esc(e.unlocked?e.content:(index===1?'Запросить за 1 жетон':'Открытие на этапе сбора улик'))+'</p></button>').join('')+'</div></div>';
+ }
+ if(index===2){body+='<div class="panel"><h2>Первая версия расследования</h2><p>Укажите установленные факты, вашу версию событий и то, что ещё необходимо проверить. После новых обстоятельств вы сможете уточнить вывод. Отправить можно один раз, не менее 80 символов.</p>'+(state.myHypothesis?'<div class="success">'+esc(state.myHypothesis.text)+'</div>':'<textarea class="field" id="hypothesisText" placeholder="Первая версия команды: установленные факты, объяснение событий и вопросы для проверки..."></textarea><button class="full" onclick="teamAction(\'hypothesis\')">Отправить первую версию</button>')+'</div>'}
+ 
+ if(index>=3)body+='<div class="panel"><div class="eyebrow">НОВЫЕ СВЕДЕНИЯ ПО ДЕЛУ</div><h2>Неожиданный поворот</h2><div class="alert">'+esc(c.twist)+'</div><p class="muted">'+esc(c.revisionPrompt||'Сопоставьте новые факты с первой версией расследования.')+'</p>'+(index===3?'<div class="noticebar"><span>◆</span><span>Обсудите новые факты и отправьте уточнённую версию. На этапе результатов её увидят все команды.</span></div>':'')+'</div>';
+ if(index===3)body+='<section class="panel"><div class="eyebrow">УТОЧНЕНИЕ ВЕРСИИ</div><h2>Версия после новых обстоятельств</h2><p class="muted">Объясните, подтвердилась ли первая версия расследования или как её пришлось изменить. Один ответ на команду, минимум 60 символов.</p>'+(state.myRevision?'<div class="success"><b>Уточнённая версия сохранена.</b><p class="truncate">'+esc(state.myRevision.text)+'</p></div>':'<textarea class="field" id="revisionText" placeholder="Какие факты изменили вашу версию? Что вы теперь предполагаете и почему?"></textarea><button class="full" onclick="teamAction(\'revision\')">Отправить уточнённую версию</button>')+'</section>';
+ if(index>=4){
+  if(index===4)body+='<section class="panel prep-questions"><div class="eyebrow">ИТОГОВОЕ ЗАКЛЮЧЕНИЕ · ПЯТЬ ВОПРОСОВ</div><h2>Сформулируйте окончательные выводы</h2><p class="muted">Учтите изученные документы и новые обстоятельства. Ответьте на пять вопросов: это и будет итоговое заключение вашей команды. После отправки изменить его нельзя. На этапе «Результаты» ответы увидят все команды.</p>'+(state.myPrep?'<div class="success"><b>Итоговое заключение сохранено</b></div>'+QUESTIONS.map((q,i)=>'<div class="casebox"><b>'+String(i+1)+'. '+esc(q)+'</b><p class="truncate">'+esc(state.myPrep.answers[i])+'</p></div>').join(''):QUESTIONS.map((q,i)=>'<div class="answer-field"><label for="answer'+i+'"><b>'+String(i+1)+'. '+esc(q)+'</b></label><textarea class="field" id="answer'+i+'" placeholder="Согласованный ответ команды (не менее 15 символов)"></textarea></div>').join('')+'<button class="full" onclick="teamAction(\'prepare\')">Отправить итоговое заключение</button>')+'</section>';
+   const all=state.reviewCases||[];
+  body+='<div class="section">Общий архив: материалы всех шести групп</div><p class="muted">Откройте папку нужной команды. Доступны девять материалов каждого дела и новые обстоятельства. Письменные ответы других команд будут раскрыты только на этапе «Результаты».</p>';
+  if(!all.length)body+='<div class="danger">Материалы общего архива пока не загрузились. Обновите страницу или попросите ведущего обновить этап.</div>';
+  body+=all.map((x,i)=>'<details class="panel detailscase reviewcase" data-case="r'+i+'" '+(x.team===auth.team?'open':'')+'><summary><span>ДЕЛО '+String(i+1).padStart(2,'0')+' · '+esc(x.team)+' · «'+esc(x.title)+'»</span></summary><div class="inside"><div class="filetag">ТЕМА РАССЛЕДОВАНИЯ</div><p>'+esc(x.topic)+'</p><div class="filetag">ИСХОДНЫЕ ОБСТОЯТЕЛЬСТВА</div><p class="truncate">'+esc(x.brief)+'</p><div class="casebox"><b>Задание группы:</b> '+esc(x.question)+'</div><p class="muted small"><b>Нормативная основа:</b> '+esc(x.norm)+'</p><div class="section">Доказательства · 9 материалов</div><div class="evidence">'+x.items.map((it,j)=>'<article class="card"><div class="filetag">ДОКУМЕНТ '+String(j+1).padStart(2,'0')+' · '+esc(it.type)+'</div><h3>'+esc(it.label)+'</h3><p class="truncate">'+esc(it.content)+'</p></article>').join('')+'</div><div class="alert"><b>Новое обстоятельство:</b> '+esc(x.twist)+'</div><p class="filetag"></div></details>').join('');
+ }
+ if(index===5){
+  const allAnswers=state.teamAnswers||[];
+  body+='<section class="panel results-answers"><div class="eyebrow">ОТВЕТЫ ВСЕХ ШЕСТИ ГРУПП</div><h2>Результаты расследований</h2><p class="muted">Ниже представлены первые версии, их уточнения после новых фактов и итоговые заключения всех шести команд по пяти вопросам. Если команда не сдала ответы, это будет отмечено.</p><div class="results-summary">'+allAnswers.map(x=>'<span class="pill '+(x.answers?'active':'')+'">'+esc(x.team)+' · '+(x.answers?'5 ответов':'нет ответов')+'</span>').join('')+'</div></section>';
+  body+=allAnswers.map((x,i)=>'<details class="panel detailscase results-team" data-case="a'+i+'" '+(x.team===auth.team?'open':'')+'><summary><span>'+esc(x.team===auth.team?'ВАША КОМАНДА · ':'')+esc(x.team)+' · «'+esc(x.title)+'»</span><span class="pill">'+(x.answers?'Ответы получены':'Нет ответов')+'</span></summary><div class="inside"><div class="softlabel">ПЕРВАЯ ВЕРСИЯ РАССЛЕДОВАНИЯ</div><p class="truncate">'+esc(x.hypothesis||'Первая версия не отправлена.')+'</p><div class="softlabel">УТОЧНЁННАЯ ВЕРСИЯ ПОСЛЕ НОВЫХ ФАКТОВ</div><p class="truncate">'+esc(x.revision||'Уточнённая версия не отправлена.')+'</p><div class="softlabel">ИТОГОВОЕ ЗАКЛЮЧЕНИЕ · ПЯТЬ ВОПРОСОВ</div>'+QUESTIONS.map((q,j)=>'<div class="result-question"><div class="filetag">ВОПРОС '+String(j+1).padStart(2,'0')+'</div><h3>'+esc(q)+'</h3><p class="truncate">'+esc(x.answers?.[j]||'Ответ не представлен.')+'</p></div>').join('')+(x.legacyReport?'<div class="casebox"><b>Ранее сохранённое итоговое заключение:</b><p class="truncate">'+esc(x.legacyReport)+'</p></div>':'')+'</div></details>').join('');
+  if(!allAnswers.length)body+='<div class="danger">Ответы команд ещё загружаются. Обновите экран или сообщите преподавателю.</div>';
+  body+='<div class="panel"><h2>Общий разбор</h2><p>Сравните аргументы всех групп по пяти вопросам. Преподаватель проводит обсуждение и выставляет баллы.</p></div>';
+ }
+ body+='<div class="panel"><h2>Рейтинг расследований</h2>'+state.teams.map(t=>'<div class="rankingrow"><span class="num">'+String(state.teams.indexOf(t)+1).padStart(2,'0')+'</span><span>'+esc(t.name)+'</span><b>'+Number(state.scores[t.name]||0)+' баллов</b></div>').join('')+'</div>';
+ }
+ root.innerHTML=intro+body+(error?'<div class="danger">'+esc(error)+'</div>':'')+'<div class="footer">Все материалы вымышлены · Конституция Российской Федерации · Учебный симулятор МЭИ</div>';
+ if(root.querySelectorAll){
+  root.querySelectorAll('details.detailscase').forEach(x=>{if(expanded.includes(x.dataset.case))x.open=true});
+  root.querySelectorAll('textarea.field').forEach(x=>{if(drafts[x.id]!==undefined)x.value=drafts[x.id]});
+ }
+}
+function copyUrl(){if(navigator.clipboard?.writeText)navigator.clipboard.writeText(url()).then(()=>alert('Ссылка скопирована')).catch(()=>prompt('Ссылка для команд',url()));else prompt('Ссылка для команд',url())}
+render();if(auth)start();window.addEventListener('focus',load);
+</script></body></html>
