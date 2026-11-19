@@ -15,7 +15,7 @@ function miniShuffle(n){
 }
 const miniOrdered=a=>a.every((v,i)=>v===i);
 function miniReset(){
- play={pieces:miniSplit(trial.evidenceText,9),segments:miniSplit(trial.evidenceText,trial.kind==='board'?4:3),order:miniShuffle(9),selected:null,found:[],threads:[]};
+ play={pieces:miniSplit(trial.evidenceText,9),segments:miniSplit(trial.evidenceText,trial.kind==='board'?4:3),order:miniShuffle(9),selected:null,found:[],threads:[],lastProof:null};
 }
 async function beginChallenge(id){
  if(working)return;
@@ -27,19 +27,25 @@ async function beginChallenge(id){
  }catch(e){message(e.message)}finally{working=false}
 }
 async function cancelChallenge(){
- if(!trial||!confirm('Отменить это испытание? Потраченных жетонов нет, но прогресс мини-игры сбросится.'))return;
+ if(!trial||!confirm('Отменить общее испытание команды? Жетон не списывается, но прогресс мини-игры на телефонах сбросится.'))return;
  working=true;try{const r=await request('cancelChallenge');state=r.state;trial=null;play={};error='';render()}
  catch(e){message(e.message)}finally{working=false}
 }
 function miniHint(t){const e=document.getElementById('miniHint');if(e)e.textContent=t}
 async function miniWin(proof){
  if(!trial||working)return;
+ play.lastProof=proof;
  working=true;
  try{
   const r=await request('solveChallenge',{id:trial.id,nonce:trial.nonce,proof});
   state=r.state;trial=null;play={};error='';render();
   alert('Документ добыт! Списан один жетон. Полная улика теперь открыта всем участникам команды.');
- }catch(e){miniHint(e.message)}finally{working=false}
+ }catch(e){
+  let cleared=false;
+  try{const r=await request('state');state=r.state;cleared=!!state.case?.items?.[trial.id]?.unlocked;}catch(_e){}
+  if(cleared){trial=null;play={};render();alert('Другой участник уже получил этот документ. Теперь он открыт всей команде.');}
+  else {miniHint(e.message+' Нажмите «Повторить проверку», если испытание завершено.');const button=document.getElementById('miniRetry');if(button)button.hidden=false;}
+ }finally{working=false}
 }
 function miniSwap(a,b){
  if(a===b)return;
@@ -56,7 +62,7 @@ function miniChooseScrap(n){
 }
 function miniDrawScraps(){
  const root=document.getElementById('miniScraps');if(!root||!trial)return;
- root.innerHTML=play.order.map((piece,slot)=>'<button class="mini-scrap '+(slot===play.selected?'mini-picked':'')+'" data-slot="'+slot+'" onclick="miniChooseScrap('+slot+')"><small>ОБРЫВОК '+(piece+1)+'</small><span>'+esc(play.pieces[piece])+'</span></button>').join('');
+ root.innerHTML=play.order.map((piece,slot)=>'<button class="mini-scrap '+(slot===play.selected?'mini-picked':'')+'" data-slot="'+slot+'" onclick="miniChooseScrap('+slot+')"><small>АРХИВНЫЙ ОБРЫВОК</small><span>'+esc(play.pieces[piece])+'</span></button>').join('');
  const status=document.getElementById('miniCorrect');
  if(status)status.textContent=play.order.filter((v,i)=>v===i).length+' из 9 фрагментов расположены правильно';
 }
@@ -119,6 +125,6 @@ function miniView(){
  }else if(k==='board'){
   stage='<p class="mini-instruction">На следственной доске найдены четыре фрагмента документа. Соедините их <b>красной нитью</b>, нажимая карточки в последовательности, в которой складывается смысл документа.</p><div class="mini-board">'+[2,0,3,1].map(j=>'<button class="mini-board-card" data-thread="'+j+'" onclick="miniConnect('+j+')"><i></i><p>'+esc(play.segments[j])+'</p></button>').join('')+'</div><div class="mini-threadline" id="miniThread"></div><button class="light slim" onclick="miniResetBoard()">Перепроверить связи</button>';
  }
- return '<section id="trialOverlay" class="panel mini-shell" role="dialog" aria-label="Следственное испытание"><div class="row"><span class="eyebrow">СЛЕДСТВЕННАЯ ОПЕРАЦИЯ · '+esc(MINI_KINDS[k])+'</span><button class="light slim" onclick="cancelChallenge()">Отменить испытание</button></div><h2>'+esc(trial.label)+'</h2><div class="noticebar">Вы получаете важные сведения непосредственно во время исследования. После успешного завершения документ сохраняется в общем досье команды.</div>'+stage+'<div id="miniHint" class="mini-hint" role="status">Исследуйте доказательство. Жетон пока не списан.</div></section>';
+ return '<section id="trialOverlay" class="panel mini-shell" role="dialog" aria-label="Следственное испытание"><div class="row"><span class="eyebrow">СЛЕДСТВЕННАЯ ОПЕРАЦИЯ · '+esc(MINI_KINDS[k])+'</span><button class="light slim" onclick="cancelChallenge()">Отменить испытание</button></div><h2>'+esc(trial.label)+'</h2><div class="noticebar">Вы получаете важные сведения непосредственно во время исследования. После успешного завершения документ сохраняется в общем досье команды.</div>'+stage+'<div id="miniHint" class="mini-hint" role="status">Исследуйте доказательство. Жетон пока не списан.</div><button id="miniRetry" class="light slim" hidden onclick="miniWin(play.lastProof)">Повторить проверку</button></section>';
 }
 function miniMount(){if(trial?.kind==='shreds'){miniDrawScraps();miniEnableDrag();}}
