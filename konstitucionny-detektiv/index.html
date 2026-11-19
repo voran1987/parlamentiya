@@ -1,8 +1,118 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#18344c"><title>Конституционный детектив · МЭИ</title>
 <style>
-:root{--navy:#15354b;--gold:#ba9252;--bg:#f2f5f7;--line:#dbe4ec;--muted:#607384;--ok:#217555;--red:#a63d38}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#1b3548;font-family:Segoe UI,Arial,sans-serif;font-size:15px}button,select,input,textarea{font:inherit}button{cursor:pointer;border:0;border-radius:9px;padding:12px 16px;font-weight:700;background:var(--navy);color:white}button:disabled{opacity:.45;cursor:not-allowed}button.light{background:#edf2f7;color:var(--navy);border:1px solid var(--line)}button.slim{padding:8px 11px;font-size:13px}.full{width:100%}header{background:var(--navy);color:white;padding:15px 22px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}header strong{font-size:17px;letter-spacing:.3px}header small{display:block;color:#b9cbd8;font-size:12px;margin-top:5px}header button{background:#ffffff20;border:1px solid #ffffff45}.wrap{max-width:1150px;margin:0 auto;padding:25px 18px 60px}.intro{background:linear-gradient(110deg,#15354b,#38617a);padding:31px;border-radius:16px;color:white;margin-bottom:18px}.intro h1{font-size:clamp(29px,5vw,46px);margin:6px 0 12px}.intro p{line-height:1.6;max-width:700px;color:#e2eaf1}.eyebrow{font-size:11px;font-weight:800;letter-spacing:1.5px;color:var(--gold);text-transform:uppercase}.panel{background:white;border:1px solid var(--line);border-radius:13px;padding:22px;margin:14px 0;box-shadow:0 4px 15px #17384b09}.panel h2{margin:0 0 12px;font-size:22px}.muted{color:var(--muted)}.small{font-size:12px}.label{font-size:12px;color:var(--muted);font-weight:800;margin:15px 0 7px;text-transform:uppercase;letter-spacing:.5px}.cols{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}.card{border:1px solid var(--line);background:white;border-radius:12px;padding:17px}.card h3{font-size:16px;margin:5px 0}.card p{line-height:1.5;font-size:13px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}.stat{background:#fff;padding:15px;border:1px solid var(--line);border-radius:10px}.stat b{font-size:25px;display:block}.stat span{font-size:12px;color:var(--muted)}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.pill{font-size:12px;padding:7px 10px;border-radius:30px;background:#edf3f6;color:#486277;display:inline-block}.pill.active{background:#15354b;color:white}.field{width:100%;border:1px solid #c4d1dd;border-radius:9px;padding:12px;background:white;color:#203d50}textarea.field{min-height:130px;line-height:1.55;resize:vertical}a{color:#245a84;word-break:break-word}.qr{width:230px;max-width:100%;min-height:230px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;display:block}.qrarea{display:flex;gap:24px;align-items:center;flex-wrap:wrap}.casebox{background:#f0f5f8;border-left:4px solid var(--gold);border-radius:9px;padding:18px;line-height:1.6;margin:15px 0}.evidence{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.evidence button{text-align:left;background:#f3f7fa;border:1px solid var(--line);color:var(--navy);padding:18px}.evidence button.unlocked{background:#e6f3ee;border-color:#95c5b1}.alert{background:#fff1e8;border-left:4px solid #c78346;border-radius:8px;padding:15px;margin:13px 0;line-height:1.5}.success{background:#e7f6ed;border-left:4px solid #3e9971;border-radius:8px;padding:14px;margin:13px 0}.danger{background:#fff0ee;border:1px solid #eebcba;color:var(--red);padding:13px;border-radius:8px;margin:13px 0}.section{font-size:20px;font-weight:750;margin:20px 0 11px}.steps{display:flex;gap:7px;flex-wrap:wrap}.steps button{font-size:13px;padding:10px 11px}.steps button.selected{background:var(--gold);color:#142e42}.row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.score{width:80px;padding:9px;border:1px solid var(--line);border-radius:7px}.truncate{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55}.footer{text-align:center;color:var(--muted);font-size:12px;margin:34px auto}.hidden{display:none!important}@media(max-width:800px){.cols,.cards,.stats{grid-template-columns:1fr}.evidence{grid-template-columns:1fr}.wrap{padding:16px 12px 40px}.panel{padding:17px}.intro{padding:22px}header{padding:12px 15px}}
-</style></head><body><header><div><strong>⚖ КОНСТИТУЦИОННЫЙ ДЕТЕКТИВ</strong><small>НИУ «МЭИ» · Основы российской государственности</small></div><div class="row"><span id="tag" class="small"></span><button class="slim" id="leave" onclick="leave()" style="display:none">Выйти</button></div></header><main class="wrap" id="app"></main>
+:root{--navy:#223b4f;--ink:#1a3143;--gold:#b58b55;--gold-soft:#efe2cb;--bg:#f2f0e9;--line:#dcdcd4;--muted:#637787;--ok:#217555;--red:#a63d38;--paper:#fffdf8;--shadow:0 8px 26px #263e4a0c}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(circle at 92% -3%,#e9e1d2 0%,transparent 30%),linear-gradient(90deg,#243b4d06 1px,transparent 1px),var(--bg);background-size:auto,32px 32px,auto;color:var(--ink);font:15px/1.56 "Segoe UI",Arial,sans-serif}
+button,select,input,textarea{font:inherit}
+button{cursor:pointer;border:1px solid transparent;border-radius:10px;padding:12px 16px;min-height:43px;font-weight:700;background:var(--navy);color:#fff;transition:background .2s,transform .2s,box-shadow .2s}
+button:disabled{opacity:.5;cursor:not-allowed}
+button:hover:not(:disabled){background:#35586d;box-shadow:0 4px 14px #132b3d26;transform:translateY(-1px)}
+button:active:not(:disabled){transform:none}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid #c69f6b;outline-offset:3px}
+button.light{background:#fff;color:var(--navy);border:1px solid #cfd7d6}
+button.light:hover:not(:disabled){background:#f3f6f4}
+button.slim{padding:8px 12px;min-height:36px;font-size:12px}
+.full{width:100%}
+header{background:#fffdf8;color:var(--navy);padding:13px clamp(15px,4vw,52px);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:3px solid #d0ad7a;box-shadow:0 3px 16px #1a35430c}
+.brand{display:flex;align-items:center;gap:13px}
+.brandmark{width:46px;height:46px;display:grid;place-items:center;background:#eee3d2;border:1px solid #cbb38e;border-radius:12px;color:#4e4d45;font:700 27px Georgia,serif;flex-shrink:0}
+header strong{font:700 18px Georgia,serif;letter-spacing:.1px}
+header small{display:block;color:#687987;font-size:11px;margin-top:4px}
+header button{background:var(--navy);border:1px solid var(--navy)}
+#tag{font-size:12px;font-weight:700;color:#536b7c}
+.wrap{max-width:1200px;margin:0 auto;padding:25px clamp(14px,3vw,36px) 60px}
+.intro{position:relative;overflow:hidden;min-height:197px;background:linear-gradient(108deg,#fffdf8 0%,#f8f5ed 75%,#e9e9e2 100%);padding:32px clamp(24px,4vw,44px);border:1px solid #ddd9cf;border-left:6px solid var(--gold);border-radius:17px;box-shadow:var(--shadow);margin-bottom:20px}
+.intro:after{content:"§";position:absolute;right:48px;top:10px;font:700 190px Georgia,serif;color:#71818b1a;transform:rotate(-12deg);pointer-events:none}
+.intro h1{position:relative;z-index:1;font:700 clamp(32px,4.5vw,52px)/1.06 Georgia,serif;letter-spacing:-1.5px;color:var(--navy);margin:9px 0 14px}
+.intro p{position:relative;z-index:1;max-width:760px;color:#586d7c;font-size:15px;line-height:1.6;margin:0}
+.eyebrow{font-size:10px;font-weight:900;letter-spacing:1.6px;color:#9b743e;text-transform:uppercase}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:15px;padding:24px;margin:16px 0;box-shadow:var(--shadow)}
+.panel h2{font:700 24px/1.2 Georgia,serif;color:var(--navy);margin:0 0 14px}
+.muted{color:var(--muted)}.small{font-size:12px}
+.label{font-size:11px;color:#637a87;font-weight:800;margin:15px 0 7px;text-transform:uppercase;letter-spacing:.7px}
+.cols{display:grid;grid-template-columns:1.2fr .8fr;gap:16px}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.card{position:relative;overflow:hidden;border:1px solid #e0ddd4;background:var(--paper);border-radius:13px;padding:20px;box-shadow:0 6px 18px #253f4d0b}
+.card:before{content:"";position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,#bc9460,#e2cbab)}
+.card h3{font:700 19px/1.2 Georgia,serif;margin:13px 0 9px}
+.card p{line-height:1.55;font-size:13px;color:#607486}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0 20px}
+.stat{background:var(--paper);padding:16px;border:1px solid var(--line);border-radius:12px;min-height:90px}
+.stat:before{content:"";display:block;width:24px;height:3px;background:var(--gold);border-radius:3px;margin-bottom:8px}
+.stat b{font-size:clamp(20px,2.6vw,29px);display:block;letter-spacing:-1px;line-height:1.25;color:var(--navy)}
+.stat span{font-size:12px;color:var(--muted)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.pill{font-size:11px;padding:6px 10px;border:1px solid #d6dfe0;border-radius:22px;background:#edf2f3;color:#4b6576;display:inline-block;font-weight:700}
+.pill.active{background:var(--navy);color:white}
+.field{width:100%;border:1px solid #bfced0;border-radius:10px;padding:13px;background:#fff;color:var(--ink)}
+textarea.field{min-height:160px;resize:vertical;line-height:1.6}
+a{color:#275e81;word-break:break-word}
+a:hover{color:#9c6a32}
+.qr{width:238px;max-width:100%;min-height:238px;background:white;border:1px solid var(--line);border-radius:12px;padding:14px;display:block;box-shadow:0 3px 14px #18344c0d}
+.qrarea{display:grid;grid-template-columns:245px 1fr;gap:25px;align-items:center}
+.invitepanel{background:linear-gradient(105deg,#fffefa,#f7f7f1);border-color:#dcd6c9}
+.invitetext{min-width:0}
+.invitetext a{display:block;background:white;border:1px solid var(--line);padding:12px;border-radius:10px;font-size:12px}
+.casebox{background:#eef3f3;border-left:4px solid var(--gold);border-radius:9px;padding:18px;line-height:1.65;margin:15px 0}
+.casefile{position:relative;border-top:5px solid var(--gold);background:var(--paper);padding:30px 26px;overflow:hidden}
+.casefile:after{content:"ДОСЬЕ";position:absolute;right:-10px;top:16px;transform:rotate(13deg);font:bold 23px Segoe UI,Arial,sans-serif;letter-spacing:3px;color:#bd997772;border:2px solid #bd997772;padding:5px 12px;border-radius:6px;pointer-events:none}
+.casefile h2{font-size:clamp(25px,3vw,34px);margin-top:15px;max-width:87%}
+.case-kicker{font-size:11px;font-weight:900;letter-spacing:1.5px;color:#9b763f;margin-bottom:10px}
+.case-brief{font-size:16px;line-height:1.7;color:#355268}
+.evidence{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.evidence button{position:relative;text-align:left;min-height:145px;background:#fffefa;border:1px solid #dedbd2;color:var(--navy);padding:20px;box-shadow:0 6px 20px #1936480b}
+.evidence button:before{content:"";position:absolute;top:0;left:18px;width:41px;height:5px;background:#c39b69;border-radius:0 0 4px 4px}
+.evidence button.unlocked{background:#eef7f1;border-color:#99bea9}
+.evidence button.unlocked:before{background:#76a88e}
+.evidence button b{font:700 17px/1.35 Georgia,serif}
+.evidence button p{font-size:13px;line-height:1.55;color:#597080;margin:9px 0 0;font-weight:400}
+.evidence button:disabled:not(.unlocked){opacity:.62}
+.file-index{display:block;font:800 10px Segoe UI,Arial,sans-serif;letter-spacing:1.2px;color:#a77c4b;margin-bottom:9px}
+.alert{background:#fcf1e6;border:1px solid #e9d5c0;border-left:4px solid #bd8451;border-radius:9px;padding:17px;margin:14px 0;line-height:1.6}
+.success{background:#edf7f0;border-left:4px solid #4b936d;border-radius:9px;padding:16px;margin:14px 0}
+.danger{background:#fff1ee;border:1px solid #eac5bf;color:var(--red);padding:13px;border-radius:9px;margin:12px 0}
+.section{font:700 24px Georgia,serif;margin:28px 0 15px;color:var(--navy)}
+.steps{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px}
+.steps button{font-size:11px;line-height:1.3;min-height:78px;padding:9px 6px;background:#fffefa;color:var(--navy);border:1px solid #d9dddb;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px}
+.steps button.selected{background:#f4e8d5;color:#7a5730;border-color:#c7a471;box-shadow:inset 0 4px var(--gold)}
+.step-num{font-weight:800;font-size:11px}
+.step-time{font-size:10px;color:#778894}
+.flowstrip{display:flex;gap:7px;align-items:stretch;overflow:auto;margin:0 0 17px;padding:0 0 7px}
+.flowstep{flex:1;min-width:84px;max-width:180px;border:1px solid #d9dcd8;background:#fffdf9;color:#647988;border-radius:10px;padding:10px 7px;text-align:center;font-size:11px;line-height:1.35}
+.flowstep .n{display:block;font-size:15px;font-weight:900;margin-bottom:2px}
+.flowstep.done{background:#eff4ed;color:#50775c;border-color:#cbdcca}
+.flowstep.current{background:var(--navy);color:white;border-color:var(--navy)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.score{width:80px;padding:9px;border:1px solid var(--line);border-radius:7px}
+.truncate{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55}
+.footer{text-align:center;color:var(--muted);font-size:12px;margin:37px auto 0;border-top:1px solid var(--line);padding-top:20px}
+.hidden{display:none!important}
+.entry-layout{display:grid;grid-template-columns:1.2fr .8fr;gap:18px}
+.entry-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}
+.entry-step{background:#fffdf8;border:1px solid var(--line);border-radius:11px;padding:16px}
+.entry-step b{display:block;font:700 24px Georgia,serif;color:var(--gold);margin-bottom:5px}
+.entry-step span{font-size:12px;color:var(--muted)}
+.onboarding{border-left:4px solid var(--gold)}
+.onboarding button{margin-top:13px}
+.filetag{font:800 10px Segoe UI,Arial,sans-serif;color:#a27a4b;letter-spacing:1.3px;text-transform:uppercase}
+.rankingrow{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center;border-bottom:1px solid #eae6df;padding:11px 0;font-size:13px}
+.rankingrow:last-child{border-bottom:none}
+.rankingrow .num{color:#af8550;font-size:17px;font-weight:900}
+.rankingrow b{color:var(--navy);font-variant-numeric:tabular-nums}
+.detailscase{padding:0;overflow:hidden}
+.detailscase summary{cursor:pointer;font:700 17px Georgia,serif;padding:19px 22px;display:flex;justify-content:space-between;gap:10px;align-items:center;list-style:none}
+.detailscase summary::-webkit-details-marker{display:none}
+.detailscase summary:after{content:"＋";color:var(--gold);font:bold 23px Segoe UI,Arial,sans-serif}
+.detailscase[open] summary:after{content:"−"}
+.detailscase[open] summary{border-bottom:1px solid var(--line);background:#f7f6f1}
+.detailscase .inside{padding:20px 23px}
+.noticebar{display:flex;gap:12px;align-items:center;background:#f4ede1;border:1px solid #e6d5b9;border-radius:11px;padding:13px 17px;color:#6a5741;margin:16px 0}
+@media(max-width:1020px){.steps{grid-template-columns:repeat(4,minmax(0,1fr))}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:800px){.cols,.entry-layout,.qrarea{grid-template-columns:1fr}.qrarea .qr{margin:auto}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.evidence{grid-template-columns:1fr}.wrap{padding:18px 12px 35px}.intro{padding:25px 20px}.intro:after{right:12px;top:18px;font-size:145px}.panel{padding:19px}.steps{grid-template-columns:repeat(3,minmax(0,1fr))}.entry-steps{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:480px){.cards,.entry-steps{grid-template-columns:1fr}.intro h1{font-size:31px}.intro p{font-size:13px}.casefile{padding:25px 18px}.casefile h2{font-size:25px}.stat{padding:12px}.stat b{font-size:21px}.steps{grid-template-columns:repeat(2,minmax(0,1fr))}.brandmark{width:40px;height:40px;font-size:23px}header strong{font-size:14px}header{padding:11px 13px}.flowstep{min-width:86px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
+</style></head><body><header><div class="brand"><div class="brandmark" aria-hidden="true">§</div><div><strong>КОНСТИТУЦИОННЫЙ ДЕТЕКТИВ</strong><small>НИУ «МЭИ» · Основы российской государственности</small></div></div><div class="row"><span id="tag" class="small"></span><button class="slim" id="leave" onclick="leave()" style="display:none">Выйти</button></div></header><main class="wrap" id="app"></main>
 <script>
 const API='https://logzbhhftwvqsrqvmnik.supabase.co/functions/v1/constitutional-detective';
 const KEY='sb_publishable_gUO0b5EHdgs_vS39Iqi4pQ_tU-7tPuw';
