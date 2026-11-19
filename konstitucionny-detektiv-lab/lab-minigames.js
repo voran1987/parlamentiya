@@ -16,7 +16,7 @@ function miniShuffle(n){
 
 /* One scanned archive sheet, broken into nine complementary, irregular pieces.
    Two neighbours use the SAME generated seam, so their torn edges fit exactly. */
-const MINI_PAPER_W=300,MINI_PAPER_H=240,MINI_PAPER_PAD=24;
+const MINI_PAPER_W=300,MINI_PAPER_H=240,MINI_PAPER_PAD=36;
 function miniSeamOffset(axis,seam,segment,n){
  if(seam===0||seam===3||n===0||n===20)return 0;
  const t=n/20,seed=segment*37+seam*71+(axis==='h'?13:29);
@@ -78,8 +78,8 @@ function miniPaperFragment(piece){
  const clip='mini-paper-clip-'+piece;
  const path=miniPaperPath(piece);
  const image=play.paperImage?'<image href="'+play.paperImage+'" x="'+(-c*MINI_PAPER_W)+'" y="'+(-r*MINI_PAPER_H)+'" width="900" height="720" preserveAspectRatio="none"/>':
- '<rect x="-24" y="-24" width="348" height="288" fill="#fbefd2"/><text x="15" y="120" font-family="Georgia" font-size="16" fill="#463e34">'+esc(play.pieces[piece])+'</text>';
- return '<svg class="mini-paper-svg" viewBox="-24 -24 348 288" preserveAspectRatio="none" aria-hidden="true">'+
+ '<rect x="-36" y="-36" width="372" height="312" fill="#fbefd2"/><text x="15" y="120" font-family="Georgia" font-size="16" fill="#463e34">'+esc(play.pieces[piece])+'</text>';
+ return '<svg class="mini-paper-svg" viewBox="-36 -36 372 312" preserveAspectRatio="none" aria-hidden="true">'+
  '<defs><clipPath id="'+clip+'" clipPathUnits="userSpaceOnUse"><path d="'+path+'"/></clipPath></defs>'+
  '<g clip-path="url(#'+clip+')">'+image+'</g>'+
  '<path d="'+path+'" fill="none" stroke="#9a7e59" stroke-opacity=".7" stroke-width="1.6" stroke-linejoin="round"/>'+
