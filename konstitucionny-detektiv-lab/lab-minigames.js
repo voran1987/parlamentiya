@@ -13,9 +13,82 @@ function miniShuffle(n){
  if(a.every((v,i)=>v===i))[a[0],a[1]]=[a[1],a[0]];
  return a;
 }
+
+/* One scanned archive sheet, broken into nine complementary, irregular pieces.
+   Two neighbours use the SAME generated seam, so their torn edges fit exactly. */
+const MINI_PAPER_W=300,MINI_PAPER_H=240,MINI_PAPER_PAD=24;
+function miniSeamOffset(axis,seam,segment,n){
+ if(seam===0||seam===3||n===0||n===20)return 0;
+ const t=n/20,seed=segment*37+seam*71+(axis==='h'?13:29);
+ const large=13*Math.sin(n*2.79+seed*.83)+11*Math.sin(n*4.83+seed*1.17);
+ const small=3*Math.sin(n*13.1+seed*2.07);
+ return Math.round(Math.sin(Math.PI*t)*(large+small));
+}
+function miniPaperPath(piece){
+ const c=piece%3,r=Math.floor(piece/3),pts=[];
+ for(let i=0;i<=20;i++)pts.push([i*MINI_PAPER_W/20,miniSeamOffset('h',r,c,i)]);
+ for(let i=1;i<=20;i++)pts.push([MINI_PAPER_W+miniSeamOffset('v',c+1,r,i),i*MINI_PAPER_H/20]);
+ for(let i=19;i>=0;i--)pts.push([i*MINI_PAPER_W/20,MINI_PAPER_H+miniSeamOffset('h',r+1,c,i)]);
+ for(let i=19;i>=1;i--)pts.push([miniSeamOffset('v',c,r,i),i*MINI_PAPER_H/20]);
+ return 'M '+pts.map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' L ')+' Z';
+}
+function miniPaperImage(label,content){
+ const canvas=document.createElement('canvas');
+ canvas.width=900;canvas.height=720;
+ const ctx=canvas.getContext('2d');
+ if(!ctx)return '';
+ const gradient=ctx.createLinearGradient(0,0,900,720);
+ gradient.addColorStop(0,'#fff9e7');gradient.addColorStop(.56,'#f6ebd0');gradient.addColorStop(1,'#eaddb9');
+ ctx.fillStyle=gradient;ctx.fillRect(0,0,900,720);
+ ctx.fillStyle='#8e74552b';
+ for(let i=0;i<185;i++){
+  const x=((i*137+31)%899),y=((i*89+17)%719);
+  ctx.fillRect(x,y,(i%3)+1,(i%5)+1);
+ }
+ ctx.strokeStyle='#b49d7f';ctx.lineWidth=2;
+ ctx.strokeRect(46,43,808,637);
+ ctx.beginPath();ctx.moveTo(65,134);ctx.lineTo(836,134);ctx.stroke();
+ ctx.fillStyle='#544632';ctx.textAlign='center';
+ ctx.font='bold 29px Georgia, serif';
+ ctx.fillText('АРХИВНЫЙ ДОКУМЕНТ',450,89);
+ ctx.font='18px Georgia, serif';ctx.fillText(String(label||'Письменное доказательство').slice(0,80),450,120);
+ ctx.textAlign='left';ctx.font='27px Georgia, serif';ctx.fillStyle='#3c3830';
+ const words=String(content||'').trim().split(/\s+/);
+ let line='',y=195;
+ for(const word of words){
+  const next=line?line+' '+word:word;
+  if(ctx.measureText(next).width>757&&line){
+   ctx.fillText(line,71,y);y+=49;line=word;
+  }else line=next;
+ }
+ if(line)ctx.fillText(line,71,y);
+ ctx.save();ctx.translate(676,555);ctx.rotate(-.18);
+ ctx.globalAlpha=.36;ctx.strokeStyle='#46616b';ctx.lineWidth=5;
+ ctx.beginPath();ctx.arc(0,0,93,0,Math.PI*2);ctx.stroke();
+ ctx.beginPath();ctx.arc(0,0,78,0,Math.PI*2);ctx.stroke();
+ ctx.fillStyle='#46616b';ctx.textAlign='center';ctx.font='bold 25px Georgia, serif';
+ ctx.fillText('АРХИВ',0,-6);ctx.font='17px Georgia, serif';ctx.fillText('КОПИЯ',0,23);
+ ctx.restore();
+ ctx.fillStyle='#76664c';ctx.textAlign='left';ctx.font='italic 18px Georgia, serif';
+ ctx.fillText('Восстановление документа · материалы дела',69,654);
+ return canvas.toDataURL('image/png');
+}
+function miniPaperFragment(piece){
+ const c=piece%3,r=Math.floor(piece/3);
+ const clip='mini-paper-clip-'+piece;
+ const path=miniPaperPath(piece);
+ const image=play.paperImage?'<image href="'+play.paperImage+'" x="'+(-c*MINI_PAPER_W)+'" y="'+(-r*MINI_PAPER_H)+'" width="900" height="720" preserveAspectRatio="none"/>':
+ '<rect x="-24" y="-24" width="348" height="288" fill="#fbefd2"/><text x="15" y="120" font-family="Georgia" font-size="16" fill="#463e34">'+esc(play.pieces[piece])+'</text>';
+ return '<svg class="mini-paper-svg" viewBox="-24 -24 348 288" preserveAspectRatio="none" aria-hidden="true">'+
+ '<defs><clipPath id="'+clip+'" clipPathUnits="userSpaceOnUse"><path d="'+path+'"/></clipPath></defs>'+
+ '<g clip-path="url(#'+clip+')">'+image+'</g>'+
+ '<path d="'+path+'" fill="none" stroke="#9a7e59" stroke-opacity=".7" stroke-width="1.6" stroke-linejoin="round"/>'+
+ '</svg>';
+}
+
 const miniOrdered=a=>a.every((v,i)=>v===i);
 function miniReset(){
- play={pieces:miniSplit(trial.evidenceText,9),segments:miniSplit(trial.evidenceText,trial.kind==='board'?4:3),order:miniShuffle(9),selected:null,found:[],threads:[],lastProof:null,scanTarget:null,scanTimer:null};
+ play={pieces:miniSplit(trial.evidenceText,9),segments:miniSplit(trial.evidenceText,trial.kind==='board'?4:3),order:miniShuffle(9),paperImage:trial.kind==='shreds'?miniPaperImage(trial.label,trial.evidenceText):null,selected:null,found:[],threads:[],lastProof:null,scanTarget:null,scanTimer:null};
 }
 async function beginChallenge(id){
  if(working)return;
@@ -52,8 +125,8 @@ function miniSwap(a,b){
  [play.order[a],play.order[b]]=[play.order[b],play.order[a]];
  miniDrawScraps();
  if(miniOrdered(play.order)){
-  miniHint('Все фрагменты на месте. Восстановленный текст найден!');
-  setTimeout(()=>miniWin({order:play.order.slice()}),500);
+  miniHint('Разорванный лист восстановлен: неровные края и фрагменты документа совпали!');
+  setTimeout(()=>miniWin({order:play.order.slice()}),1100);
  }
 }
 function miniChooseScrap(n){
@@ -62,9 +135,10 @@ function miniChooseScrap(n){
 }
 function miniDrawScraps(){
  const root=document.getElementById('miniScraps');if(!root||!trial)return;
- root.innerHTML=play.order.map((piece,slot)=>'<button class="mini-scrap '+(slot===play.selected?'mini-picked':'')+'" data-slot="'+slot+'" onclick="miniChooseScrap('+slot+')"><small>АРХИВНЫЙ ОБРЫВОК</small><span>'+esc(play.pieces[piece])+'</span></button>').join('');
+ root.classList.toggle('mini-assembled',miniOrdered(play.order));
+ root.innerHTML=play.order.map((piece,slot)=>'<button type="button" class="mini-scrap '+(slot===play.selected?'mini-picked':'')+'" data-slot="'+slot+'" onclick="miniChooseScrap('+slot+')" aria-label="Фрагмент разорванной бумаги. Выбрать или поменять местами">'+miniPaperFragment(piece)+'</button>').join('');
  const status=document.getElementById('miniCorrect');
- if(status)status.textContent=play.order.filter((v,i)=>v===i).length+' из 9 фрагментов расположены правильно';
+ if(status)status.textContent=miniOrdered(play.order)?'Лист восстановлен. Соседние края, строки и печать совпали.':'Сопоставляйте соседние линии разрыва, строки текста и части архивной печати.';
 }
 function miniEnableDrag(){
  const zone=document.getElementById('miniScraps');if(!zone)return;
@@ -137,7 +211,7 @@ function miniView(){
  if(!trial)return '';
  let stage='',k=trial.kind;
  if(k==='shreds'){
-  stage='<p class="mini-instruction">Перед вами девять разорванных клочков подлинного игрового документа. <b>В каждом видны слова, даты и факты.</b> Поставьте их в правильном порядке. Можно перетаскивать или нажимать последовательно на два клочка.</p><div class="mini-correct" id="miniCorrect"></div><div class="mini-scraps" id="miniScraps"></div>';
+  stage='<p class="mini-instruction">Перед вами девять фрагментов одной повреждённой страницы. <b>У каждого клочка неповторимый рваный контур: соседние края дополняют друг друга.</b> Сопоставляйте линии разрыва, продолжения строк и части архивного штампа. Перетаскивайте детали либо нажимайте на две по очереди, чтобы поменять их местами.</p><div class="mini-correct" id="miniCorrect"></div><div class="mini-scraps" id="miniScraps"></div>';
  }else if(k==='flashlight'){
   const at=[[19,22],[79,45],[46,79]];
   stage='<p class="mini-instruction">Архив погружён во тьму. Ведите пальцем по комнате — фонарик покажет детали. Найдите три папки и ненадолго задержите луч на каждой: <b>внутри фрагменты самого доказательства</b>.</p><div class="mini-scene mini-dark" onpointermove="miniBeam(event)" onpointerdown="miniBeam(event)" onpointerup="miniEndScan(event)" onpointercancel="miniEndScan(event)" onpointerleave="miniEndScan(event)"><div class="mini-cabinets">▥　▤　▥　▦<br>▤　▥　▦　▤<br>▦　▤　▥　▥</div>'+at.map((p,i)=>'<span class="mini-hotspot" data-finder="'+i+'" style="left:'+p[0]+'%;top:'+p[1]+'%" aria-hidden="true">▤</span>').join('')+'<div class="mini-darkness"></div></div><div id="miniFound" class="mini-notes"></div>';
