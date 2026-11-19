@@ -248,6 +248,26 @@ function miniResetBoard(){
  document.querySelectorAll('[data-thread]').forEach(x=>x.classList.remove('found'));
  miniHint('Изучите четыре фрагмента одного документа и соедините их в правильной последовательности.');
 }
+
+function miniArchiveView(){
+ const a=trial.archive||{code:'—',files:[]};
+ const folders=a.files.map((item,i)=>'<span class="mini-hotspot mini-folder" data-finder="'+i+'" style="left:'+MINI_ARCHIVE_POINTS[i][0]+'%;top:'+MINI_ARCHIVE_POINTS[i][1]+'%" aria-hidden="true">▣</span>').join('');
+ return '<p class="mini-instruction">В тёмном хранилище двенадцать папок, но только три относятся к вашему делу. Водите лучом по корешкам и задерживайтесь на каждой находке, чтобы прочитать реквизиты. Затем приобщите правильные листы к делу.</p>'+
+ '<div class="mini-orientation"><b>Архивная ориентировка:</b> найдите подлинные листы № 1, 2 и 3 с шифром <b>'+esc(a.code)+'</b> за <b>2026 год</b>. Черновики, незаверенные копии и другие шифры не подходят.</div>'+
+ '<div class="mini-scene mini-dark mini-archive-lg" onpointermove="miniBeam(event)" onpointerdown="miniBeam(event)" onpointerup="miniEndScan(event)" onpointercancel="miniEndScan(event)" onpointerleave="miniEndScan(event)"><div class="mini-cabinets">▥　▤　▥　▦<br>▤　▥　▦　▤<br>▦　▤　▥　▥</div>'+folders+'<div class="mini-darkness"></div></div>'+
+ '<div class="mini-mark-status" id="miniMarkStatus">Исследовано 0 из 12. Отобрано 0 из 3.</div><div id="miniFound" class="mini-notes"></div>'+
+ '<button id="miniCheck" class="mini-check" type="button" onclick="miniCheckFinds()" disabled>Сверить три найденные папки с описью</button>';
+}
+function miniLoupeView(){
+ const rows=trial.comparison?.pairs||[];
+ const cells=rows.map((a,i)=>'<div class="mini-diff-row" data-finder="'+i+'"><div><b>Оригинал · '+String(i+1).padStart(2,'0')+'</b><p>'+esc(a.left)+'</p></div><div><b>Подозрительная копия</b><p>'+esc(a.right)+'</p></div></div>').join('');
+ return '<p class="mini-instruction">На столе две почти одинаковые копии одного документа. Из восьми фрагментов текста три содержат юридически важные изменения. Изучите каждый участок через лупу, сопоставьте тексты и отметьте только подмены сведений.</p>'+
+ '<div class="mini-orientation"><b>Задача эксперта:</b> обнаружить ровно три содержательных расхождения. Простое совпадение текста не считается подделкой.</div>'+
+ '<div class="mini-scene mini-forensic mini-forensic-lg" onpointermove="miniBeam(event)" onpointerdown="miniBeam(event)" onpointerup="miniEndScan(event)" onpointercancel="miniEndScan(event)" onpointerleave="miniEndScan(event)"><div class="mini-diff-rows">'+cells+'</div><div class="mini-fog"></div><div class="mini-lens"></div></div>'+
+ '<div class="mini-mark-status" id="miniMarkStatus">Изучено 0 из 8. Отмечено 0 из 3.</div><div id="miniFound" class="mini-notes"></div>'+
+ '<button id="miniCheck" class="mini-check" type="button" onclick="miniCheckFinds()" disabled>Проверить три подозрительных изменения</button>';
+}
+
 function miniView(){
  if(!trial)return '';
  let stage='',k=trial.kind;
