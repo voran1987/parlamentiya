@@ -7,6 +7,8 @@
 .mini-correct{font-size:12px;font-weight:800;color:#8e6836;margin:12px 0}
 
 .mini-scraps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(9px,2.5vw,24px);padding:clamp(13px,3vw,28px);background:repeating-linear-gradient(65deg,#b3a087 0 4px,#c2b097 4px 13px);border-radius:14px;touch-action:none;user-select:none;isolation:isolate;transition:gap .35s}
+.mini-puzzle-scroll{width:100%;max-width:100%;overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;scrollbar-color:#9f8768 #eddec4;scrollbar-width:thin;padding:4px 0 10px}
+.mini-scraps.mini-zoom{min-width:650px}
 .mini-scraps.mini-assembled{gap:0;background:#b9a58b}
 .mini-scrap{position:relative;display:block;min-width:0;width:100%;height:auto;aspect-ratio:5/4;padding:0!important;margin:0;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;clip-path:none!important;transform:none!important;overflow:visible;touch-action:none;cursor:grab;user-select:none}
 .mini-scrap:active{cursor:grabbing}
