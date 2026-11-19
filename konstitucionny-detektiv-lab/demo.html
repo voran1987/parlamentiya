@@ -101,7 +101,7 @@ async function request(action,b={}){
  if(action==='solveChallenge'){
   const v=b.proof||{},c=DEMO[demoIndex];
   const validOrder=(n)=>Array.isArray(v.order)&&v.order.length===n&&v.order.every((x,i)=>x===i);
-  const validFound=Array.isArray(v.found)&&v.found.length===3&&new Set(v.found).size===3&&v.found.every(x=>Number.isInteger(x)&&x>=0&&x<3);
+  const validFound=Array.isArray(v.found)&&v.found.length===3&&new Set(v.found).size===3&&v.found.every(x=>Number.isInteger(x)&&x>=0&&x<(c.kind==='flashlight'?12:8));
   const desired=c.kind==='flashlight'?[2,6,10]:c.kind==='loupe'?[1,4,6]:[];
   const passed=c.kind==='shreds'?validOrder(9):c.kind==='board'?validOrder(4):validFound&&desired.slice().sort((a,b)=>a-b).join(',')===v.found.slice().sort((a,b)=>a-b).join(',');
   if(!passed)throw Error("Испытание пока не завершено.");
