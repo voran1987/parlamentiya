@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#213749">
+<title>Конституционный детектив · 24 сюжетных мини-испытания</title>
+<style>
+:root{--navy:#243b4e;--ink:#243b4e;--muted:#627586;--line:#dedbd2;--bg:#f4f1e9;--gold:#bc925f}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Segoe UI,Arial,sans-serif;color:var(--ink)}
+a{color:#305f72;text-decoration:underline}main{width:min(1020px,calc(100% - 24px));margin:0 auto;padding:21px 0 60px}
+.panel{background:white;border:1px solid var(--line);border-radius:14px;padding:24px;margin:16px 0;box-shadow:0 7px 24px #30404a0a}
+.row{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+.eyebrow,.filetag{font-size:11px;letter-spacing:1.35px;font-weight:800;color:#977044;text-transform:uppercase}
+.eyebrow{margin-bottom:8px}
+h1{font:700 clamp(30px,5vw,49px)/1.11 Georgia,serif;margin:13px 0 14px}
+h2{font:700 26px/1.18 Georgia,serif;margin:14px 0}
+p{line-height:1.63}
+.muted{color:var(--muted)}
+.noticebar{border-left:4px solid #b7976e;background:#f4eee2;color:#4c5961;padding:15px;border-radius:7px;line-height:1.5;margin:14px 0}
+button{cursor:pointer;border-radius:8px;border:1px solid #365c6e;padding:12px 17px;font-weight:700;color:white;background:#284a5c;font-family:inherit;font-size:14px}
+button:hover{filter:brightness(1.07)}button:focus-visible{outline:3px solid #c5a477;outline-offset:2px}
+button:disabled{cursor:default;opacity:.6}button.light{background:#fff;color:#30516a;border-color:#c8d1d6}
+button.slim{padding:8px 11px;font-size:12px;min-height:0}
+.demo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px}
+.demo-choice{background:white;border:1px solid #dfd5c3;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:13px}
+.demo-choice h3{font:700 20px Georgia,serif;margin:0}.demo-choice p{font-size:13px;margin:0;color:var(--muted)}
+.demo-icon{width:50px;height:50px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:#f3eadb;font-size:26px}
+.demo-choice button{margin-top:auto}
+.status-chip{display:inline-block;background:#e4f0e8;border-radius:99px;font-size:11px;padding:5px 9px;color:#2b654c;font-weight:800}
+.full-evidence{white-space:pre-wrap;background:#fff9e8;padding:18px;border-radius:9px;border:1px solid #dccbae;font:16px/1.6 Georgia,serif}
+.demo-help{font-size:12px;color:var(--muted);line-height:1.5}
+footer{margin:25px auto;text-align:center;color:#829099;font-size:12px}
+@media(max-width:560px){.panel{padding:14px}.demo-grid{grid-template-columns:1fr}.demo-choice{padding:15px}main{padding-top:14px}}
+#demoCase{width:100%;margin:11px 0;border-radius:10px;border:1px solid #bdc8cc;padding:13px;font:600 15px Segoe UI,Arial,sans-serif;color:#243b4e;background:white}.demo-case-selector{margin-top:15px}</style>
+<link rel="stylesheet" href="./minigames.css?v=20261119-15">
+</head>
+<body>
+<main>
+  <div class="row">
+    <div class="eyebrow">КОНСТИТУЦИОННЫЙ ДЕТЕКТИВ · СЮЖЕТНЫЕ ИСПЫТАНИЯ</div>
+    <a href="./">Вернуться к игре</a>
+  </div>
+  <h1>24 сюжетных испытания</h1>
+  <p class="muted">Шесть дел, четыре испытания для каждого. Выберите дело и испытание: предметы, архивы и документы отличаются в зависимости от сюжета. Во время задания появляются фрагменты доказательства, а после успешного прохождения — полный игровой документ.</p>
+  <div class="noticebar">Это локальная демонстрация. Она не создаёт игровую сессию, не подключается к Supabase, не расходует жетоны и не влияет на настоящие результаты команд.</div>
+  <div id="demo-app"></div>
+  <footer>Учебные документы и события вымышлены · Для мобильных браузеров и компьютеров</footer>
+</main>
+<script src="./minigames.js?v=20261119-15"></script>
+<script>
+const DEMO_MODE=true;
+const DEMO_CASES=[{"team":"Архив","title":"Три даты одного закона","docs":[{"label":"03 · Карточка законопроекта","text":"Законопроект внесён в Государственную Думу 12 марта. К третьему чтению подготовлена изменённая редакция; 19 июня Государственная Дума приняла окончательный текст и направила его в Совет Федерации."},{"label":"04 · Сообщение Совета Федерации","text":"Совет Федерации одобрил федеральный закон 25 июня. Сотрудник пресс-службы употребил выражение «закон принят окончательно»."},{"label":"05 · Доставка на подпись","text":"В сопроводительном письме отмечено направление принятого закона Президенту 27 июня 2026 года. Сведений о подписании на 26 июня в письме нет."},{"label":"06 · Подписанный экземпляр","text":"Федеральный закон подписан Президентом 1 июля 2026 года. Его текст совпадает с окончательной редакцией, принятой Государственной Думой 19 июня, а не с проектом от 16 июня."}]},{"team":"Федерализм","title":"Линия на границе","docs":[{"label":"03 · Схема объектов и управления","text":"Высоковольтная линия соединяет три субъекта РФ и относится к федеральной энергетической системе. На схеме отдельно обозначены владелец сетевого объекта, системный оператор (диспетчерское управление) и местные распределительные сети."},{"label":"04 · Первая версия распоряжения","text":"Первоначальная редакция распоряжения, зарегистрированная в 11:30, поручает региональному министру обеспечить резервное питание социально значимых объектов, доставку топлива, оповещение населения и взаимодействие с уполномоченными организациями. Права отдавать "},{"label":"05 · Новая редакция распоряжения","text":"В редакции, зарегистрированной в 17:40, появился новый пункт 7: «Обязать диспетчера системного оператора изменить межрегиональные перетоки по устному указанию регионального министра». Остальные пункты о больницах и аварийных службах сохранены."},{"label":"06 · Письмо больницы","text":"Главврач просит обеспечить доставку топлива для автономного генератора и координацию местных аварийных служб."}]},{"team":"Права человека","title":"Два предупреждения","docs":[{"label":"03 · Публикация работника А","text":"А написал об очередях и предложил изменить расписание; приложил фотографию пустого зала ожидания без посетителей и документов."},{"label":"04 · Публикация работника Б","text":"Сотрудник Б опубликовал фотографию монитора внутренней системы. На снимке можно различить фамилии посетителей, сведения о поданных заявлениях и отдельные данные о состоянии здоровья. Б утверждает, что хотел показать причину очередей, но лица, попавшие в кадр, "},{"label":"05 · Политика обработки данных","text":"В учреждении установлен порядок доступа к внутренней системе. Сотрудник Б был ознакомлен с правилами неразглашения персональных данных."},{"label":"06 · Показания посетителя","text":"Очевидец подтверждает очереди и утверждает, что у сотрудника А не было доступа к закрытой системе в день публикации."}]},{"team":"Исполнительная власть","title":"Три документа об аварии","docs":[{"label":"03 · Указ Президента","text":"Официально опубликованный указ предусматривает координацию федеральных органов по ликвидации аварии и поручения в пределах установленной компетенции."},{"label":"04 · Постановление Правительства","text":"Правительство определяет порядок взаимодействия федеральных ведомств и правила отчётности об устранении последствий аварии."},{"label":"05 · Проект ведомственного приказа","text":"В рабочем экземпляре ведомственного приказа содержится формулировка «приостановить действие пункта федерального закона». На листе помета «Проект для согласования», отсутствуют подпись и регистрационный номер; графа «замечания юридической службы» не заполнена."},{"label":"06 · Протокол согласования","text":"Юридическая служба вернула проект на переработку: ведомственный приказ не может приостанавливать действие федерального закона. Служба предложила сохранить лишь нормы о распределении внутренних дежурств и порядок уведомления территориальных органов."}]},{"team":"Местное самоуправление","title":"Центр благоустройства","docs":[{"label":"03 · Действующий закон субъекта","text":"Региональный закон № 12-КЗ от 15 сентября 2026 года предусматривает общую платформу заявок, координацию межмуниципальных проектов и единый формат отчётности. В нём не указано, что все муниципальные полномочия по благоустройству переданы центру."},{"label":"04 · Законопроект о перераспределении","text":"Отдельный проект закона № 36-КЗ предполагает перераспределение нескольких полномочий в сфере благоустройства. На тексте стоит отметка «к первому чтению»; данных об окончательном принятии нет."},{"label":"05 · Решение муниципального совета","text":"Представительный орган согласовал совместную закупку оборудования через общий центр. Решение не предусматривает передачу региону всех функций по благоустройству; контроль муниципальной программы оставлен за органами местного самоуправления."},{"label":"06 · Бюджетное письмо","text":"Регион предлагает субсидию на цифровую диспетчеризацию. В письме не указано, что муниципалитеты прекращают исполнять все свои обязанности; финансовое обеспечение конкретных функций требует отдельного решения."}]},{"team":"Правосудие","title":"Спор у ворот парка","docs":[{"label":"03 · Краевой закон «О городских парках»","text":"Вымышленный закон 2024 года предусматривает свободное посещение общедоступных парков. Министерству поручено организовать их содержание и безопасность; общего требования предъявлять паспорт в законе нет."},{"label":"04 · Приказ министерства № 18","text":"В нормативном приказе краевого министерства от 16 марта 2026 года пункт 6 предписывает охране проверять удостоверение личности у каждого посетителя парка независимо от причины посещения."},{"label":"05 · Карточка судебного дела","text":"В Приозёрском краевом суде рассматривалось административное исковое заявление жителей о признании недействующим пункта 6 приказа министерства № 18. Краевой закон в этом деле не оспаривался."},{"label":"06 · Резолютивная часть решения","text":"18 августа суд признал пункт 6 приказа министерства № 18 недействующим со дня вступления судебного решения в законную силу. В решении нет вывода о недействительности всего приказа или краевого закона."}]}];
+const DEMO_TYPES=[
+ {kind:'shreds',name:'Восстановление разорванного документа',icon:'🧩'},
+ {kind:'flashlight',name:'Поиск в тёмном архиве',icon:'🔦'},
+ {kind:'loupe',name:'Экспертиза двух копий под лупой',icon:'🔍'},
+ {kind:'board',name:'Доска расследования',icon:'📌'}
+];
+let demoCase=0;
+function demoItems(){return DEMO_TYPES.map((type,i)=>({...type,file:DEMO_CASES[demoCase].docs[i].label,text:DEMO_CASES[demoCase].docs[i].text}));}
+let DEMO=demoItems();
+let working=false,state={},demoIndex=0,completed=new Set();
+const esc=x=>String(x??'').replace(/[&<>"']/g,y=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[y]));
+function message(m){alert(String(m))}
+
+
+function demoArchive(){
+ const lines=miniSplit(DEMO[1].text,3),code='Д-'+(demoCase+14)+'-30-26',wrongNumber='Д-'+(demoCase+14)+'-32-26';
+ const good=n=>({code,year:2026,status:'Подлинник',part:n,text:lines[n-1]});
+ const bad=(c,y,status,part,why)=>({code:c,year:y,status,part,text:why});
+ const wrong='Архивный документ другой редакции: '+DEMO_CASES[demoCase].title;
+ return {code,files:[
+  bad(code,2025,'Подлинник',1,wrong),
+  bad(code,2025,'Подлинник',3,wrong),
+  good(2),
+  bad(code,2026,'Черновик',1,'Неофициальная редакция. '+wrong),
+  bad(wrongNumber,2026,'Подлинник',3,'Иное производство. '+wrong),
+  bad(code,2026,'Копия без заверения',2,'Копия не подтверждена. '+wrong),
+  good(3),
+  bad(wrongNumber,2026,'Подлинник',1,'Регистрационный номер не совпадает. '+wrong),
+  bad(code,2026,'Отозван',3,'Отозванный материал. '+wrong),
+  bad(wrongNumber,2026,'Подлинник',2,'Другой шифр дела. '+wrong),
+  good(1),
+  bad(code,2026,'Черновик',2,'Проект без регистрации. '+wrong)
+ ]};
+}
+function demoComparison(){
+ const words=DEMO[2].text.split(/\s+/),span=Math.min(words.length,Math.max(8,Math.ceil(words.length*.49))),range=Math.max(0,words.length-span);
+ const lines=Array.from({length:8},(_,i)=>words.slice(Math.floor(i*range/7),Math.floor(i*range/7)+span).join(' '));
+ const changed=new Set([1,4,6]);
+ const alter=str=>{
+  const options=[[/\d{4}/,x=>String(Number(x)-1)],[/\d{1,2}/,x=>String(Number(x)+1)],[/закона/i,'приказа'],[/решени[а-яё]*/i,'распоряжения'],[/приказ[а-яё]*/i,'закона'],[/не\s+/i,''],[/проект[а-яё]*/i,'утверждённый акт']];
+  for(const [re,sub] of options)if(re.test(str))return str.replace(re,sub);
+  return str+' (исправленная версия)';
+ };
+ return {pairs:lines.map((v,i)=>({left:v,right:changed.has(i)?alter(v):v}))};
+}
+
+async function request(action,b={}){
+ if(action==='challenge'){
+  let doc=DEMO[demoIndex];const challenge={id:b.id,caseIndex:demoCase,kind:doc.kind,label:doc.file,nonce:'demonstration',evidenceText:doc.text};if(doc.kind==='flashlight')challenge.archive=demoArchive();if(doc.kind==='loupe')challenge.comparison=demoComparison();return {state:{},challenge};
+ }
+ if(action==='cancelChallenge')return{state:{}};
+ if(action==='state')return{state:{}};
+ if(action==='solveChallenge'){
+  const v=b.proof||{},c=DEMO[demoIndex];
+  const validOrder=(n)=>Array.isArray(v.order)&&v.order.length===n&&v.order.every((x,i)=>x===i);
+  const validFound=Array.isArray(v.found)&&v.found.length===3&&new Set(v.found).size===3&&v.found.every(x=>Number.isInteger(x)&&x>=0&&x<(c.kind==='flashlight'?12:8));
+  const desired=c.kind==='flashlight'?[2,6,10]:c.kind==='loupe'?[1,4,6]:[];
+  const passed=c.kind==='shreds'?validOrder(9):c.kind==='board'?validOrder(4):validFound&&desired.slice().sort((a,b)=>a-b).join(',')===v.found.slice().sort((a,b)=>a-b).join(',');
+  if(!passed)throw Error("Испытание пока не завершено.");
+  completed.add(demoIndex);return{state:{},unlocked:true};
+ }
+ throw Error("Неизвестное действие демонстрации");
+}
+function chooseCase(n){demoCase=Math.max(0,Math.min(5,Number(n)||0));demoIndex=0;DEMO=demoItems();completed=new Set();trial=null;play={};render();}
+function pick(n){demoIndex=n;trial=null;play={};render();beginChallenge(n+2)}
+function showList(){trial=null;play={};render()}
+function render(){
+ const el=document.getElementById('demo-app');
+ let body='<section class="panel demo-case-selector"><label for="demoCase"><b>Дело и команда</b></label><select id="demoCase" onchange="chooseCase(this.value)">'+DEMO_CASES.map((c,i)=>'<option value="'+i+'" '+(i===demoCase?'selected':'')+'>'+esc(c.team)+' · '+esc(c.title)+'</option>').join('')+'</select><p class="demo-help">Каждое дело содержит свои тексты, архивную ориентировку, карточки, контрольные записи и визуальную обстановку.</p></section><section class="demo-grid">'+DEMO.map((x,i)=>'<article class="demo-choice"><div class="demo-icon">'+x.icon+'</div><h3>'+String(i+1)+'. '+esc(x.name)+'</h3><p>Доказательство: '+esc(x.file)+'</p>'+(completed.has(i)?'<div class="status-chip">Доказательство восстановлено</div>':'')+'<button onclick="pick('+i+')">'+(completed.has(i)?'Повторить испытание':'Начать испытание')+'</button></article>').join('')+'</section>';
+ if(trial)body+=miniView();
+ if(!trial&&completed.has(demoIndex))body+='<section class="panel"><div class="eyebrow">ДОКУМЕНТ ВОССТАНОВЛЕН</div><h2>'+esc(DEMO[demoIndex].file)+'</h2><div class="full-evidence">'+esc(DEMO[demoIndex].text)+'</div><div class="row"><button class="light" onclick="showList()">Выбрать другое испытание</button>'+(demoIndex<3?'<button onclick="pick('+(demoIndex+1)+')">Следующее испытание</button>':'')+'</div></section>';
+ el.innerHTML=body;
+ if(trial)miniMount();
+}
+render();
+</script>
+</body></html>
