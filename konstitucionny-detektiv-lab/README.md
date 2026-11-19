@@ -6,6 +6,9 @@ https://voran1987.github.io/parlamentiya/konstitucionny-detektiv/
 **Лаборатория:**
 https://voran1987.github.io/parlamentiya/konstitucionny-detektiv-lab/
 
+**Опробовать все четыре механики без сессии и жетонов:**
+https://voran1987.github.io/parlamentiya/konstitucionny-detektiv-lab/demo.html
+
 ## Что изолировано
 - Свой HTML и отдельные файлы \`lab-minigames.js\`, \`lab-minigames.css\`.
 - Своя Supabase Edge Function \`constitutional-detective-lab\` (не \`constitutional-detective\`).
