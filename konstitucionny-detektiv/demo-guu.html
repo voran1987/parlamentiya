@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#213749">
+<title>Конституционный детектив · ГУУ · 24 мини-испытания</title>
+<style>
+:root{--navy:#243b4e;--ink:#243b4e;--muted:#627586;--line:#dedbd2;--bg:#f4f1e9;--gold:#bc925f}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Segoe UI,Arial,sans-serif;color:var(--ink)}
+a{color:#305f72;text-decoration:underline}main{width:min(1020px,calc(100% - 24px));margin:0 auto;padding:21px 0 60px}
+.panel{background:white;border:1px solid var(--line);border-radius:14px;padding:24px;margin:16px 0;box-shadow:0 7px 24px #30404a0a}
+.row{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+.eyebrow,.filetag{font-size:11px;letter-spacing:1.35px;font-weight:800;color:#977044;text-transform:uppercase}
+.eyebrow{margin-bottom:8px}
+h1{font:700 clamp(30px,5vw,49px)/1.11 Georgia,serif;margin:13px 0 14px}
+h2{font:700 26px/1.18 Georgia,serif;margin:14px 0}
+p{line-height:1.63}
+.muted{color:var(--muted)}
+.noticebar{border-left:4px solid #b7976e;background:#f4eee2;color:#4c5961;padding:15px;border-radius:7px;line-height:1.5;margin:14px 0}
+button{cursor:pointer;border-radius:8px;border:1px solid #365c6e;padding:12px 17px;font-weight:700;color:white;background:#284a5c;font-family:inherit;font-size:14px}
+button:hover{filter:brightness(1.07)}button:focus-visible{outline:3px solid #c5a477;outline-offset:2px}
+button:disabled{cursor:default;opacity:.6}button.light{background:#fff;color:#30516a;border-color:#c8d1d6}
+button.slim{padding:8px 11px;font-size:12px;min-height:0}
+.demo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px}
+.demo-choice{background:white;border:1px solid #dfd5c3;border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:13px}
+.demo-choice h3{font:700 20px Georgia,serif;margin:0}.demo-choice p{font-size:13px;margin:0;color:var(--muted)}
+.demo-icon{width:50px;height:50px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:#f3eadb;font-size:26px}
+.demo-choice button{margin-top:auto}
+.status-chip{display:inline-block;background:#e4f0e8;border-radius:99px;font-size:11px;padding:5px 9px;color:#2b654c;font-weight:800}
+.full-evidence{white-space:pre-wrap;background:#fff9e8;padding:18px;border-radius:9px;border:1px solid #dccbae;font:16px/1.6 Georgia,serif}
+.demo-help{font-size:12px;color:var(--muted);line-height:1.5}
+footer{margin:25px auto;text-align:center;color:#829099;font-size:12px}
+@media(max-width:560px){.panel{padding:14px}.demo-grid{grid-template-columns:1fr}.demo-choice{padding:15px}main{padding-top:14px}}
+#demoCase{width:100%;margin:11px 0;border-radius:10px;border:1px solid #bdc8cc;padding:13px;font:600 15px Segoe UI,Arial,sans-serif;color:#243b4e;background:white}.demo-case-selector{margin-top:15px}</style>
+<link rel="stylesheet" href="./minigames.css?v=20261119-15">
+</head>
+<body>
+<main>
+  <div class="row">
+    <div class="eyebrow">КОНСТИТУЦИОННЫЙ ДЕТЕКТИВ · ГУУ</div>
+    <a href="./guu.html">Вернуться к игре</a>
+  </div>
+  <h1>24 сюжетных испытания</h1>
+  <p class="muted">Шесть дел ГУУ о публичной власти, выборах и управленческих решениях. Для каждого — четыре следственные операции с собственными документами и обстановкой. Во время поиска появляются фрагменты доказательства, после успешного прохождения — полный игровой документ.</p>
+  <div class="noticebar">Это локальная демонстрация. Она не создаёт игровую сессию, не подключается к Supabase, не расходует жетоны и не влияет на настоящие результаты команд.</div>
+  <div id="demo-app"></div>
+  <footer>Учебные документы и события вымышлены · Для мобильных браузеров и компьютеров</footer>
+</main>
+<script src="./minigames-guu.js?v=20261119-18"></script>
+<script>
+const DEMO_MODE=true;
+const DEMO_CASES=[{"team":"Нормотворцы","title":"Регламент из будущего","docs":[{"label":"03 · Проект от 12 августа","text":"Черновая редакция регламента предусматривает обязательное согласование собраний в муниципальных залах за 30 дней. На полях — отметка «К обсуждению на заседании комиссии», подписи об утверждении нет."},{"label":"04 · Повестка совета","text":"В повестке заседания от 20 августа пункт «Регламент предоставления помещений для публичных обсуждений». В пояснении указано, что поправки к проекту рассмотрены постоянной комиссией; планируется голосование по окончательному тексту."},{"label":"05 · Протокол голосования","text":"Протокол от 20 августа фиксирует кворум и принятие итоговой редакции большинством установленного состава депутатов. Спорное требование о согласовании за 30 дней исключено при голосовании."},{"label":"06 · Подписанный экземпляр","text":"22 августа глава муниципального образования подписал принятый советом регламент. В подписанном тексте вместо согласования за 30 дней предусмотрено уведомление за пять рабочих дней при предоставлении муниципальных помещений."}]},{"team":"Муниципальный совет","title":"Слушания без слушателей","docs":[{"label":"03 · Порядок слушаний","text":"Вымышленный местный акт требует опубликовать официальное извещение в муниципальном бюллетене не позднее чем за 15 календарных дней. Он предусматривает свободный допуск при наличии мест и обязательную регистрацию поступивших письменных замечаний в материалах сл"},{"label":"04 · Объявление в бюллетене","text":"Печатный муниципальный бюллетень от 23 сентября содержит тему, место, дату слушаний — 10 октября — и способ подачи замечаний. В номере бюллетеня и реестре опубликования даты совпадают."},{"label":"05 · История сайта","text":"В журнале сайта администрации запись об объявлении впервые появилась 2 октября. Опубликованное содержание совпадает с печатным извещением, но время размещения в интернете существенно позже."},{"label":"06 · Пропускной журнал","text":"У входа в зал 10 октября дежурный отмечал посетителей по списку предварительной электронной регистрации. Записи о правовом основании нового ограничения в журнале нет. Четыре человека сообщили об отказе во входе."}]},{"team":"Цифровые права","title":"Алгоритм отказал","docs":[{"label":"03 · Регламент конкурса","text":"Положение конкурса требует представить четыре документа и предусматривает оценку проекта по открытым критериям. Спорные отказы из-за технического расхождения должны быть проверены уполномоченным специалистом; положительного решения по умолчанию нет."},{"label":"04 · Журнал файлового хранилища","text":"В техническом журнале от 3 марта указана успешная загрузка четырёх файлов, включая register.pdf; контрольные суммы записаны, удалений в тот день не было."},{"label":"05 · Журнал индексатора","text":"В ночь на 4 марта служба обработки вложений выдала ошибку связи с реестром. Отметка о документе не передана в автоматический модуль проверки, хотя сам файл сохранён."},{"label":"06 · Служебная инструкция оператора","text":"Операторы кол-центра отвечали по шаблону «решение принято автоматически». Между тем внутренняя инструкция допускает передачу спорного отказа специалисту для ручной проверки."}]},{"team":"Избирательная комиссия","title":"Афиша перед голосованием","docs":[{"label":"03 · Информационная карточка А","text":"Публикация А содержит дату голосования, порядок поиска участка и контакты комиссии. Призывов голосовать за конкретного кандидата или против него нет."},{"label":"04 · Карточка кампании Б","text":"Материал Б содержит имя зарегистрированного кандидата, лозунг его кампании и узнаваемые цвета. Документ подписан как агитационный материал; на копии есть сведения об изготовителе."},{"label":"05 · Договор городской администрации","text":"Муниципальный контракт касается только подготовки нейтральных объявлений о дате и адресах голосования. Рекламное изображение кандидата среди оплачиваемых по договору материалов не указано."},{"label":"06 · Платёж избирательного фонда","text":"Отдельная квитанция фиксирует оплату изготовления листовки Б из средств избирательного фонда кандидата. Квитанция не объясняет, кто и через какую систему распространял цифровую копию."}]},{"team":"Общественный контроль","title":"Контракт с одним участником","docs":[{"label":"03 · Планирование проекта","text":"Заявка на цифровую платформу обсуждалась городской администрацией ещё весной. В рабочем плане приведены варианты конкурентной закупки и пилотного этапа; аварийные обстоятельства не описаны."},{"label":"04 · Распоряжение о сроках","text":"Глава администрации потребовал запустить сервис к установленной дате. В тексте нет специального режима чрезвычайной ситуации или ссылки на конкретную норму закупки у единственного поставщика."},{"label":"05 · Обоснование поставщика","text":"Контрактная служба приложила справку о возможности выбранной компании выполнить работу в короткий срок. Документ не заменяет правовое основание неконкурентной процедуры."},{"label":"06 · Протокол рассмотрения","text":"В протоколе указаны участники обсуждения, в том числе сотрудник, связанный родством с руководителем подрядчика. Отметок о его самоотводе при рассмотрении нет."}]},{"team":"Правосудие","title":"Зал, который нельзя забронировать","docs":[{"label":"03 · Муниципальный регламент","text":"Регламент устанавливает условия бронирования муниципальных залов: свободное время, соблюдение вместимости и безопасности; спорный пункт 7 дополнительно требует визирования районным управлением."},{"label":"04 · Заявление организации","text":"Организация подала заявку заблаговременно, указала число участников, тематику мероприятия и контактное лицо. О необходимости дополнительной визы сотрудники сообщили после регистрации заявления."},{"label":"05 · Требования судебного заявления","text":"В административном иске оспаривался только пункт 7 в части обязательной визы районного управления. Другие пункты о сроках и безопасности организация не оспаривала."},{"label":"06 · Резолютивная часть суда","text":"Суд признал недействующим пункт 7 муниципального регламента в указанной части. Требований об отмене всего документа в резолютивной части нет."}]}];
+const DEMO_TYPES=[
+ {kind:'shreds',name:'Восстановление разорванного документа',icon:'🧩'},
+ {kind:'flashlight',name:'Поиск в тёмном архиве',icon:'🔦'},
+ {kind:'loupe',name:'Экспертиза двух копий под лупой',icon:'🔍'},
+ {kind:'board',name:'Доска расследования',icon:'📌'}
+];
+let demoCase=0;
+function demoItems(){return DEMO_TYPES.map((type,i)=>({...type,file:DEMO_CASES[demoCase].docs[i].label,text:DEMO_CASES[demoCase].docs[i].text}));}
+let DEMO=demoItems();
+let working=false,state={},demoIndex=0,completed=new Set();
+const esc=x=>String(x??'').replace(/[&<>"']/g,y=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[y]));
+function message(m){alert(String(m))}
+
+
+function demoArchive(){
+ const lines=miniSplit(DEMO[1].text,3),code='Д-'+(demoCase+14)+'-30-26',wrongNumber='Д-'+(demoCase+14)+'-32-26';
+ const good=n=>({code,year:2026,status:'Подлинник',part:n,text:lines[n-1]});
+ const bad=(c,y,status,part,why)=>({code:c,year:y,status,part,text:why});
+ const wrong='Архивный документ другой редакции: '+DEMO_CASES[demoCase].title;
+ return {code,files:[
+  bad(code,2025,'Подлинник',1,wrong),
+  bad(code,2025,'Подлинник',3,wrong),
+  good(2),
+  bad(code,2026,'Черновик',1,'Неофициальная редакция. '+wrong),
+  bad(wrongNumber,2026,'Подлинник',3,'Иное производство. '+wrong),
+  bad(code,2026,'Копия без заверения',2,'Копия не подтверждена. '+wrong),
+  good(3),
+  bad(wrongNumber,2026,'Подлинник',1,'Регистрационный номер не совпадает. '+wrong),
+  bad(code,2026,'Отозван',3,'Отозванный материал. '+wrong),
+  bad(wrongNumber,2026,'Подлинник',2,'Другой шифр дела. '+wrong),
+  good(1),
+  bad(code,2026,'Черновик',2,'Проект без регистрации. '+wrong)
+ ]};
+}
+function demoComparison(){
+ const words=DEMO[2].text.split(/\s+/),span=Math.min(words.length,Math.max(8,Math.ceil(words.length*.49))),range=Math.max(0,words.length-span);
+ const lines=Array.from({length:8},(_,i)=>words.slice(Math.floor(i*range/7),Math.floor(i*range/7)+span).join(' '));
+ const changed=new Set([1,4,6]);
+ const alter=str=>{
+  const options=[[/\d{4}/,x=>String(Number(x)-1)],[/\d{1,2}/,x=>String(Number(x)+1)],[/закона/i,'приказа'],[/решени[а-яё]*/i,'распоряжения'],[/приказ[а-яё]*/i,'закона'],[/не\s+/i,''],[/проект[а-яё]*/i,'утверждённый акт']];
+  for(const [re,sub] of options)if(re.test(str))return str.replace(re,sub);
+  return str+' (исправленная версия)';
+ };
+ return {pairs:lines.map((v,i)=>({left:v,right:changed.has(i)?alter(v):v}))};
+}
+
+async function request(action,b={}){
+ if(action==='challenge'){
+  let doc=DEMO[demoIndex];const challenge={id:b.id,caseIndex:demoCase,kind:doc.kind,label:doc.file,nonce:'demonstration',evidenceText:doc.text};if(doc.kind==='flashlight')challenge.archive=demoArchive();if(doc.kind==='loupe')challenge.comparison=demoComparison();return {state:{},challenge};
+ }
+ if(action==='cancelChallenge')return{state:{}};
+ if(action==='state')return{state:{}};
+ if(action==='solveChallenge'){
+  const v=b.proof||{},c=DEMO[demoIndex];
+  const validOrder=(n)=>Array.isArray(v.order)&&v.order.length===n&&v.order.every((x,i)=>x===i);
+  const validFound=Array.isArray(v.found)&&v.found.length===3&&new Set(v.found).size===3&&v.found.every(x=>Number.isInteger(x)&&x>=0&&x<(c.kind==='flashlight'?12:8));
+  const desired=c.kind==='flashlight'?[2,6,10]:c.kind==='loupe'?[1,4,6]:[];
+  const passed=c.kind==='shreds'?validOrder(9):c.kind==='board'?validOrder(4):validFound&&desired.slice().sort((a,b)=>a-b).join(',')===v.found.slice().sort((a,b)=>a-b).join(',');
+  if(!passed)throw Error("Испытание пока не завершено.");
+  completed.add(demoIndex);return{state:{},unlocked:true};
+ }
+ throw Error("Неизвестное действие демонстрации");
+}
+function chooseCase(n){demoCase=Math.max(0,Math.min(5,Number(n)||0));demoIndex=0;DEMO=demoItems();completed=new Set();trial=null;play={};render();}
+function pick(n){demoIndex=n;trial=null;play={};render();beginChallenge(n+2)}
+function showList(){trial=null;play={};render()}
+function render(){
+ const el=document.getElementById('demo-app');
+ let body='<section class="panel demo-case-selector"><label for="demoCase"><b>Дело и команда</b></label><select id="demoCase" onchange="chooseCase(this.value)">'+DEMO_CASES.map((c,i)=>'<option value="'+i+'" '+(i===demoCase?'selected':'')+'>'+esc(c.team)+' · '+esc(c.title)+'</option>').join('')+'</select><p class="demo-help">Каждое дело содержит свои тексты, архивную ориентировку, карточки, контрольные записи и визуальную обстановку.</p></section><section class="demo-grid">'+DEMO.map((x,i)=>'<article class="demo-choice"><div class="demo-icon">'+x.icon+'</div><h3>'+String(i+1)+'. '+esc(x.name)+'</h3><p>Доказательство: '+esc(x.file)+'</p>'+(completed.has(i)?'<div class="status-chip">Доказательство восстановлено</div>':'')+'<button onclick="pick('+i+')">'+(completed.has(i)?'Повторить испытание':'Начать испытание')+'</button></article>').join('')+'</section>';
+ if(trial)body+=miniView();
+ if(!trial&&completed.has(demoIndex))body+='<section class="panel"><div class="eyebrow">ДОКУМЕНТ ВОССТАНОВЛЕН</div><h2>'+esc(DEMO[demoIndex].file)+'</h2><div class="full-evidence">'+esc(DEMO[demoIndex].text)+'</div><div class="row"><button class="light" onclick="showList()">Выбрать другое испытание</button>'+(demoIndex<3?'<button onclick="pick('+(demoIndex+1)+')">Следующее испытание</button>':'')+'</div></section>';
+ el.innerHTML=body;
+ if(trial)miniMount();
+}
+render();
+</script>
+</body></html>
