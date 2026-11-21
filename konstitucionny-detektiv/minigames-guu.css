@@ -150,3 +150,13 @@ body:has(#trialOverlay)::before{content:"";position:fixed;inset:0;z-index:898;ba
  .mini-puzzle-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
  .mini-puzzle-actions button{font-size:11px!important;min-height:44px}
 }
+
+/* Visible turn affordance for tap-enabled fragment rotation (GUU + Law). */
+.mini-hard .mini-scrap .mini-turn-symbol{
+ position:absolute;z-index:5;right:4px;top:4px;display:grid;place-items:center;
+ width:28px;height:28px;border-radius:50%;background:#fff8e9e8;
+ color:#564024;border:1px solid #a87c42;box-shadow:0 1px 4px #36281944;
+ font:700 21px/1 "Segoe UI",Arial,sans-serif;pointer-events:none;
+}
+.mini-hard .mini-scrap.mini-picked .mini-turn-symbol{background:#704b26;color:#fff;border-color:#704b26}
+@media(max-width:620px){.mini-hard .mini-scrap .mini-turn-symbol{width:23px;height:23px;font-size:18px;right:1px;top:1px}}
