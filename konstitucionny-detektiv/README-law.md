@@ -1,4 +1,4 @@
-# Юридический детектив — режим «Право» (тема 2.2)
+# Правовой детектив — режим «Право» (тема 2.2)
 
 **Адрес игры:** https://voran1987.github.io/parlamentiya/konstitucionny-detektiv/law.html
 
