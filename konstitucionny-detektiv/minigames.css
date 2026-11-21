@@ -120,3 +120,21 @@ body:has(#trialOverlay)::before{content:"";position:fixed;inset:0;z-index:898;ba
 .mini-shell .mini-orientation{border-left-color:var(--case-accent)}
 .mini-shell .mini-check{background:var(--case-accent)!important;border-color:var(--case-accent)!important}
 @media(max-width:620px){.mini-location{font-size:11px}.mini-location span{font-size:19px}}
+
+/* Rotatable MEI paper fragments — same touch/keyboard affordance as the other game modes. */
+.mini-scraps .mini-paper-svg{
+ transform:rotate(var(--paper-turn,0deg));transform-origin:center;
+ transition:transform .2s ease,filter .2s ease
+}
+.mini-scraps .mini-scrap.mini-picked .mini-paper-svg{
+ transform:rotate(var(--paper-turn,0deg)) scale(1.06)
+}
+.mini-scraps .mini-scrap .mini-turn-symbol{
+ position:absolute;z-index:5;top:4px;right:4px;width:28px;height:28px;
+ display:grid;place-items:center;border-radius:50%;pointer-events:none;
+ background:#fff8e9e8;color:#564024;border:1px solid #a87c42;
+ box-shadow:0 1px 4px #36281944;font:700 21px/1 "Segoe UI",Arial,sans-serif
+}
+.mini-scraps .mini-scrap.mini-picked .mini-turn-symbol{background:#704b26;color:#fff}
+.mini-puzzle-actions{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+@media(max-width:620px){.mini-scraps .mini-scrap .mini-turn-symbol{width:23px;height:23px;font-size:18px;top:1px;right:1px}.mini-puzzle-actions button{min-height:44px}}
