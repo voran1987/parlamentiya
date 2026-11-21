@@ -213,9 +213,20 @@ function miniRotateSelected(){
 }
 function miniChooseScrap(n){
  if(play.solved)return;
- if(play.selected===null){play.selected=n;miniDrawScraps();return}
- const a=play.selected;play.selected=null;
- if(a!==n)miniSwap(a,n);else miniDrawScraps();
+ if(play.selected===null){
+  play.selected=n;
+  miniDrawScraps();
+  miniHint(miniHardPaper()?'Обрывок выбран. Нажмите на него ещё раз или используйте кнопку «↻ Повернуть на 90°».':'Обрывок выбран. Нажмите на другой для обмена.');
+  return;
+ }
+ const a=play.selected;
+ if(a===n&&miniHardPaper()){
+  miniRotatePiece(n);
+  miniHint('Выбранный фрагмент повёрнут на 90°. Продолжайте нажимать на него для следующего поворота.');
+ }else{
+  play.selected=null;
+  if(a!==n)miniSwap(a,n);else miniDrawScraps();
+ }
 }
 function miniToggleZoom(){
  play.zoom=!play.zoom;
@@ -229,14 +240,14 @@ function miniDrawScraps(){
  root.classList.toggle('mini-assembled',miniSolved());
  root.classList.toggle('mini-zoom',!!play.zoom);
  root.classList.toggle('mini-hard',miniHardPaper());
- const renderTile=(piece,slot)=>'<button type="button" class="mini-scrap '+(slot===play.selected?'mini-picked':'')+'" data-slot="'+slot+'" onclick="miniChooseScrap('+slot+')"'+(miniHardPaper()?' ondblclick="miniRotatePiece('+slot+')"':'')+' aria-label="Обрывок бумаги. Выбрать и передвинуть">'+miniPaperFragment(piece)+'</button>';
+ const renderTile=(piece,slot)=>'<button type="button" class="mini-scrap '+(slot===play.selected?'mini-picked':'')+'" data-slot="'+slot+'" onclick="miniChooseScrap('+slot+')" aria-pressed="'+(slot===play.selected)+'" aria-label="Фрагмент '+(slot+1)+'. Выбрать; повторное нажатие — повернуть на 90 градусов." title="Нажмите для выбора · повторно — повернуть ↻">'+miniPaperFragment(piece)+(miniHardPaper()?'<span class="mini-turn-symbol" aria-hidden="true">↻</span>':'')+'</button>';
  root.innerHTML=miniHardPaper()?
    '<div class="mini-paper-workspace"><div class="mini-hard-board">'+play.order.slice(0,12).map((p,i)=>renderTile(p,i)).join('')+'</div><div class="mini-paper-tray"><div class="mini-tray-caption">Неразобранные фрагменты · после сборки здесь останутся 3 посторонних обрывка</div><div class="mini-hard-tray">'+play.order.slice(12).map((p,i)=>renderTile(p,i+12)).join('')+'</div></div></div>':
    play.order.map((p,i)=>renderTile(p,i)).join('');
  const stat=document.getElementById('miniCorrect');
- if(stat)stat.textContent=miniSolved()?'Документ собран, все 12 частей на местах.':'Нужно восстановить 12 частей документа; среди 15 обрывков три относятся к другим листам.';
+ if(stat)stat.textContent=miniSolved()?'Документ восстановлен.':(miniHardPaper()?(play.selected===null?'15 фрагментов: выберите обрывок, повторное нажатие повернёт его на 90°. Три лишних оставьте в лотке.':'Фрагмент № '+(play.selected+1)+' выбран: повторное нажатие — поворот, другой фрагмент — обмен местами.'):'Восстановите девять фрагментов страницы.');
  const rotation=document.getElementById('miniRotateButton');
- if(rotation)rotation.disabled=!miniHardPaper()||play.selected===null;
+ if(rotation){rotation.disabled=!miniHardPaper()||play.solved;rotation.setAttribute('aria-label','Повернуть выбранный фрагмент на 90 градусов');}
 }
 function miniEnableDrag(){
  const zone=document.getElementById('miniScraps');if(!zone)return;
@@ -362,7 +373,7 @@ function miniView(){
  if(!trial)return '';
  let stage='',k=trial.kind;
  if(k==='shreds'){
-  stage='<p class="mini-instruction">'+esc(miniScene().puzzle)+(miniHardPaper()?' <b>Экспертная сложность:</b> перед вами 15 перемешанных обрывков, из которых только 12 принадлежат искомой странице. Некоторые фрагменты перевёрнуты: восстановите 4 ряда по 3 элемента, совместите рисунок разрывов, продолжения текста и печати. Три чужих фрагмента оставьте в нижнем лотке.':' Перед вами девять фрагментов одной повреждённой страницы. Сопоставляйте контуры разрывов и строки текста.')+'</p><div class="mini-correct" id="miniCorrect"></div><div class="mini-puzzle-scroll"><div class="mini-scraps" id="miniScraps"></div></div><div class="mini-puzzle-actions">'+(miniHardPaper()?'<button id="miniRotateButton" class="light slim" onclick="miniRotateSelected()" disabled>Повернуть выбранный на 90°</button>':'')+'<button id="miniZoomButton" class="light slim" onclick="miniToggleZoom()">Увеличить фрагменты</button></div><p class="mini-instruction">Перетащите один клочок на другой, чтобы поменять их местами, или выберите два по очереди. Для вращения сначала выделите деталь. На компьютере можно дважды щёлкнуть по обрывку.</p>';
+  stage='<p class="mini-instruction">'+esc(miniScene().puzzle)+(miniHardPaper()?' <b>Экспертная сложность:</b> перед вами 15 перемешанных обрывков, из которых только 12 принадлежат искомой странице. Некоторые фрагменты перевёрнуты: восстановите 4 ряда по 3 элемента, совместите рисунок разрывов, продолжения текста и печати. Три чужих фрагмента оставьте в нижнем лотке.':' Перед вами девять фрагментов одной повреждённой страницы. Сопоставляйте контуры разрывов и строки текста.')+'</p><div class="mini-correct" id="miniCorrect"></div><div class="mini-puzzle-scroll"><div class="mini-scraps" id="miniScraps"></div></div><div class="mini-puzzle-actions">'+(miniHardPaper()?'<button id="miniRotateButton" class="light slim" onclick="miniRotateSelected()">↻ Повернуть на 90°</button>':'')+'<button id="miniZoomButton" class="light slim" onclick="miniToggleZoom()">Увеличить фрагменты</button></div><p class="mini-instruction">Нажмите на фрагмент, чтобы выбрать его. Повторное нажатие на тот же фрагмент поворачивает его на 90°. Нажатие на другой фрагмент меняет их местами. Также можно перетаскивать и использовать кнопку «↻ Повернуть на 90°».</p>';
  }else if(k==='flashlight'){
   stage=miniArchiveView();
  }else if(k==='loupe'){
