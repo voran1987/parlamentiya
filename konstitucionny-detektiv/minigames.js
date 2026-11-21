@@ -91,7 +91,7 @@ function miniPaperFragment(piece){
  const path=miniPaperPath(piece);
  const image=play.paperImage?'<image href="'+play.paperImage+'" x="'+(-c*MINI_PAPER_W)+'" y="'+(-r*MINI_PAPER_H)+'" width="900" height="720" preserveAspectRatio="none"/>':
  '<rect x="-36" y="-36" width="372" height="312" fill="#fbefd2"/><text x="15" y="120" font-family="Georgia" font-size="16" fill="#463e34">'+esc(play.pieces[piece])+'</text>';
- return '<svg class="mini-paper-svg" viewBox="-36 -36 372 312" preserveAspectRatio="none" aria-hidden="true">'+
+ return '<svg class="mini-paper-svg" style="--paper-turn:'+(play.rotations?.[piece]||0)+'deg" viewBox="-36 -36 372 312" preserveAspectRatio="none" aria-hidden="true">'+
  '<defs><clipPath id="'+clip+'" clipPathUnits="userSpaceOnUse"><path d="'+path+'"/></clipPath></defs>'+
  '<g clip-path="url(#'+clip+')">'+image+'</g>'+
  '<path d="'+path+'" fill="none" stroke="#9a7e59" stroke-opacity=".7" stroke-width="1.6" stroke-linejoin="round"/>'+
@@ -100,7 +100,7 @@ function miniPaperFragment(piece){
 
 const miniOrdered=a=>a.every((v,i)=>v===i);
 function miniReset(){
- play={pieces:miniSplit(trial.evidenceText,9),segments:miniSplit(trial.evidenceText,trial.kind==='board'?4:3),order:miniShuffle(9),zoom:false,paperImage:trial.kind==='shreds'?miniPaperImage(trial.label,trial.evidenceText):null,selected:null,found:[],inspected:[],marked:[],threads:[],lastProof:null,scanTarget:null,scanTimer:null};
+ play={pieces:miniSplit(trial.evidenceText,9),segments:miniSplit(trial.evidenceText,trial.kind==='board'?4:3),order:miniShuffle(9),rotations:Array.from({length:9},()=>90*Math.floor(Math.random()*4)),solved:false,zoom:false,paperImage:trial.kind==='shreds'?miniPaperImage(trial.label,trial.evidenceText):null,selected:null,found:[],inspected:[],marked:[],threads:[],lastProof:null,scanTarget:null,scanTimer:null};
 }
 async function beginChallenge(id){
  if(working)return;
@@ -132,18 +132,36 @@ async function miniWin(proof){
   else {miniHint(e.message+' Нажмите «Повторить проверку», если испытание завершено.');const button=document.getElementById('miniRetry');if(button)button.hidden=false;}
  }finally{working=false}
 }
+function miniSolved(){return miniOrdered(play.order)&&play.rotations.every(n=>n===0);}
+function miniFinalize(){
+ if(play.solved||!miniSolved())return;
+ play.solved=true;
+ miniDrawScraps();
+ miniHint('Разорванный лист восстановлен: все девять фрагментов расположены и повёрнуты правильно!');
+ setTimeout(()=>miniWin({order:play.order.slice()}),1000);
+}
 function miniSwap(a,b){
  if(a===b)return;
  [play.order[a],play.order[b]]=[play.order[b],play.order[a]];
- miniDrawScraps();
- if(miniOrdered(play.order)){
-  miniHint('Разорванный лист восстановлен: неровные края и фрагменты документа совпали!');
-  setTimeout(()=>miniWin({order:play.order.slice()}),1100);
- }
+ play.selected=null;miniDrawScraps();miniFinalize();
+}
+function miniRotatePiece(slot){
+ if(play.solved)return;
+ const piece=play.order[slot];
+ play.rotations[piece]=(play.rotations[piece]+90)%360;
+ play.selected=slot;
+ miniDrawScraps();miniFinalize();
+}
+function miniRotateSelected(){
+ if(play.selected===null){miniHint('Сначала выберите фрагмент для поворота.');return;}
+ miniRotatePiece(play.selected);
 }
 function miniChooseScrap(n){
- if(play.selected===null){play.selected=n;miniDrawScraps();return}
- let first=play.selected;play.selected=null;miniSwap(first,n);miniDrawScraps();
+ if(play.solved)return;
+ if(play.selected===null){play.selected=n;miniDrawScraps();miniHint('Фрагмент выбран. Нажмите его ещё раз для поворота или другой для обмена.');return;}
+ const first=play.selected;
+ if(first===n){miniRotatePiece(n);miniHint('Обрывок повёрнут на 90°. Повторите касание для следующего поворота.');}
+ else miniSwap(first,n);
 }
 function miniToggleZoom(){
  play.zoom=!play.zoom;
@@ -154,11 +172,11 @@ function miniToggleZoom(){
 }
 function miniDrawScraps(){
  const root=document.getElementById('miniScraps');if(!root||!trial)return;
- root.classList.toggle('mini-assembled',miniOrdered(play.order));
+ root.classList.toggle('mini-assembled',miniSolved());
  root.classList.toggle('mini-zoom',!!play.zoom);
- root.innerHTML=play.order.map((piece,slot)=>'<button type="button" class="mini-scrap '+(slot===play.selected?'mini-picked':'')+'" data-slot="'+slot+'" onclick="miniChooseScrap('+slot+')" aria-label="Фрагмент разорванной бумаги. Выбрать или поменять местами">'+miniPaperFragment(piece)+'</button>').join('');
+ root.innerHTML=play.order.map((piece,slot)=>'<button type="button" class="mini-scrap '+(slot===play.selected?'mini-picked':'')+'" data-slot="'+slot+'" onclick="miniChooseScrap('+slot+')" aria-pressed="'+(slot===play.selected)+'" aria-label="Фрагмент '+(slot+1)+'. Выбрать; повторное нажатие — поворот на 90 градусов." title="Нажмите для выбора · повторно — повернуть ↻">'+miniPaperFragment(piece)+'<span class="mini-turn-symbol" aria-hidden="true">↻</span></button>').join('');
  const status=document.getElementById('miniCorrect');
- if(status)status.textContent=miniOrdered(play.order)?'Лист восстановлен. Соседние края, строки и печать совпали.':'Сопоставляйте соседние линии разрыва, строки текста и части архивной печати.';
+ if(status)status.textContent=miniSolved()?'Лист восстановлен: порядок и поворот правильные.':(play.selected===null?'Найдите места девяти фрагментам и исправьте их ориентацию. Нажмите для выбора.':'Выбран фрагмент № '+(play.selected+1)+'. Повторное нажатие — поворот на 90°, другой фрагмент — обмен.');
 }
 function miniEnableDrag(){
  const zone=document.getElementById('miniScraps');if(!zone)return;
@@ -284,7 +302,7 @@ function miniView(){
  if(!trial)return '';
  let stage='',k=trial.kind;
  if(k==='shreds'){
-  stage='<p class="mini-instruction">'+esc(miniScene().puzzle)+' Перед вами девять фрагментов одной повреждённой страницы. <b>У каждого клочка неповторимый рваный контур: соседние края дополняют друг друга.</b> Сопоставляйте линии разрыва, продолжения строк и части архивного штампа. Перетаскивайте детали либо нажимайте на две по очереди, чтобы поменять их местами.</p><div class="mini-correct" id="miniCorrect"></div><div class="mini-puzzle-scroll"><div class="mini-scraps" id="miniScraps"></div></div><button id="miniZoomButton" class="light slim" onclick="miniToggleZoom()">Увеличить фрагменты</button>';
+  stage='<p class="mini-instruction">'+esc(miniScene().puzzle)+' Перед вами девять фрагментов повреждённой страницы. Некоторые повёрнуты. Сопоставьте линии разрыва, текст и штамп. <b>Первое нажатие выбирает фрагмент; повторное поворачивает его на 90°.</b> Нажатие на другой обрывок меняет их местами. Также можно перетаскивать детали.</p><div class="mini-correct" id="miniCorrect"></div><div class="mini-puzzle-scroll"><div class="mini-scraps" id="miniScraps"></div></div><div class="mini-puzzle-actions"><button id="miniRotateButton" class="light slim" onclick="miniRotateSelected()">↻ Повернуть на 90°</button><button id="miniZoomButton" class="light slim" onclick="miniToggleZoom()">Увеличить фрагменты</button></div>';
  }else if(k==='flashlight'){
   stage=miniArchiveView();
  }else if(k==='loupe'){
