@@ -97,7 +97,138 @@ h3{letter-spacing:-.02em}
 .scan-folder button{font-size:12px;padding:6px 12px;white-space:nowrap}
 .scan-sr-only{position:absolute;clip-path:inset(50%);width:1px;height:1px;overflow:hidden}
 @media(max-width:640px){.scan-reader{padding:0 0 25px}.scan-toolbar{top:0;flex-wrap:wrap;font-size:10px}.scan-toolbar .rows{flex:1;justify-content:flex-end}.scan-page{transform:none;margin:0;min-height:100vh;padding:38px 24px 48px;font-size:var(--scansize);box-shadow:none}.scan-page .scan-data{flex-wrap:wrap;margin-bottom:24px}.scan-page .scan-stamp{width:115px;height:64px}.scan-page .scan-end{margin-top:35px}.scan-folder{flex-wrap:wrap}.scan-folder .scan-controls{margin-left:73px;align-items:start}.scan-page .scan-org-row span{font-size:11px}.scan-page .statline{gap:4px}}
-</style></head>
+
+/* DISTINCT SCANNED DOSSIERS v4 */
+.scan-page{--page-ink:#283039;padding:66px 65px 52px;color:var(--page-ink);background:#efece4;font-size:var(--scansize)}
+.scan-page .leaf-head{font-family:Arial,sans-serif;letter-spacing:.09em;font-size:.78em;font-weight:700}
+.scan-page .leaf-meta{font: .80em Arial,sans-serif;color:#626b6e}
+.scan-page .leaf-title{font-size:1.38em;text-transform:uppercase;letter-spacing:.03em;margin:20px 0 8px;color:#242a31;line-height:1.2}
+.scan-page .leaf-sub{font-size:.92em;color:#5b6367;margin:0 0 22px}
+.scan-page .leaf-foot{font: .67em Arial,sans-serif;letter-spacing:.13em;text-transform:uppercase;text-align:center;border-top:1px solid #9fa6a5;margin-top:36px;padding-top:12px;color:#626a68}
+.scan-page .leaf-sign{margin-top:30px;display:flex;gap:15px;justify-content:space-between;align-items:flex-end;font: .80em Arial,sans-serif;color:#5f6569}
+.scan-page .leaf-sign .scribble{display:block;font-family:Georgia,serif;font-size:1.3em;font-style:italic;color:#37516e;transform:rotate(-4deg);margin-top:8px}
+.scan-page .sheet-stamp{border:2px double #91645a;transform:rotate(-9deg);padding:9px;text-transform:uppercase;letter-spacing:.12em;color:#9d6559;font:700 .67em Arial,sans-serif;text-align:center}
+.scan-page .scan-content{font-size:1em}
+.scan-page .scan-content table{width:100%;border-collapse:collapse;margin:12px 0 22px}
+.scan-page .scan-content td,.scan-page .scan-content th{padding:7px;border:1px solid #8a8f8a;vertical-align:top;text-align:left}
+.scan-page .scan-content th{background:rgba(76,89,94,.07);font-family:Arial,sans-serif;font-size:.8em}
+.scan-page .scan-typed{font-family:'Courier New',Consolas,monospace}
+.scan-page .perforation{height:14px;background:repeating-linear-gradient(90deg,transparent 0 22px,#c1bdb5 22px 26px,transparent 26px 35px);margin-bottom:19px}
+.scan-page .leaf-report-serial{display:flex;justify-content:space-between;border-top:4px double #454c50;border-bottom:1px solid #a0a4a0;padding:11px 0;margin:0 0 24px;font:700 .76em Arial,sans-serif}
+.scan-page .leaf-observation{font: .77em Arial,sans-serif;text-transform:uppercase;letter-spacing:.06em;color:#5d686e}
+.scan-page .leaf-box{border:1px solid #a7aaa7;padding:12px 14px;margin:15px 0;background:rgba(255,255,255,.25)}
+.scan-page .leaf-ruled{background:repeating-linear-gradient(180deg,transparent 0 27px,rgba(76,96,116,.11) 28px,transparent 29px)}
+.scan-page .leaf-punches{position:absolute;left:11px;top:98px;display:grid;gap:220px}
+.scan-page .leaf-punches span{display:block;width:17px;height:17px;border-radius:50%;background:#bbb8ad;box-shadow:inset 1px 1px 3px rgba(0,0,0,.3),0 0 0 3px rgba(255,255,255,.45)}
+.scan-page .scan-foot-label{margin-top:30px;font:10px Arial,sans-serif;color:#757974;text-transform:uppercase;letter-spacing:.11em;border-top:1px solid #b4b5ae;padding-top:12px;text-align:center}
+/* 01 — Patrol incident log: carbon copy */
+.scan-page.scan-incident{background:#e2e4e2;--page-ink:#273c4c;font-family:'Courier New',monospace;transform:rotate(.16deg)}
+.scan-incident:before{background:repeating-linear-gradient(0deg,transparent 0 30px,rgba(74,89,102,.075) 31px 32px),linear-gradient(90deg,#bec4c3 0 19px,transparent 20px)!important;opacity:.5}
+.scan-incident .leaf-head{border:2px solid #687784;text-align:center;padding:10px;font:700 .83em 'Courier New',monospace}
+.scan-incident .leaf-title{font:700 1.15em 'Courier New',monospace;text-align:left}
+.scan-incident .scan-content{font-size:.92em}
+.scan-incident .scan-content table{font-size:.91em}
+.scan-incident .sheet-stamp{border:2px solid #516878;color:#516878}
+/* 02 — web-evidence printout with capture */
+.scan-page.scan-osint{background:#fbfaf6;transform:rotate(-.1deg)}
+.scan-osint .browser-print{border:1px solid #b0b4b2;margin:10px 0 27px;background:#fff}
+.scan-osint .browser-chrome{background:#d5d9db;padding:7px 11px;font:11px Consolas,monospace;color:#4d626b;display:flex;gap:8px;align-items:center}
+.scan-osint .browser-chrome:before{content:"● ● ●";font-size:10px;color:#8d9da5}
+.scan-osint .browser-video{height:135px;background:#e0e3e3;display:flex;align-items:center;justify-content:center;color:#52636d;font:700 .9em Arial,sans-serif;gap:18px}
+.scan-osint .browser-play{font-size:22px;border:2px solid #758791;border-radius:50%;width:48px;height:48px;display:grid;place-items:center}
+.scan-osint .browser-post{padding:11px;font: .83em Arial,sans-serif}
+.scan-osint .osint-mark{font:11px Arial,sans-serif;color:#8e5544;border:2px solid #b57c68;padding:7px;max-width:185px;transform:rotate(-6deg);text-align:center;margin-left:auto}
+.scan-osint .scan-content{font-family:Arial,sans-serif;font-size:.9em}
+/* 03 — civic monitoring memo / bar data */
+.scan-page.scan-monitor{background:#fffefa;transform:rotate(.09deg)}
+.scan-monitor .monitor-rule{height:8px;background:linear-gradient(90deg,#54706d 0 70%,#bdad87 70% 100%);margin:0 0 22px}
+.scan-monitor .leaf-title{text-align:left;font-family:Arial,sans-serif;font-size:1.3em}
+.scan-monitor .monitor-chart{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0}
+.scan-monitor .monitor-bar{padding:9px;background:#f0f3f1;border:1px solid #cad4d0;font: .79em Arial,sans-serif}
+.scan-monitor .monitor-track{height:13px;background:#d1dbd6;margin-top:10px}
+.scan-monitor .monitor-fill{height:13px;background:#7f9e93}
+.scan-monitor .monitor-bar:nth-child(2) .monitor-fill{background:#bd9977}
+.scan-monitor .monitor-notice{border-left:3px solid #6f8a7c;padding:8px 13px;font: .85em Arial,sans-serif}
+/* 04 — internal intelligence command structure, landscape */
+.scan-page.scan-command{max-width:980px;min-height:660px;padding:43px 46px;background:#eaebeb;transform:rotate(.07deg)}
+.scan-command .leaf-head{display:flex;justify-content:space-between;border-bottom:3px solid #4c5761;padding-bottom:10px}
+.scan-command .leaf-title{text-align:left;font:700 1.5em Arial,sans-serif}
+.scan-command .scan-org{margin:25px 0;gap:10px}
+.scan-command .scan-org-main{border:2px solid #526b7c;background:#d3dce1;padding:16px 24px;font-size:1.15em}
+.scan-command .scan-org-row{gap:12px}
+.scan-command .scan-org-row span{border:1.5px solid #71828b;background:#f7faf8;padding:14px;min-width:152px}
+.scan-command .leaf-sign{margin-top:26px}
+/* 05 — chronological operations ledger */
+.scan-page.scan-log{background:#f0ebdd;font-family:'Courier New',monospace}
+.scan-log .leaf-head{border-bottom:1px dotted #8e938d}
+.scan-log .leaf-title{font:700 1.25em 'Courier New',monospace}
+.scan-log .scan-content table{font-size:.91em}
+.scan-log .scan-content table tr:nth-child(odd){background:rgba(142,144,132,.08)}
+.scan-log .margin-number{position:absolute;left:19px;top:320px;writing-mode:vertical-rl;letter-spacing:.3em;color:#84909b;font:11px Consolas,monospace}
+/* 06 — cartographic field sheet, landscape */
+.scan-page.scan-cartography{max-width:980px;min-height:675px;padding:34px 42px;background:#e7e9e1;transform:rotate(-.08deg)}
+.scan-cartography .leaf-head{display:flex;justify-content:space-between;border-bottom:2px solid #869883;padding-bottom:12px}
+.scan-cartography .leaf-title{font:700 1.37em Arial,sans-serif}
+.scan-cartography .scan-map{height:290px;background:linear-gradient(135deg,#d6ded2,#f1f1df);border:2px solid #8a9888}
+.scan-cartography .scan-map:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 29px,#afbdab 30px 31px),repeating-linear-gradient(90deg,transparent 0 29px,#afbdab 30px 31px);opacity:.2}
+.scan-cartography .scan-map-river{top:140px;height:28px;border-top:12px solid #a2b9b7}
+.scan-cartography .scan-map-label{background:#f2f2e8;padding:4px}
+.scan-cartography .carto-legend{display:flex;gap:15px;padding:8px;border:1px solid #a6ada4;font:11px Arial,sans-serif;margin:10px 0 20px}
+/* 07 — border post duty log with correction */
+.scan-page.scan-border{background:#e9ecee;font-family:'Courier New',monospace}
+.scan-border .border-report-head{border:3px double #3e5d79;padding:15px;text-align:center;font:700 .85em Arial,sans-serif}
+.scan-border .border-chronometer{font:700 2em 'Courier New',monospace;letter-spacing:.05em;color:#39526a;margin:12px 0}
+.scan-border .leaf-title{font:700 1.2em 'Courier New',monospace}
+.scan-border .border-margin-note{border-left:3px solid #a46554;padding:7px 12px;font:italic .9em Georgia,serif;transform:rotate(-1deg);margin:12px 0}
+/* 08 — diplomatic note: pristine formal letter */
+.scan-page.scan-diplomatic{background:#fcfaf5;min-height:1060px;padding:90px 80px;transform:none}
+.scan-diplomatic .diplo-emblem{width:56px;height:56px;border:2px solid #65716f;border-radius:50%;display:grid;place-items:center;margin:0 auto 20px;font:700 27px Georgia,serif;color:#65716f}
+.scan-diplomatic .leaf-head,.scan-diplomatic .leaf-title{text-align:center;font-family:Georgia,serif}
+.scan-diplomatic .leaf-title{letter-spacing:.15em;font-size:1.12em;margin-top:35px}
+.scan-diplomatic .scan-content{margin:42px 0 55px;line-height:2}
+.scan-diplomatic .scan-content p{text-align:justify;text-indent:26px}
+.scan-diplomatic .leaf-sign{margin-top:60px}
+/* 09 — military situation briefing */
+.scan-page.scan-sitrep{background:#f0f1ee;font-family:Arial,sans-serif;transform:rotate(.11deg)}
+.scan-sitrep .sitrep-top{background:#424e59;color:#f6f6f5;padding:12px;font:700 .85em Consolas,monospace;letter-spacing:.1em;margin:-10px 0 25px}
+.scan-sitrep .leaf-title{font-family:Arial,sans-serif;font-size:1.22em}
+.scan-sitrep .sitrep-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:18px 0}
+.scan-sitrep .sitrep-grid span{border:1px solid #adb5b3;background:#e0e6e3;padding:10px;text-align:center;font:700 .8em Arial,sans-serif}
+.scan-sitrep .scan-content{font-size:.95em}
+/* 10 — capture registration form with photo void */
+.scan-page.scan-capture{background:#eeeae2;transform:rotate(-.14deg)}
+.scan-capture .capture-header{display:grid;grid-template-columns:1fr 135px;gap:16px;border-bottom:3px double #777b75;padding-bottom:13px;margin-bottom:24px}
+.scan-capture .capture-photo{height:148px;border:1px solid #969e9d;display:grid;place-items:center;text-align:center;font:11px Arial,sans-serif;color:#727e80;background:repeating-linear-gradient(135deg,#e1e2de 0 9px,#ebede8 10px 20px)}
+.scan-capture .leaf-title{text-align:left;font:700 1.25em Arial,sans-serif}
+.scan-capture .scan-content th{width:29%}
+.scan-capture .capture-boxes{display:flex;gap:18px;font:12px Arial,sans-serif;margin:14px 0}
+/* 11 — interview/detention protocol, numbered clauses */
+.scan-page.scan-detention{background:#f4f1e8;transform:rotate(.08deg)}
+.scan-detention .leaf-title{text-align:left;border-bottom:2px solid #4b5660;padding-bottom:12px;font-family:Arial,sans-serif}
+.scan-detention .detain-fields{display:grid;grid-template-columns:1fr 1fr;border:1px solid #a4aaa9;margin:15px 0}
+.scan-detention .detain-fields span{padding:12px;border-right:1px solid #a4aaa9;font:12px Arial,sans-serif}
+.scan-detention .detain-fields span:last-child{border:0}
+.scan-detention .detain-ack{border-top:1px dotted #858c8e;margin-top:42px;padding-top:12px;font:italic .84em Georgia,serif}
+/* 12 — humanitarian field inspection with checkbox checklist */
+.scan-page.scan-inspection{background:#f7f5ee;transform:rotate(-.1deg)}
+.scan-inspection .inspection-head{border:2px solid #677d7b;padding:14px 16px;text-align:center;font:700 .85em Arial,sans-serif;letter-spacing:.07em}
+.scan-inspection .leaf-title{font-family:Arial,sans-serif;font-size:1.32em;text-align:left}
+.scan-inspection .inspection-list{display:grid;gap:7px;margin:15px 0;font-family:Arial,sans-serif;font-size:.9em}
+.scan-inspection .inspection-list div{border-bottom:1px dashed #b3b8b3;padding:8px 0;display:flex;gap:12px}
+.scan-inspection .inspection-list b{font-size:1.15em;font-weight:400;color:#557b76}
+.scan-inspection .inspection-map{height:114px;margin:19px 0;background:linear-gradient(120deg,#e0e3dc 0 60%,#c9d5d1 61%);border:1px solid #9ba9a4;position:relative}
+.scan-inspection .inspection-map:before{content:"";position:absolute;inset:16px 40px;border:3px dashed #617c76;transform:rotate(-6deg)}
+.scan-inspection .inspection-map:after{content:"контрольные посты и линии наблюдения · условная схема";position:absolute;bottom:5px;left:8px;font:10px Arial,sans-serif;color:#53655e}
+@media(max-width:650px){
+.scan-page.scan-command,.scan-page.scan-cartography,.scan-page.scan-diplomatic{min-height:100vh;padding:35px 22px}
+.scan-command .scan-org-row span{min-width:85px;padding:7px;font-size:10px}
+.scan-page .leaf-meta{font-size:.72em}
+.scan-page .leaf-title{font-size:1.12em}
+.scan-page.scan-diplomatic .scan-content{margin:20px 0;line-height:1.7}
+.scan-capture .capture-header{grid-template-columns:1fr 95px}
+.scan-capture .capture-photo{height:110px}
+.scan-sitrep .sitrep-grid{grid-template-columns:1fr}
+}</style></head>
 <body><div class="topline"></div><header><div class="wrap"><div><small>ПОЛИТИЧЕСКАЯ КОНФЛИКТОЛОГИЯ / ПРАКТИКУМ 08</small><h1>Граница войны</h1></div><div class="topmeta"><span class="pill">Независимая экспертная комиссия</span></div></div></header><main class="wrap" id="root"><div class="paper">Загрузка материалов расследования…</div></main><div id="footer" class="footer hidden"></div><div id="scanReader" class="scan-reader" aria-hidden="true"><div class="scan-outer"><div class="scan-toolbar"><span>АРХИВ ДОКАЗАТЕЛЬСТВ · УЧЕБНАЯ СИМУЛЯЦИЯ</span><div class="rows"><button type="button" data-act="scan-size" data-change="-1" aria-label="Уменьшить текст">А−</button><button type="button" data-act="scan-size" data-change="1" aria-label="Увеличить текст">А+</button><button type="button" data-act="scan-close" aria-label="Закрыть документ">Закрыть ✕</button></div></div><div id="scanPaper" class="scan-page"></div></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script><script>
 (function(){
@@ -160,17 +291,39 @@ function scanAllowed(id){
  if(hostToken)return true;
  var t=currentTeam();return !!(t&&t.docs&&t.docs.includes(id));
 }
+
+var SCAN_TYPES={p1:"incident",p2:"osint",p3:"monitor",p4:"command",p5:"log",p6:"cartography",p7:"border",p8:"diplomatic",p9:"sitrep",p10:"capture",p11:"detention",p12:"inspection"};
+function scanSignature(doc,stamp){
+return '<div class="leaf-sign"><div>'+E(doc.sign)+'<span class="scribble">/ __________ /</span></div>'+(stamp?'<div class="sheet-stamp">'+E(stamp)+'</div>':'<div class="leaf-meta">Регистрация: '+E(doc.no)+'</div>')+'</div>';
+}
+function scanFoot(){
+return '<div class="scan-foot-label">УЧЕБНАЯ РЕКОНСТРУКЦИЯ · НЕ ЯВЛЯЕТСЯ ПОДЛИННЫМ ДОКУМЕНТОМ</div>';
+}
+function scanSheet(id,doc){
+var folio='<div class="leaf-meta">Дело №08 / '+E(doc.no)+' · '+E(doc.date)+'</div>';
+var content='<div class="scan-content">'+doc.body+'</div>';
+switch(id){
+case "p1":return '<div class="leaf-head">'+E(doc.unit)+'</div><div class="leaf-report-serial"><span>РЕГИСТРАЦИЯ: '+E(doc.no)+'</span><span>ДАТА: '+E(doc.date)+'</span></div><h2 class="leaf-title">'+E(doc.kind)+'</h2><div class="leaf-sub">'+E(doc.sub)+'</div>'+content+scanSignature(doc,"Принято к учёту")+scanFoot();
+case "p2":return '<div class="leaf-punches"><span></span><span></span></div><div class="leaf-head">Отдел верификации публикаций / распечатка доказательства</div><div class="browser-print"><div class="browser-chrome">архивная копия публикации · 14 мая</div><div class="browser-video"><span class="browser-play">▶</span><span>ВИДЕО 00:46<br/>кадр не воспроизводится</span></div><div class="browser-post">Группа «ОВГ-1»: «Объявляем о создании штаба сопротивления и начале гражданской войны»</div></div><div class="osint-mark">Источник и автор публикации не подтверждены</div><h2 class="leaf-title">'+E(doc.kind)+'</h2>'+folio+content+scanSignature(doc,"На проверке")+scanFoot();
+case "p3":return '<div class="monitor-rule"></div><div class="leaf-head">'+E(doc.unit)+'</div><div class="leaf-meta">'+E(doc.date)+' · '+E(doc.no)+'</div><h2 class="leaf-title">Обзор активности и инцидентов</h2><p class="leaf-sub">'+E(doc.sub)+'</p><div class="monitor-chart"><div class="monitor-bar">Мирные акции · 13 из 17<div class="monitor-track"><div class="monitor-fill" style="width:76.5%"></div></div></div><div class="monitor-bar">Акции с беспорядками · 4 из 17<div class="monitor-track"><div class="monitor-fill" style="width:23.5%"></div></div></div></div><div class="monitor-notice">Огнестрельное оружие отмечено в 2 эпизодах; они входят в число событий с беспорядками.</div>'+content+scanSignature(doc,"Рабочая версия")+scanFoot();
+case "p4":return '<div class="leaf-head"><span>'+E(doc.unit)+'</span><span>'+E(doc.no)+' / '+E(doc.date)+'</span></div><h2 class="leaf-title">'+E(doc.kind)+'</h2><p class="leaf-sub">'+E(doc.sub)+'</p>'+content+scanSignature(doc,"Схема проверена")+scanFoot();
+case "p5":return '<div class="perforation"></div><div class="margin-number">ОПЕРАТИВНЫЙ ЖУРНАЛ · '+E(doc.no)+'</div><div class="leaf-head">ПОЛЕВАЯ КНИГА РЕГИСТРАЦИИ ИНЦИДЕНТОВ</div><h2 class="leaf-title">'+E(doc.kind)+'</h2>'+folio+content+scanSignature(doc,"Сводка")+scanFoot();
+case "p6":return '<div class="leaf-head"><span>'+E(doc.unit)+'</span><span>ПРИЛОЖЕНИЕ · '+E(doc.no)+'</span></div><h2 class="leaf-title">Картографическое приложение № 6</h2><p class="leaf-sub">'+E(doc.sub)+'</p>'+content+'<div class="carto-legend"><span>● районы активности</span><span>≋ водная преграда</span><span>─ дороги</span><span>… зоны неполных данных</span></div>'+scanSignature(doc,"Условная схема")+scanFoot();
+case "p7":return '<div class="border-report-head">'+E(doc.unit)+'<div style="font-size:.8em;margin-top:4px">ВОЕННО-СЛУЖЕБНЫЙ ЖУРНАЛ · ПОСТ ВОСТОЧНЫЙ-4</div></div><div class="border-chronometer">12:14 — 12:52</div><h2 class="leaf-title">'+E(doc.kind)+'</h2>'+folio+content+'<div class="border-margin-note">Уточнить первичное время наблюдения и маршрут отхода подразделения</div>'+scanSignature(doc,"Получено штабом")+scanFoot();
+case "p8":return '<div class="diplo-emblem">А</div><div class="leaf-head">'+E(doc.unit)+'</div><h2 class="leaf-title">Дипломатическая нота</h2><div class="leaf-sub" style="text-align:center">№ '+E(doc.no)+' · '+E(doc.date)+'<br/>'+E(doc.sub)+'</div>'+content+'<p style="margin:28px 0 0;font-style:italic">Министерство иностранных дел Государства А пользуется случаем, чтобы возобновить посольству уверения в своём высоком уважении.</p>'+scanSignature(doc,null)+scanFoot();
+case "p9":return '<div class="sitrep-top">SITREP / '+E(doc.no)+' / '+E(doc.date)+'</div><div class="leaf-head">'+E(doc.unit)+'</div><h2 class="leaf-title">'+E(doc.kind)+'</h2><div class="leaf-sub">'+E(doc.sub)+'</div><div class="sitrep-grid"><span>ЗОНА: СЕВЕРНЫЙ РЕГИОН</span><span>НАБЛЮДЕНИЕ: 1–5 ИЮЛЯ</span><span>ИСТОЧНИК: ПОЛЕВЫЕ СВОДКИ</span></div>'+content+scanSignature(doc,"Сводка принята")+scanFoot();
+case "p10":return '<div class="capture-header"><div><div class="leaf-head">'+E(doc.unit)+'</div><h2 class="leaf-title">'+E(doc.kind)+'</h2><p class="leaf-meta">'+E(doc.no)+' · '+E(doc.date)+'</p></div><div class="capture-photo">ФОТОГРАФИЯ<br/>НЕ ПРИЛОЖЕНА</div></div><div class="capture-boxes"><span>☒ личность уточняется</span><span>☒ помощь оказана</span><span>□ медицинское наблюдение</span></div>'+content+scanSignature(doc,"Учётная запись")+scanFoot();
+case "p11":return '<div class="leaf-head">'+E(doc.unit)+'</div><h2 class="leaf-title">'+E(doc.kind)+'</h2><div class="detain-fields"><span>Дело: '+E(doc.no)+'</span><span>Дата: '+E(doc.date)+'</span></div><div class="leaf-sub">'+E(doc.sub)+'</div><div class="leaf-box"><b>Отмеченные сведения</b><p>☒ Лицо задержано в зоне инцидента<br/>☒ Изъяты предметы<br/>☐ Связь с конкретным обстрелом установлена окончательно</p></div>'+content+'<div class="detain-ack">Запись составлена по первоначальным сведениям; подтверждение обстоятельств продолжается.</div>'+scanSignature(doc,"Протокол")+scanFoot();
+case "p12":return '<div class="inspection-head">'+E(doc.unit)+'<div style="margin-top:6px;font-size:.83em">ПОЛЕВОЕ ОБСЛЕДОВАНИЕ / '+E(doc.no)+' / '+E(doc.date)+'</div></div><h2 class="leaf-title">'+E(doc.kind)+'</h2><p class="leaf-sub">'+E(doc.sub)+'</p><div class="inspection-list"><div><b>☒</b>Вооружённые посты на въездах</div><div><b>☒</b>Ограничения передвижения жителей</div><div><b>☒</b>Пропускной режим</div><div><b>☒</b>Местные органы не управляют районом</div></div><div class="inspection-map"></div>'+content+scanSignature(doc,"Обследовано")+scanFoot();
+default:return folio+'<h2>'+E(doc.kind)+'</h2>'+content+scanSignature(doc,"Учётная копия")+scanFoot();
+}
+}
 function scanDialog(id){
  var doc=SCAN_DOCS[id];if(!doc||!scanAllowed(id))return;
  var paper=document.getElementById("scanPaper");
+ paper.className="scan-page scan-"+SCAN_TYPES[id];
  paper.style.setProperty("--scansize",scanFont+"px");
- paper.innerHTML='<div class="scan-top">Учебное дело № 08 · реконструкция материала расследования</div>'+
-  '<div class="scan-ministry">'+E(doc.unit)+'</div>'+
-  '<div class="scan-data"><span>'+E(doc.date)+'</span><span>Рег. № '+E(doc.no)+'</span><span>Лист 1 / 1</span></div>'+
-  '<h2>'+E(doc.kind)+'</h2><div class="scan-sub">'+E(doc.sub)+'</div>'+
-  '<div class="scan-content">'+doc.body+'</div>'+
-  '<div class="scan-end"><div><span class="scan-sign">'+E(doc.sign)+'</span><div style="font:11px Arial,sans-serif;color:#777;margin-top:8px">Подпись / условное воспроизведение</div></div><div class="scan-stamp"><span>Архив<br>дело № 08<br>копия</span></div></div>'+
-  '<div class="scan-bottom">УЧЕБНАЯ РЕКОНСТРУКЦИЯ · НЕ ЯВЛЯЕТСЯ ПОДЛИННЫМ ДОКУМЕНТОМ</div>';
+ paper.innerHTML=scanSheet(id,doc);
  var modal=document.getElementById("scanReader");modal.classList.add("open");modal.setAttribute("aria-hidden","false");
  document.body.style.overflow="hidden";modal.scrollTop=0;
 }
