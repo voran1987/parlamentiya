@@ -221,7 +221,7 @@ function roundReport(h){
 if(!h)return '<div class="panel">Отчёт станет доступен после завершения раунда.</div>';
 const labels=(h.teamDecisions||[]),choices=h.teamChoices||[],alliances=h.alliances||[],actions=h.actions||[];
 const before=h.metricsBefore||[],scoreOld=h.scoresBefore||[];
-return '<section class="panel round-report"><div class="eyebrow">Политический отчёт · Раунд '+(h.round+1)+'</div><h2>'+esc(h.title)+'</h2><p class="sub">Общее решение республики: <strong>'+esc(h.choice)+'</strong>. Итог: <strong>'+esc(h.regime)+'</strong>.</p>'+
+return '<section class="panel round-report"><div class="eyebrow">Политический отчёт · Раунд '+(h.round+1)+'</div><h2>'+esc(h.title)+'</h2><p class="sub">Общее решение республики: <strong>'+esc(h.choice)+'</strong>. Власть: <strong>'+governmentTransition(h)+'</strong>. Политический итог: <strong>'+esc(h.regime)+'</strong>.</p>'+
 '<div class="report-metrics">'+METRIC_NAMES.map((n,i)=>'<div class="report-metric"><span>'+esc(n)+'</span><strong>'+h.metrics[i]+'</strong><small>'+(before[i]==null?'Текущее значение':esc(signed(h.metrics[i]-before[i]))+' за раунд')+'</small></div>').join('')+'</div>'+
 '<h3 style="margin:20px 0 10px">Как действовали делегации</h3>'+
 TEAMS.map((name,i)=>{
@@ -237,7 +237,15 @@ return '<article class="report-team"><div class="report-head"><strong>'+EMO[i]+'
 }).join('')+
 '<p class="brief-foot">Отчёт отражает зафиксированные решения и действия. Скрытые дипломатические сообщения не публикуются; личные голоса раскрываются только после закрытия голосования. Изменение влияния может включать бонусы, штрафы и условия кризиса.</p></section>';
 }
-function historyPanel(){return '<section class="panel"><h3>Протокол решений</h3>'+(state.history.length?state.history.slice().reverse().map(h=>'<div class="history"><div class="number">РАУНД '+(h.round+1)+'</div><strong>'+esc(h.title)+'</strong><p class="muted">Решение: '+esc(h.choice)+'</p><p class="note">Итог: '+esc(h.regime)+'</p><p class="note">Доверие '+h.metrics[0]+' · Экономика '+h.metrics[1]+' · Стабильность '+h.metrics[2]+'</p></div>').join(''):'<p class="muted">История появится после первого кризиса.</p>')+'</section>'}
+function governmentTransition(h){
+ const names=['Правящая элита','Оппозиция','Бизнес-элита','Медиа и гражданское общество','Силовые структуры'];
+ const old=Number(h.governmentBefore),now=Number(h.governmentAfter);
+ if(!Number.isInteger(old)||!Number.isInteger(now)||h.governmentBefore==null||h.governmentAfter==null||old<0||now<0||old>=names.length||now>=names.length)return esc(h.regime||'Итог не указан');
+ return old!==now
+ ? 'Смена власти: '+esc(names[old])+' → '+esc(names[now])
+ : 'Власть сохранила делегация «'+esc(names[now])+'»';
+}
+function historyPanel(){return '<section class="panel"><h3>Протокол решений</h3>'+(state.history.length?state.history.slice().reverse().map(h=>'<div class="history"><div class="number">РАУНД '+(h.round+1)+'</div><strong>'+esc(h.title)+'</strong><p class="muted">Решение: '+esc(h.choice)+'</p><p class="note"><strong>Власть:</strong> '+governmentTransition(h)+'</p><p class="note">Политический итог: '+esc(h.regime)+'</p><p class="note">Доверие '+h.metrics[0]+' · Экономика '+h.metrics[1]+' · Стабильность '+h.metrics[2]+'</p></div>').join(''):'<p class="muted">История появится после первого кризиса.</p>')+'</section>'}
 async function runSimulation(){try{const x=await api('simulate');const outcomes=Object.entries(x.outcomes).map(([k,v])=>k+': '+v+' / '+x.trials).join('\\n');const winners=x.wins.map((n,i)=>TEAMS[i]+': '+(100*n/x.trials).toFixed(1)+'%').join('\\n');alert('Автотест '+x.trials+' случайных полных партий (случайные стратегии, не оптимальные):\\n\\nИсходы:\\n'+outcomes+'\\n\\nВероятность первого места (ничьи делятся поровну):\\n'+winners+'\\n\\nСредние показатели: '+x.averages.join(' / '))}catch(e){toast(e.message)}}
 function exportCSV(){if(!state?.history?.length){toast('Сначала завершите первый раунд');return}const rows=[['Раунд','Кризис','Решение','Доверие','Экономика','Стабильность','Исход'],...state.history.map(h=>[h.round+1,h.title,h.choice,...h.metrics,h.regime])];const csv='\ufeff'+rows.map(row=>row.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(';')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='areya-'+auth.code+'-protocol.csv';a.click();URL.revokeObjectURL(url)}
 async function reset(){if(confirm('Перезапустить игру с теми же участниками?'))await action('reset')}
