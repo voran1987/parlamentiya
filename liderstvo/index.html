@@ -336,7 +336,7 @@ function hostRoleOptionsUI(){
 if(!state.allTeamOptions)return '';
 return '<section class="panel"><div class="eyebrow">Материалы ведущего</div><h3>Задачи и варианты всех пяти делегаций</h3>'+
 state.allTeamOptions.map((options,i)=>'<div class="team" style="margin:12px 0;padding:14px"><strong>'+EMO[i]+' '+esc(TEAMS[i])+'</strong>'+
-(state.hostBriefs?.[i]?'<details class="host-brief"><summary>Посмотреть вводную и цели делегации</summary>'+state.hostBriefs[i].map((line,k)=>'<p><b>'+['Ситуация','Цель','Допустимый компромисс','С кем договариваться'][k]+':</b> '+esc(line)+'</p>').join('')+'</details>':'')+
+(state.hostBriefs?.[i]?'<details class="host-brief"><summary>Посмотреть вводную и цели делегации</summary>'+state.hostBriefs[i].map((line,k)=>'<p><b>'+['Ситуация','Цель','Допустимый компромисс','С кем договариваться'][k]+':</b> '+esc(line)+'</p>').join('')+(state.hostInsiderNotes?.[i]?'<p><b>Закрытые сведения:</b> '+esc(state.hostInsiderNotes[i])+'</p>':'')+'</details>':'')+
 options.map((label,j)=>'<div style="margin:8px 0;font-size:13px"><b>'+((state.alignedMode?['Поддержка','Компромисс','Критика'][j]:(j+1)+'.'))+':</b> '+esc(label)+'</div>').join('')+'</div>').join('')+'</section>';
 }
 function voteUI(){
