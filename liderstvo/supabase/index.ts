@@ -112,12 +112,19 @@ metricsBefore,scoresBefore,governmentBefore:gov,governmentAfter:s.government});
 s.phase='results';if(s.round===rounds.length-1){s.completed=true;const goals=s.strategyProgress.map((v:number)=>v>=3);s.missionResults=goals;s.scores=s.scores.map((v:number,i:number)=>v+(goals[i]?5:0));s.history.at(-1).scores=[...s.scores];}
 }
 Deno.serve(async(req:Request)=>{if(req.method==='OPTIONS')return new Response(null,{headers:C});if(req.method!=='POST')return J({error:'POST only'},405);
-try{const b=await req.json();const op=String(b.op||'');if(op==='create'){const secret=token(),code=Array.from(crypto.getRandomValues(new Uint8Array(3))).map(x=>x.toString(36).toUpperCase().padStart(2,'0')).join('').slice(0,6);const {error}=await db.from('pl_rooms').insert({code,host_hash:await hash(secret),state:fresh()});if(error)throw error;return J({code,token:secret,host:true});}
+try{const b=await req.json();const op=String(b.op||'');if(op==='create'){const secret=token(),recoveryKey=token(),code=Array.from(crypto.getRandomValues(new Uint8Array(3))).map(x=>x.toString(36).toUpperCase().padStart(2,'0')).join('').slice(0,6);const {error}=await db.from('pl_rooms').insert({code,host_hash:await hash(secret),state:{...fresh(),hostRecoveryHash:await hash(recoveryKey)}});if(error)throw error;return J({code,token:secret,recoveryKey,host:true});}
 const code=String(b.code||'').toUpperCase().slice(0,6),secret=String(b.token||'');if(!/^[A-Z0-9]{6}$/.test(code))return J({error:'Неверный код комнаты'},400);
 for(let attempt=0;attempt<5;attempt++){
 const {data:room,error:readError}=await db.from('pl_rooms').select('state,host_hash,version').eq('code',code).gt('expires_at',new Date().toISOString()).maybeSingle();
 if(readError)throw readError;if(!room)return J({error:'Комната не найдена'},404);
-const h=await hash(secret),isHost=!!secret&&h===room.host_hash;const s=room.state;const me=s.players.find((p:any)=>p.hash===h&&!!secret);
+const h=await hash(secret),s=room.state,isHost=!!secret&&(h===room.host_hash||(s.hostAccessHashes||[]).includes(h));const me=s.players.find((p:any)=>p.hash===h&&!!secret);
+if(op==='recover_host'){
+ const key=String(b.recoveryKey||'').trim();
+ if(key.length<50||!s.hostRecoveryHash||await hash(key)!==s.hostRecoveryHash)return J({error:'Неверный ключ восстановления ведущего'},403);
+ const newToken=token();s.hostAccessHashes=[...(s.hostAccessHashes||[]).slice(-9),await hash(newToken)];
+ const {data:updated,error:writeError}=await db.from('pl_rooms').update({state:s,version:room.version+1,updated_at:new Date().toISOString()}).eq('code',code).eq('version',room.version).select('code').maybeSingle();
+ if(writeError)throw writeError;if(updated)return J({code,token:newToken,host:true});continue;
+}
 if(op==='join'){if(s.players.length>=30)return J({error:'Комната заполнена'},400);if(!/^[\p{L}\p{N} ._-]{2,32}$/u.test(String(b.name||'')))return J({error:'Укажите имя (2–32 символа)'},400);const team=Number(b.team);if(!Number.isInteger(team)||team<0||team>=5)return J({error:'Выберите делегацию'},400);if(s.players.filter((p:any)=>p.team===team).length>=6)return J({error:'В делегации уже 6 человек'},400);if(s.phase!=='lobby')return J({error:'Игра уже началась'},409);const t=token();s.players.push({id:crypto.randomUUID(),hash:await hash(t),name:String(b.name).trim(),team});const {data:updated}=await db.from('pl_rooms').update({state:s,version:room.version+1}).eq('code',code).eq('version',room.version).select('code').maybeSingle();if(updated)return J({code,token:t,host:false});continue;}
 if(!isHost&&!me)return J({error:'Требуется повторное подключение'},401);
 if(op==='state')return J(view(s,me,isHost));
